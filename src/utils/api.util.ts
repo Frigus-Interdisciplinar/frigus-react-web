@@ -1,5 +1,5 @@
-import type { ErrorResponse } from "../types/error-response.type";
-import type { HttpMethod } from "../types/http-methods.type";
+import type { ErrorResponse } from "@/types/error-response.type";
+import type { HttpMethod } from "@/types/http-methods.type";
 import axios, { AxiosError, type AxiosRequestConfig } from "axios";
 
 // config inicial da instancia do axios

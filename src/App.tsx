@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { api } from "./utils/api.util";
+import { api } from "@/utils/api.util";
 
 // apenas para teste da funcao, sera removido
 
