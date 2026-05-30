@@ -1,0 +1,4 @@
+echo "verificando..."
+
+npm run typecheck --if-present
+npm run lint
