@@ -1,0 +1,7 @@
+echo "verificando..."
+
+npm run typecheck --if-present
+npm run build
+npm run lint
+
+rm -rf dist
