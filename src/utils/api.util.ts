@@ -42,3 +42,8 @@ export async function api<T>(
     throw error;
   }
 }
+
+api.get = <T>(endpoint: string) => api<T>(endpoint, "GET");
+api.post = <T>(endpoint: string, body: unknown) => api<T>(endpoint, "POST", body);
+api.put = <T>(endpoint: string, body: unknown) => api<T>(endpoint, "PUT", body);
+api.delete = <T>(endpoint: string) => api<T>(endpoint, "DELETE");
