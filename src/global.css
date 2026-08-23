@@ -1,1 +1,64 @@
-@import "tailwindcss"
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300..900;1,300..900&family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&display=swap');
+@import "tailwindcss";
+
+:root {
+  --bg-app: #F5F8FD;
+  --bg-surface: #F8F8F8;
+  --border-subtle: #C9DEF9;
+  --text-main: #1A1919;
+  --text-muted: #1F5F97;
+  --sidebar-bg: #131C55;
+  --sidebar-text: #FFFFFF;
+  --sidebar-muted: #C9DEF9;
+}
+
+.dark {
+  --bg-app: #0B1024;
+  --bg-surface: #131C55;
+  --border-subtle: #1F5F97;
+  --text-main: #F8F8F8;
+  --text-muted: #C9DEF9;
+  --sidebar-bg: #070B18;
+  --sidebar-text: #FFFFFF;
+  --sidebar-muted: #70A2D7;
+}
+
+@theme {
+  --font-sans: 'Sarabun', system-ui, -apple-system, sans-serif;
+  --font-title: 'Nasalization', 'Montserrat', sans-serif;
+  --font-display: 'Nasalization', sans-serif;
+  --font-montserrat: 'Montserrat', sans-serif;
+  --font-sarabun: 'Sarabun', sans-serif;
+
+  --color-bg-app: var(--bg-app);
+  --color-surface: var(--bg-surface);
+  --color-border-subtle: var(--border-subtle);
+  --color-text-main: var(--text-main);
+  --color-text-muted: var(--text-muted);
+  --color-sidebar-bg: var(--sidebar-bg);
+  --color-sidebar-text: var(--sidebar-text);
+  --color-sidebar-muted: var(--sidebar-muted);
+
+  --color-frigus-primary: #2552C8;
+  --color-frigus-navy: #131C55;
+  --color-frigus-secondary: #1F5F97;
+  --color-frigus-light-blue: #70A2D7;
+  --color-frigus-ice: #C9DEF9;
+  --color-frigus-accent: #F9C968;
+  --color-frigus-bg: #F8F8F8;
+  --color-frigus-dark: #1A1919;
+  --color-frigus-brand: #1B4C7A;
+  --color-frigus-white: #FFFFFF;
+  
+  --radius-frigus: 20px;
+  --radius-button: 12px;
+}
+
+@layer base {
+  body {
+    background-color: var(--bg-app);
+    color: var(--text-main);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+}
