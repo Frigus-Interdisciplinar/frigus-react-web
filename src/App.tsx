@@ -1,37 +1,38 @@
-import { useEffect, useState } from "react";
-import { api } from "@/utils/api.util";
+import { useState } from "react";
+import Sidebar, { type SectionString } from "@/components/Sidebar/Navbar";
+import Button from "@/components/Button";
 
-// apenas para teste da funcao, sera removido
+export default function App() {
+  const [activeSection, setActiveSection] = useState<SectionString>("home");
 
-type Response = {
-  id: number,
-  title: string,
-  price: number,
-  description: string,
-  category: string,
-  image: string,
-  rating: {rate: number, count: number }, 
+  return (
+    <div className="flex min-h-screen bg-bg-app">
+      <Sidebar activeSection={activeSection} />
+
+      <main className="flex-1 p-8">
+        <h1 className="text-2xl font-title text-text-main mb-6">
+          Teste da Sidebar e Componentes
+        </h1>
+
+        <div className="flex flex-wrap gap-4 items-center">
+          <Button variant="primary" onClick={() => setActiveSection("home")}>
+            Visão geral
+          </Button>
+          <Button variant="secondary" onClick={() => setActiveSection("stock")}>
+            Estoque
+          </Button>
+          <Button variant="accent" onClick={() => setActiveSection("recipe")}>
+            Receitas
+          </Button>
+          <Button variant="destructive">
+            Excluir
+          </Button>
+          <Button variant="outline">
+            Configurações
+          </Button>
+        </div>
+      </main>
+    </div>
+  );
 }
 
-const App = () => {
-  const [data, setData] = useState<Response[]>([])
-
-  useEffect(() => {
-    const loadData = async () => {
-      const res = await api<Response[]>("/products", "GET");
-      setData(res);
-    }
-    loadData();
-  })
-
-  return <div className="bg-[#2e2e2e]">
-    <ul>
-      {data && data.map((product) => (
-        <li key={product.id}>{product.title}</li>
-      ))}
-    </ul>
-    
-  </div>;
-};
-
-export default App;
