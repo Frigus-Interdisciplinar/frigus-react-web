@@ -8,7 +8,7 @@ import {
   Settings,
 } from "lucide-react";
 import NavigationItem from "./NavigationItem";
-import frigusLogo from "@/assets/frigus-logo.png";
+import frigusLogo from "@/assets/frigus-logo.svg";
 
 export type SectionString =
   | "home"
