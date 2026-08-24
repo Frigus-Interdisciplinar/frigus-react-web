@@ -4,8 +4,7 @@ import axios, { AxiosError, type AxiosRequestConfig } from "axios";
 
 // config inicial da instancia do axios
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:8080",
-  // baseURL: "https://fakestoreapi.com",
+  baseURL: import.meta.env.VITE_API_URL,
   timeout: 10000,
   timeoutErrorMessage: "Erro ao conectar com o servidor.",
   headers: {
