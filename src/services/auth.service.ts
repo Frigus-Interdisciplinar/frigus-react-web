@@ -3,7 +3,7 @@ import type { LoginInput, RegisterInput } from "@/schemas/auth.schema";
 import type { LoginResponseDto, RegisterResponseDto } from "@/types/auth.type";
 
 export async function login(data: LoginInput) {
-  const res = await api.post<LoginResponseDto>("web/auth/login", data);
+  const res = await api.post<LoginResponseDto>("/web/auth/login", data);
   return res;
 }
 

@@ -2,13 +2,13 @@ import { z } from "zod";
 
 export const loginSchema = z.object({
   email: z.email("Email inválido"),
-  password: z.string("Senha inválida").min(8, "Senha inválida"),
+  rawPassword: z.string("Senha inválida").min(8, "Senha inválida"),
 });
 
 export const registerSchema = z.object({
   name: z.string("Nome inválido").min(3, "Nome muito curto"),
   email: z.email("Email inválido"),
-  password: z
+  rawPassword: z
     .string("Senha inválida")
     .regex(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,20}$/,

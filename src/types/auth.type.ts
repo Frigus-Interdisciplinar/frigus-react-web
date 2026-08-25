@@ -1,4 +1,4 @@
-type AccountType = "DOMESTIC" | "COMMERCIAL" | "BUSINESS";
+export type AccountType = "DOMESTIC" | "COMMERCIAL" | "BUSINESS";
 
 export interface LoginResponseDto {
   accessToken: string;
@@ -7,6 +7,7 @@ export interface LoginResponseDto {
     id: string;
     name: string;
     email: string;
+    birthDate: string;
     accountType: AccountType;
   };
 }

@@ -3,15 +3,27 @@ import yellowDecorative from "@/assets/yellow-decorative.svg";
 import frigusLogoText from "@/assets/frigus-logo-text.svg";
 import Button from "@/components/Button";
 import Checkbox from "@/components/Checkbox";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
+import { login } from "@/services/auth.service";
+import { useStore } from "@/store/store";
 
 export default function LoginPage() {
   const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
+  const [rawPassword, setRawPassword] = useState<string>("");
   const [rememberMe, setRememberMe] = useState<boolean>(false);
+  const store = useStore();
 
-  const handleSubmit = async () => {
-    console.log({ email, password, rememberMe });
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+
+    console.log(email, rawPassword, rememberMe);
+    
+
+    const res = await login({ email, rawPassword });
+    console.log(res);
+    
+    store.login(res.user, res.accessToken, res.refreshToken);
+    console.log(store.user, store.accessToken, store.refreshToken, rememberMe);
   };
 
   return (
@@ -95,23 +107,43 @@ export default function LoginPage() {
               id="login-input-password"
               className="w-105 h-12 bg-white rounded-xl border border-slate-200 mt-0 pl-3 text-sm focus:outline-blue-400"
               placeholder="Digite sua senha"
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => setRawPassword(e.target.value)}
             />
 
             <div className="flex justify-between items-center w-105 mt-2">
-              <Checkbox id="remember-me" label="Manter conectado" onChange={(e) => setRememberMe(e.target.checked)} />
-              <a href="/forgot-password" className="text-blue-700 text-sm font-semibold underline">
+              <Checkbox
+                id="remember-me"
+                label="Manter conectado"
+                onChange={(e) => setRememberMe(e.target.checked)}
+              />
+              <a
+                href="/forgot-password"
+                className="text-blue-700 text-sm font-semibold underline"
+              >
                 Esqueci minha senha
               </a>
             </div>
 
             <div className="mt-4">
-              <Button type="submit" variant="primary" className="w-105 h-12" onClick={handleSubmit}>
+              <Button
+                type="submit"
+                variant="primary"
+                className="w-105 h-12"
+                onClick={handleSubmit}
+              >
                 Entrar
               </Button>
             </div>
 
-            <p className="text-center mt-6 text-slate-500 text-sm">Ainda não tem uma conta? <a href="/register" className="text-blue-700 text-sm font-bold underline">Cadastre-se</a></p>
+            <p className="text-center mt-5 text-slate-500 text-sm">
+              Ainda não tem uma conta?{" "}
+              <a
+                href="/register"
+                className="text-blue-700 text-sm font-bold underline"
+              >
+                Cadastre-se
+              </a>
+            </p>
           </form>
         </div>
       </section>
