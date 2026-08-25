@@ -1,13 +1,27 @@
 import blueDecorative from "@/assets/blue-decorative.svg";
 import yellowDecorative from "@/assets/yellow-decorative.svg";
 import frigusLogoText from "@/assets/frigus-logo-text.svg";
+import Button from "@/components/Button";
+import Checkbox from "@/components/Checkbox";
+import { useState } from "react";
 
 export default function LoginPage() {
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [rememberMe, setRememberMe] = useState<boolean>(false);
+
+  const handleSubmit = async () => {
+    console.log({ email, password, rememberMe });
+  };
+
   return (
     <main className="flex h-screen w-screen">
       <section className="w-[610px] bg-frigus-navy relative overflow-hidden pl-[64px]">
-
-        <img src={frigusLogoText} alt="Frigus Logo with text" className="w-[150px] h-[45px] absolute top-[54px] left-[64px]" />
+        <img
+          src={frigusLogoText}
+          alt="Frigus Logo with text"
+          className="w-[150px] h-[45px] absolute top-[54px] left-[64px]"
+        />
 
         <div className="flex flex-col gap-[24px] mt-[188px] w-fit">
           <h1 className="text-[40px] font-bold leading-[46px] text-frigus-white">
@@ -33,7 +47,9 @@ export default function LoginPage() {
         />
 
         <div className="relative w-[430px] h-[125px] rounded-frigus bg-[#283064] mt-[130px] z-10 flex flex-col gap-2 justify-center pl-[24px]">
-          <h3 className="font-bold text-frigus-white text-[18px]">Sua rotina em um só lugar</h3>
+          <h3 className="font-bold text-frigus-white text-[18px]">
+            Sua rotina em um só lugar
+          </h3>
           <p className="font-normal text-frigus-ice leading-[21px]">
             Estoque, validade, receitas e lista de compras <br />
             conectados de forma simples.
@@ -42,38 +58,62 @@ export default function LoginPage() {
       </section>
 
       <section className="flex-1 flex items-center justify-center">
+        <div className="rounded-frigus bg-frigus-white shadow-[0_16px_34px_0_rgba(19,28,85,0.10)] w-[520px] h-[575px] flex flex-col items-center justify-center">
+          <div className="w-105 text-left">
+            <h2 className="font-bold text-frigus-navy text-[28px]">
+              Bem-vindo(a) de volta!
+            </h2>
 
-        <div className="rounded-frigus bg-frigus-white shadow-[0_16px_34px_0_rgba(19,28,85,0.10)] w-[520px] h-[575px] pl-10 pt-12">
-
-          <h2 className="font-bold text-frigus-navy text-[28px]">Bem-vindo(a) de volta!</h2>
-
-          <p className="font-normal text-[#70809F] text-[16px] mt-1">
-            Entre para continuar cuidando melhor da sua rotina.
-          </p>
-
-          <form className="flex flex-col gap-2 mt-10">
-          <label htmlFor="login-input-email" className="text-blue-950 text-base font-semibold">
-            Email
-          </label>
-          <input type="text" id="login-input-email" className="w-105 h-12 bg-white rounded-xl border border-slate-200 mt-0 pl-3 text-sm focus:outline-blue-400" placeholder="Digite seu email" />
-
-          <label htmlFor="login-input-password" className="text-blue-950 text-base font-semibold mt-6">
-            Senha
-          </label>
-          <input type="password" id="login-input-password" className="w-105 h-12 bg-white rounded-xl border border-slate-200 mt-0 pl-3 text-sm focus:outline-blue-400 " placeholder="Digite sua senha" />
-
-
-          <div className="flex justify-between">
-            <label htmlFor="remember-me" className="flex items-center">
-              <input type="checkbox" id="remember-me" className="size-4 bg-white rounded-[5px] border border-slate-200" />
-              <span className="text-[#70809F] text-sm">Manter conectado</span>
-            </label>
+            <p className="font-normal text-[#70809F] text-[16px] mt-1">
+              Entre para continuar cuidando melhor da sua rotina.
+            </p>
           </div>
 
-        </form>
-        </div>
-        
+          <form className="flex flex-col gap-2 mt-10">
+            <label
+              htmlFor="login-input-email"
+              className="text-blue-950 text-base font-semibold"
+            >
+              Email
+            </label>
+            <input
+              type="text"
+              id="login-input-email"
+              className="w-105 h-12 bg-white rounded-xl border border-slate-200 mt-0 pl-3 text-sm focus:outline-blue-400"
+              placeholder="Digite seu email"
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
+            <label
+              htmlFor="login-input-password"
+              className="text-blue-950 text-base font-semibold mt-6"
+            >
+              Senha
+            </label>
+            <input
+              type="password"
+              id="login-input-password"
+              className="w-105 h-12 bg-white rounded-xl border border-slate-200 mt-0 pl-3 text-sm focus:outline-blue-400"
+              placeholder="Digite sua senha"
+              onChange={(e) => setPassword(e.target.value)}
+            />
+
+            <div className="flex justify-between items-center w-105 mt-2">
+              <Checkbox id="remember-me" label="Manter conectado" onChange={(e) => setRememberMe(e.target.checked)} />
+              <a href="/forgot-password" className="text-blue-700 text-sm font-semibold underline">
+                Esqueci minha senha
+              </a>
+            </div>
+
+            <div className="mt-4">
+              <Button type="submit" variant="primary" className="w-105 h-12" onClick={handleSubmit}>
+                Entrar
+              </Button>
+            </div>
+
+            <p className="text-center mt-6 text-slate-500 text-sm">Ainda não tem uma conta? <a href="/register" className="text-blue-700 text-sm font-bold underline">Cadastre-se</a></p>
+          </form>
+        </div>
       </section>
     </main>
   );

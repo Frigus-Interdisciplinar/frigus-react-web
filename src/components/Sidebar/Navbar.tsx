@@ -31,8 +31,8 @@ const navigationItems: NavItem[] = [
   { label: "Visão geral", href: "/home", icon: <LayoutDashboard size={18} />, section: "home" },
   { label: "Estoque", href: "/stock", icon: <Package size={18} />, section: "stock" },
   { label: "Receitas", href: "/recipe", icon: <Utensils size={18} />, section: "recipe" },
-  { label: "Lista de compras", href: "/shopping-list", icon: <ShoppingBasket size={18} />, section: "shopping-list" },
-  { label: "Membros da família", href: "/family-members", icon: <UsersRound size={18} />, section: "family-members" },
+  { label: "Compras", href: "/shopping-list", icon: <ShoppingBasket size={18} />, section: "shopping-list" },
+  { label: "Família", href: "/family-members", icon: <UsersRound size={18} />, section: "family-members" },
   { label: "Chat", href: "/chat", icon: <MessageCircle size={18} />, section: "chat" },
   { label: "Configurações", href: "/settings", icon: <Settings size={18} />, section: "settings" },
 ];
