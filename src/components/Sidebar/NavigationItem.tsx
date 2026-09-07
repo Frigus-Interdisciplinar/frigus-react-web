@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import type { NavItem } from "./Navbar";
 import { cn } from "@/utils/cn.util";
 
@@ -8,8 +9,8 @@ type NavItemProps = {
 
 export default function NavigationItem({ item, active }: NavItemProps) {
   return (
-    <a
-      href={item.href}
+    <Link
+      to={item.href}
       className={cn(
         "flex items-center gap-3 px-3.5 py-2.5 rounded-button w-full font-sans text-sm transition-colors duration-150 select-none",
         active
@@ -21,6 +22,6 @@ export default function NavigationItem({ item, active }: NavItemProps) {
         {item.icon}
       </span>
       <span className="truncate">{item.label}</span>
-    </a>
+    </Link>
   );
 }

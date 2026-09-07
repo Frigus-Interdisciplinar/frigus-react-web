@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import {
   LayoutDashboard,
   Package,
@@ -18,6 +19,10 @@ export type SectionString =
   | "family-members"
   | "chat"
   | "settings"
+  | "alerts"
+  | "profile"
+  | "plans"
+  | "notifications"
   | undefined;
 
 export type NavItem = {
@@ -43,15 +48,15 @@ type SidebarProps = {
 
 export default function Sidebar({ activeSection }: SidebarProps) {
   return (
-    <aside className="h-screen sticky top-0 bg-sidebar-bg w-60 p-4 flex flex-col justify-between shrink-0 select-none">
+    <aside className="h-screen sticky top-0 bg-sidebar-bg w-60 p-4 flex flex-col justify-between shrink-0 select-none z-20">
       {/* Header com Logo */}
       <div className="flex flex-col gap-6">
-        <div className="flex items-center gap-2.5 px-3 pt-2">
+        <Link to="/home" className="flex items-center gap-2.5 px-3 pt-2 hover:opacity-90 transition-opacity">
           <img src={frigusLogo} alt="Frigus Logo" className="w-8 h-8 object-contain" />
           <span className="font-display text-white text-lg tracking-wider font-semibold">
             FRIGUS
           </span>
-        </div>
+        </Link>
 
         {/* Links de Navegação */}
         <nav className="flex flex-col gap-1">
@@ -66,7 +71,10 @@ export default function Sidebar({ activeSection }: SidebarProps) {
       </div>
 
       {/* Perfil do Usuário na Base */}
-      <div className="pt-4 border-t border-white/10 flex items-center gap-3 px-2">
+      <Link
+        to="/profile"
+        className="pt-4 border-t border-white/10 flex items-center gap-3 px-2 hover:bg-white/5 rounded-lg transition-colors py-2"
+      >
         <div className="w-9 h-9 rounded-full bg-frigus-ice flex items-center justify-center text-frigus-navy font-bold text-xs shrink-0">
           HP
         </div>
@@ -74,7 +82,7 @@ export default function Sidebar({ activeSection }: SidebarProps) {
           <span className="text-white text-xs font-bold truncate">Henrique Paulo</span>
           <span className="text-sidebar-muted text-[11px] truncate">Plano doméstico</span>
         </div>
-      </div>
+      </Link>
     </aside>
   );
 }
