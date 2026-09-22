@@ -100,5 +100,8 @@ Modal.Input = ModalInput;
 Modal.ItemList = ModalItemList;
 Modal.Footer = ModalFooter;
 
-export { Modal as AddItemModal };
+export { default as AddFoodModal } from "./AddFoodModal";
+export { default as EditFoodModal } from "./EditFoodModal";
+export { default as InviteMemberModal } from "./InviteMemberModal";
+export { Modal as AddItemModal, Modal as AddShoppingItemsModal };
 
