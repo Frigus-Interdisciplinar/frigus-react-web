@@ -1,22 +1,24 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+
+// Páginas de Autenticação
+import LoginPage from "@/pages/Auth/Login";
+import RegisterPage from "@/pages/Auth/Register";
+import ForgotPasswordPage from "@/pages/Auth/ForgotPassword";
 
 // Páginas Domésticas
-import DashboardPage from "./pages/DashboardPage";
-import StockPage from "./pages/StockPage";
-import FoodDetailsPage from "./pages/FoodDetailsPage";
-import AlertsPage from "./pages/AlertsPage";
-import RecipePage from "./pages/RecipePage";
-import RecipeDetailsPage from "./pages/RecipeDetailsPage";
-import ShoppingListPage from "./pages/ShoppingListPage";
-import FamilyMembersPage from "./pages/FamilyMembersPage";
-import ChatPage from "./pages/ChatPage";
-import ProfilePage from "./pages/ProfilePage";
-import SettingsPage from "./pages/SettingsPage";
-import PlansPage from "./pages/PlansPage";
-import NotificationsPage from "./pages/NotificationsPage";
+import HomePage from "@/pages/Domestic/Home";
+import StockPage from "@/pages/Domestic/Stock";
+import FoodDetailsPage from "@/pages/Domestic/FoodDetails";
+import AlertsPage from "@/pages/Domestic/Alerts";
+import RecipePage from "@/pages/Domestic/Recipe";
+import RecipeDetailsPage from "@/pages/Domestic/RecipeDetails";
+import ShoppingListPage from "@/pages/Domestic/ShoppingList";
+import FamilyMembersPage from "@/pages/Domestic/FamilyMembers";
+import ChatPage from "@/pages/Domestic/Chat";
+import ProfilePage from "@/pages/Domestic/Profile";
+import SettingsPage from "@/pages/Domestic/Settings";
+import PlansPage from "@/pages/Domestic/Plans";
+import NotificationsPage from "@/pages/Domestic/Notifications";
 
 export default function App() {
   return (
@@ -28,7 +30,7 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
         {/* Rotas Domésticas */}
-        <Route path="/home" element={<DashboardPage />} />
+        <Route path="/home" element={<HomePage />} />
         <Route path="/stock" element={<StockPage />} />
         <Route path="/stock/:id" element={<FoodDetailsPage />} />
         <Route path="/alerts" element={<AlertsPage />} />
