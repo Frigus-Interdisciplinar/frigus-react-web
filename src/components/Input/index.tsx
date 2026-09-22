@@ -9,12 +9,26 @@ export type InputProps = ComponentProps<"input"> & {
 };
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ id, label, type = "text", error, className, showPasswordToggle, ...props }, ref) => {
+  (
+    {
+      id,
+      label,
+      type = "text",
+      error,
+      className,
+      showPasswordToggle,
+      ...props
+    },
+    ref
+  ) => {
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const isPasswordType = type === "password";
-    const actualType = isPasswordType && (showPasswordToggle ?? true)
-      ? (isPasswordVisible ? "text" : "password")
-      : type;
+    const actualType =
+      isPasswordType && (showPasswordToggle ?? true)
+        ? isPasswordVisible
+          ? "text"
+          : "password"
+        : type;
 
     return (
       <div className="flex flex-col gap-1.5 w-full text-left">

@@ -1,8 +1,8 @@
-import { type ComponentProps, type ReactNode } from 'react';
-import { Check } from 'lucide-react';
-import { cn } from '@/utils/cn.util';
+import { type ComponentProps, type ReactNode } from "react";
+import { Check } from "lucide-react";
+import { cn } from "@/utils/cn.util";
 
-export type CheckboxProps = Omit<ComponentProps<'input'>, 'type'> & {
+export type CheckboxProps = Omit<ComponentProps<"input">, "type"> & {
   label?: ReactNode;
 };
 
@@ -22,10 +22,10 @@ export default function Checkbox({
           type="checkbox"
           id={id}
           className={cn(
-            'peer size-4 appearance-none bg-white rounded-[5px] border border-slate-200',
-            'checked:bg-frigus-primary checked:border-frigus-primary',
-            'hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-frigus-primary/20',
-            'transition-all duration-150 cursor-pointer m-0',
+            "peer size-4 appearance-none bg-white rounded-[5px] border border-slate-200",
+            "checked:bg-frigus-primary checked:border-frigus-primary",
+            "hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-frigus-primary/20",
+            "transition-all duration-150 cursor-pointer m-0",
             className
           )}
           {...props}
