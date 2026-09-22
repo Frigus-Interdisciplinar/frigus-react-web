@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   ChevronRight,
@@ -8,9 +9,25 @@ import {
 } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import Badge from "@/components/Badge";
+import { EditFoodModal } from "@/components/Modal";
+import type { FoodItemData } from "@/components/Modal/EditFoodModal";
 
 export default function FoodDetailsPage() {
   const { id } = useParams<{ id: string }>();
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const [food, setFood] = useState<FoodItemData>({
+    id: id || "1",
+    name: "Leite integral",
+    category: "Laticínios",
+    location: "Geladeira",
+    quantity: "2 L",
+    expiration: "18 ago 2026",
+  });
+
+  const handleSave = (updated: FoodItemData) => {
+    setFood(updated);
+  };
 
   return (
     <AppLayout activeSection="stock">
@@ -23,9 +40,9 @@ export default function FoodDetailsPage() {
                 Meu estoque
               </Link>
               <ChevronRight size={12} />
-              <span>Geladeira</span>
+              <span>{food.location}</span>
               <ChevronRight size={12} />
-              <span className="text-frigus-navy font-semibold">Leite integral</span>
+              <span className="text-frigus-navy font-semibold">{food.name}</span>
             </div>
             <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-frigus-navy">
               Detalhes do alimento
@@ -33,11 +50,18 @@ export default function FoodDetailsPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-bold text-red-600 hover:bg-red-50 hover:border-red-200 transition-colors">
+            <button
+              type="button"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-bold text-red-600 hover:bg-red-50 hover:border-red-200 transition-colors cursor-pointer"
+            >
               <Trash2 size={15} />
               <span>Excluir</span>
             </button>
-            <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-frigus-primary hover:bg-blue-700 text-white text-xs font-bold transition-colors shadow-xs">
+            <button
+              type="button"
+              onClick={() => setIsEditModalOpen(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2552C8] hover:bg-blue-700 text-white text-xs font-bold transition-colors shadow-xs cursor-pointer"
+            >
               <Edit size={15} />
               <span>Editar item</span>
             </button>
@@ -49,21 +73,21 @@ export default function FoodDetailsPage() {
           <div className="w-32 h-32 rounded-2xl bg-blue-50/50 p-2 flex items-center justify-center border border-blue-100/50 shrink-0">
             <img
               src="/images/food-leite.png"
-              alt="Leite integral"
+              alt={food.name}
               className="w-full h-full object-contain"
             />
           </div>
 
           <div className="space-y-3 flex-1 text-center md:text-left">
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
-              <Badge variant="info">Laticínios</Badge>
+              <Badge variant="info">{food.category}</Badge>
               <Badge variant="success">Dentro do prazo</Badge>
             </div>
             <h2 className="font-montserrat font-bold text-2xl text-frigus-navy">
-              Leite integral
+              {food.name}
             </h2>
             <p className="text-xs text-gray-400 font-medium">
-              Marca: Fazenda Bela • ID: #{id || "1"}
+              Marca: Fazenda Bela • ID: #{food.id || "1"}
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
@@ -72,7 +96,7 @@ export default function FoodDetailsPage() {
                   Quantidade Disponível
                 </span>
                 <span className="font-montserrat font-bold text-lg text-frigus-navy">
-                  2 L
+                  {food.quantity}
                 </span>
               </div>
               <div className="bg-gray-50 rounded-2xl p-3 border border-gray-100">
@@ -80,7 +104,7 @@ export default function FoodDetailsPage() {
                   Armazenamento
                 </span>
                 <span className="font-montserrat font-bold text-lg text-frigus-navy">
-                  Geladeira
+                  {food.location}
                 </span>
               </div>
               <div className="bg-gray-50 rounded-2xl p-3 border border-gray-100 col-span-2 sm:col-span-1">
@@ -100,67 +124,62 @@ export default function FoodDetailsPage() {
           {/* Informações do Item (7 colunas) */}
           <div className="lg:col-span-7 bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-4">
             <h3 className="font-montserrat font-bold text-frigus-navy text-base">
-              Informações do item
+              Informações do produto
             </h3>
 
-            <div className="divide-y divide-gray-100 text-sm">
-              {[
-                { label: "CATEGORIA", value: "Laticínios" },
-                { label: "MARCA", value: "Fazenda Bela" },
-                { label: "UNIDADE DE MEDIDA", value: "Litro (L)" },
-                { label: "QUANTIDADE", value: "2 L" },
-                { label: "LOCAL", value: "Geladeira" },
-                { label: "DATA DE VALIDADE", value: "18 de agosto de 2026" },
-                { label: "CADASTRADO EM", value: "02 de agosto de 2026" },
-                { label: "ÚLTIMA ATUALIZAÇÃO", value: "Hoje, 09:41" },
-              ].map((row, idx) => (
-                <div key={idx} className="py-3 flex items-center justify-between">
-                  <span className="text-xs font-bold text-gray-400 tracking-wider">
-                    {row.label}
-                  </span>
-                  <span className="font-semibold text-frigus-navy text-xs sm:text-sm">
-                    {row.value}
-                  </span>
-                </div>
-              ))}
+            <div className="grid grid-cols-2 gap-4 text-xs">
+              <div>
+                <span className="text-gray-400 font-medium block">Espaço na casa</span>
+                <span className="font-bold text-frigus-navy mt-0.5 block">{food.location}</span>
+              </div>
+              <div>
+                <span className="text-gray-400 font-medium block">Categoria</span>
+                <span className="font-bold text-frigus-navy mt-0.5 block">{food.category}</span>
+              </div>
+              <div>
+                <span className="text-gray-400 font-medium block">Data de entrada</span>
+                <span className="font-bold text-frigus-navy mt-0.5 block">02 ago 2026</span>
+              </div>
+              <div>
+                <span className="text-gray-400 font-medium block">Data de validade</span>
+                <span className="font-bold text-frigus-navy mt-0.5 block">{food.expiration}</span>
+              </div>
+              <div>
+                <span className="text-gray-400 font-medium block">Código de barras</span>
+                <span className="font-bold text-frigus-navy mt-0.5 block">7891000315507</span>
+              </div>
+              <div>
+                <span className="text-gray-400 font-medium block">Cadastrado por</span>
+                <span className="font-bold text-frigus-navy mt-0.5 block">Henrique Paulo</span>
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-gray-100">
+              <span className="text-xs text-gray-400 font-medium block mb-1">
+                Observações
+              </span>
+              <p className="text-xs text-gray-600 font-sans leading-relaxed">
+                Manter sempre refrigerado entre 2°C e 8°C. Após aberto, consumir em até 3 dias.
+              </p>
             </div>
           </div>
 
-          {/* Validade e Consumo (5 colunas) */}
+          {/* Validade e Histórico de Consumo (5 colunas) */}
           <div className="lg:col-span-5 space-y-6">
-            {/* Card de Validade */}
-            <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-4">
-              <h3 className="font-montserrat font-bold text-frigus-navy text-base">
-                Validade e consumo
-              </h3>
-
-              <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100 flex items-center gap-4">
-                <div className="w-14 h-14 rounded-xl bg-white border border-emerald-200 flex flex-col items-center justify-center text-center shadow-xs">
-                  <span className="text-[10px] uppercase font-bold text-emerald-600">
-                    AGO
-                  </span>
-                  <span className="font-montserrat font-bold text-xl text-frigus-navy leading-none">
-                    18
-                  </span>
-                  <span className="text-[9px] text-gray-400">2026</span>
-                </div>
-                <div>
-                  <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block">
-                    Dentro da validade
-                  </span>
-                  <p className="font-bold text-frigus-navy text-sm">Faltam 3 dias</p>
-                  <p className="text-xs text-gray-500">
-                    Consuma antes de 18 de agosto.
-                  </p>
-                </div>
+            {/* Card de Alerta de Validade */}
+            <div className="bg-emerald-50 rounded-3xl p-6 border border-emerald-200 text-emerald-950 space-y-2">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 size={18} className="text-emerald-600" />
+                <h4 className="font-montserrat font-bold text-sm text-emerald-900">
+                  Dentro do prazo de validade
+                </h4>
               </div>
-
-              <button className="w-full py-2.5 px-4 bg-frigus-navy hover:bg-slate-900 text-white rounded-xl text-xs font-bold transition-colors">
-                Registrar consumo
-              </button>
+              <p className="text-xs text-emerald-800 font-sans leading-relaxed">
+                Este item tem validade até {food.expiration}. Não há risco imediato de perda.
+              </p>
             </div>
 
-            {/* Histórico de Consumo */}
+            {/* Histórico Recente de Consumo */}
             <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-3">
               <div>
                 <h4 className="font-montserrat font-bold text-frigus-navy text-sm">
@@ -198,6 +217,14 @@ export default function FoodDetailsPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal Dedicado de Editar Alimento (Figma 1879:4658) */}
+      <EditFoodModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        initialData={food}
+        onSave={handleSave}
+      />
     </AppLayout>
   );
 }

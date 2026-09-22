@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { UserPlus, Shield, Mail, CheckCircle2 } from "lucide-react";
+import { UserPlus, Shield } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import Badge from "@/components/Badge";
+import { InviteMemberModal } from "@/components/Modal";
+import type { InviteMemberData } from "@/components/Modal/InviteMemberModal";
 
 type Member = {
   id: string;
@@ -15,7 +17,7 @@ type Member = {
   avatarBg: string;
 };
 
-const members: Member[] = [
+const initialMembers: Member[] = [
   {
     id: "1",
     name: "Henrique Paulo",
@@ -60,19 +62,21 @@ const members: Member[] = [
 ];
 
 export default function FamilyMembersPage() {
+  const [members, setMembers] = useState<Member[]>(initialMembers);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteSent, setInviteSent] = useState(false);
 
-  const handleSendInvite = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inviteEmail) return;
-    setInviteSent(true);
-    setTimeout(() => {
-      setInviteSent(false);
-      setIsInviteOpen(false);
-      setInviteEmail("");
-    }, 1500);
+  const handleInvite = (data: InviteMemberData) => {
+    const newMember: Member = {
+      id: String(Date.now()),
+      name: data.name,
+      email: data.email,
+      role: data.role,
+      roleType: data.role === "Pode editar" ? "editor" : "viewer",
+      lastAccess: "Pendente",
+      avatarLetter: data.name.charAt(0).toUpperCase() || "U",
+      avatarBg: "bg-emerald-100 text-emerald-700",
+    };
+    setMembers((prev) => [...prev, newMember]);
   };
 
   return (
@@ -90,8 +94,9 @@ export default function FamilyMembersPage() {
           </div>
 
           <button
+            type="button"
             onClick={() => setIsInviteOpen(true)}
-            className="inline-flex items-center gap-2 bg-frigus-primary hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-xs self-start sm:self-auto"
+            className="inline-flex items-center gap-2 bg-[#2552C8] hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-xs self-start sm:self-auto cursor-pointer"
           >
             <UserPlus size={16} />
             <span>Convidar membro</span>
@@ -108,31 +113,92 @@ export default function FamilyMembersPage() {
               Todo mundo alinhado para cuidar do estoque
             </h2>
             <p className="text-frigus-ice text-sm font-sans leading-relaxed">
-              Adicione pessoas, organize permissões e compartilhe a rotina da casa
+              Mantenha os familiares a par do que precisa ser comprado e evite desperdícios na rotina doméstica.
             </p>
           </div>
 
-          <div className="flex items-center -space-x-3 z-10 shrink-0">
-            {members.map((m) => (
-              <div
-                key={m.id}
-                className={`w-12 h-12 rounded-full border-2 border-white flex items-center justify-center font-bold text-sm shadow-sm ${m.avatarBg}`}
-              >
-                {m.avatarLetter}
-              </div>
-            ))}
+          {/* Quick Stats Card */}
+          <div className="bg-white/10 backdrop-blur-xs rounded-2xl p-5 border border-white/20 w-full sm:w-auto flex items-center gap-6 z-10 shrink-0">
+            <div className="text-center">
+              <span className="font-montserrat font-bold text-2xl text-white block">
+                {members.length}
+              </span>
+              <span className="text-[11px] text-frigus-ice uppercase tracking-wider font-semibold">
+                Membros
+              </span>
+            </div>
+            <div className="w-px h-10 bg-white/20" />
+            <div className="text-center">
+              <span className="font-montserrat font-bold text-2xl text-white block">
+                1
+              </span>
+              <span className="text-[11px] text-frigus-ice uppercase tracking-wider font-semibold">
+                Administrador
+              </span>
+            </div>
+          </div>
+
+          {/* Background circles */}
+          <div className="absolute right-0 bottom-0 w-64 h-64 rounded-full bg-blue-600/30 blur-2xl pointer-events-none" />
+          <div className="absolute left-1/2 -top-10 w-48 h-48 rounded-full bg-frigus-accent/20 blur-2xl pointer-events-none" />
+        </div>
+
+        {/* Informações sobre Permissões */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-white rounded-2xl p-4 border border-gray-200/80 flex items-start gap-3">
+            <div className="w-8 h-8 rounded-xl bg-blue-50 text-frigus-primary flex items-center justify-center shrink-0">
+              <Shield size={16} />
+            </div>
+            <div>
+              <h3 className="font-montserrat font-bold text-xs text-frigus-navy">
+                Administrador
+              </h3>
+              <p className="text-[11px] text-gray-500 mt-0.5">
+                Controle total, convite de novos membros e alteração de planos.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-4 border border-gray-200/80 flex items-start gap-3">
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+              <Shield size={16} />
+            </div>
+            <div>
+              <h3 className="font-montserrat font-bold text-xs text-frigus-navy">
+                Pode editar
+              </h3>
+              <p className="text-[11px] text-gray-500 mt-0.5">
+                Adiciona, remove e atualiza itens no estoque e lista de compras.
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl p-4 border border-gray-200/80 flex items-start gap-3">
+            <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+              <Shield size={16} />
+            </div>
+            <div>
+              <h3 className="font-montserrat font-bold text-xs text-frigus-navy">
+                Visualizar
+              </h3>
+              <p className="text-[11px] text-gray-500 mt-0.5">
+                Acompanha a disponibilidade dos alimentos e status das listas.
+              </p>
+            </div>
           </div>
         </div>
 
         {/* Tabela de Membros */}
         <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs">
-          <div className="flex items-center justify-between mb-4 pb-2 border-b border-gray-100">
-            <h3 className="font-montserrat font-bold text-frigus-navy text-base">
-              Pessoas da casa
-            </h3>
-            <span className="text-xs font-bold text-frigus-primary bg-blue-50 px-3 py-1 rounded-xl">
-              {members.length} membros
-            </span>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="font-montserrat font-bold text-frigus-navy text-base">
+                Pessoas com acesso
+              </h3>
+              <p className="text-xs text-gray-400">
+                {members.length} membros conectados à sua conta familiar
+              </p>
+            </div>
           </div>
 
           <div className="overflow-x-auto">
@@ -141,17 +207,20 @@ export default function FamilyMembersPage() {
                 <tr className="text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
                   <th className="py-3 px-4">Membro</th>
                   <th className="py-3 px-4">Permissão</th>
-                  <th className="py-3 px-4">Último Acesso</th>
-                  <th className="py-3 px-4 text-right">Ação</th>
+                  <th className="py-3 px-4">Último acesso</th>
+                  <th className="py-3 px-4 text-right">Ações</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {members.map((member) => (
-                  <tr key={member.id} className="hover:bg-gray-50/70 transition-colors">
-                    <td className="py-4 px-4">
+                  <tr
+                    key={member.id}
+                    className="hover:bg-gray-50/70 transition-colors group"
+                  >
+                    <td className="py-3.5 px-4 font-bold text-frigus-navy">
                       <div className="flex items-center gap-3">
                         <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${member.avatarBg}`}
+                          className={`w-9 h-9 rounded-full ${member.avatarBg} font-bold flex items-center justify-center text-xs shrink-0`}
                         >
                           {member.avatarLetter}
                         </div>
@@ -161,41 +230,47 @@ export default function FamilyMembersPage() {
                               {member.name}
                             </span>
                             {member.isCurrentUser && (
-                              <Badge variant="primary" className="text-[10px] py-0 px-2">
+                              <span className="text-[10px] font-bold px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md">
                                 Você
-                              </Badge>
+                              </span>
                             )}
                           </div>
-                          <span className="text-xs text-gray-400 font-normal">
+                          <p className="text-xs text-gray-400 font-normal">
                             {member.email}
-                          </span>
+                          </p>
                         </div>
                       </div>
                     </td>
 
-                    <td className="py-4 px-4">
-                      <span
-                        className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg ${
-                          member.roleType === "admin"
-                            ? "bg-purple-50 text-purple-700"
-                            : member.roleType === "editor"
-                            ? "bg-blue-50 text-frigus-primary"
-                            : "bg-gray-100 text-gray-600"
-                        }`}
-                      >
-                        {member.roleType === "admin" && <Shield size={13} />}
-                        {member.role}
-                      </span>
+                    <td className="py-3.5 px-4">
+                      {member.roleType === "admin" && (
+                        <Badge variant="primary">{member.role}</Badge>
+                      )}
+                      {member.roleType === "editor" && (
+                        <Badge variant="success">{member.role}</Badge>
+                      )}
+                      {member.roleType === "viewer" && (
+                        <Badge variant="neutral">{member.role}</Badge>
+                      )}
                     </td>
 
-                    <td className="py-4 px-4 text-xs text-gray-500 font-medium">
+                    <td className="py-3.5 px-4 text-gray-500 text-xs">
                       {member.lastAccess}
                     </td>
 
-                    <td className="py-4 px-4 text-right">
-                      <button className="px-3 py-1 rounded-lg text-xs font-bold text-gray-600 hover:bg-gray-100 transition-colors">
-                        {member.isCurrentUser ? "Editar" : "Gerir"}
-                      </button>
+                    <td className="py-3.5 px-4 text-right">
+                      {member.isCurrentUser ? (
+                        <span className="text-xs text-gray-400 italic">
+                          Titular
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          className="text-xs font-semibold text-gray-500 hover:text-frigus-primary transition-colors cursor-pointer"
+                        >
+                          Gerenciar
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -204,66 +279,13 @@ export default function FamilyMembersPage() {
           </div>
         </div>
 
-        {/* Modal de Convidar Membro */}
-        {isInviteOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
-            <div className="bg-white rounded-3xl p-6 shadow-2xl w-full max-w-md border border-gray-100 space-y-4">
-              <h3 className="font-montserrat font-bold text-frigus-navy text-lg">
-                Convidar novo membro
-              </h3>
-              <p className="text-xs text-gray-500 font-sans">
-                Envie um convite por e-mail para que outra pessoa da família possa acessar e gerenciar o estoque.
-              </p>
-
-              {inviteSent ? (
-                <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 text-center space-y-2">
-                  <CheckCircle2 size={24} className="text-emerald-600 mx-auto" />
-                  <p className="text-xs font-bold text-emerald-800">
-                    Convite enviado com sucesso!
-                  </p>
-                </div>
-              ) : (
-                <form onSubmit={handleSendInvite} className="space-y-4">
-                  <div>
-                    <label className="text-xs font-bold text-gray-600 block mb-1">
-                      E-mail do membro
-                    </label>
-                    <div className="relative">
-                      <Mail
-                        size={16}
-                        className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
-                      />
-                      <input
-                        type="email"
-                        required
-                        value={inviteEmail}
-                        onChange={(e) => setInviteEmail(e.target.value)}
-                        placeholder="exemplo@email.com"
-                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-frigus-primary"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-end gap-3 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setIsInviteOpen(false)}
-                      className="px-4 py-2 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100"
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-5 py-2 rounded-xl bg-frigus-primary text-white text-xs font-bold hover:bg-blue-700 shadow-xs"
-                    >
-                      Enviar convite
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
-          </div>
-        )}
+        {/* Modal Dedicado de Convidar Membro (Figma 1879:4682) */}
+        <InviteMemberModal
+          isOpen={isInviteOpen}
+          onClose={() => setIsInviteOpen(false)}
+          onInvite={handleInvite}
+          householdName="Casa Henrique"
+        />
       </div>
     </AppLayout>
   );

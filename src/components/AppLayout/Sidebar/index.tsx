@@ -42,7 +42,7 @@ const navigationItems: NavItem[] = [
     section: "home",
   },
   {
-    label: "Estoque",
+    label: "Meu estoque",
     href: "/stock",
     icon: <Package size={18} />,
     section: "stock",

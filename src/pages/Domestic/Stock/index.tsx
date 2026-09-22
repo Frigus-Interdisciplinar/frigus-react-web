@@ -3,7 +3,9 @@ import { Link } from "react-router-dom";
 import { Plus, Search, ChevronDown } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import Badge, { type BadgeVariant } from "@/components/Badge";
-import AddItemModal from "@/components/Modal";
+import { AddFoodModal } from "@/components/Modal";
+import type { NewFoodData } from "@/components/Modal/AddFoodModal";
+import StockSidebar from "./StockSidebar";
 
 type StockItem = {
   id: string;
@@ -18,7 +20,7 @@ type StockItem = {
   image?: string;
 };
 
-const stockItems: StockItem[] = [
+const initialStockItems: StockItem[] = [
   {
     id: "1",
     name: "Leite integral",
@@ -93,17 +95,35 @@ const stockItems: StockItem[] = [
 ];
 
 export default function StockPage() {
+  const [items, setItems] = useState<StockItem[]>(initialStockItems);
   const [activeTab, setActiveTab] = useState<"Todos" | "Despensa" | "Geladeira" | "Freezer">("Todos");
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const filteredItems = stockItems.filter((item) => {
+  const handleAddFood = (data: NewFoodData) => {
+    const newItem: StockItem = {
+      id: String(Date.now()),
+      name: data.name,
+      brand: "Geral",
+      category: data.category,
+      quantity: data.quantity,
+      location: data.location,
+      expiration: data.expiration,
+      status: "Dentro do prazo",
+      statusVariant: "success",
+    };
+    setItems((prev) => [newItem, ...prev]);
+  };
+
+  const filteredItems = items.filter((item) => {
     const matchesTab = activeTab === "Todos" || item.location === activeTab;
     const matchesSearch =
       item.name.toLowerCase().includes(search.toLowerCase()) ||
       item.brand.toLowerCase().includes(search.toLowerCase()) ||
       item.category.toLowerCase().includes(search.toLowerCase());
-    return matchesTab && matchesSearch;
+    const matchesStatus = statusFilter ? item.status === statusFilter : true;
+    return matchesTab && matchesSearch && matchesStatus;
   });
 
   return (
@@ -120,13 +140,14 @@ export default function StockPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <span className="text-xs text-gray-400 hidden md:inline">
               Atualizado hoje, 09:41
             </span>
             <button
+              type="button"
               onClick={() => setIsAddModalOpen(true)}
-              className="inline-flex items-center gap-2 bg-frigus-primary hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-xs"
+              className="inline-flex items-center gap-2 bg-[#2552C8] hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-xs cursor-pointer"
             >
               <Plus size={16} />
               <span>Adicionar item</span>
@@ -142,8 +163,9 @@ export default function StockPage() {
               {(["Todos", "Despensa", "Geladeira", "Freezer"] as const).map((tab) => (
                 <button
                   key={tab}
+                  type="button"
                   onClick={() => setActiveTab(tab)}
-                  className={`flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                  className={`flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     activeTab === tab
                       ? "bg-white text-frigus-navy shadow-xs"
                       : "text-gray-500 hover:text-frigus-navy"
@@ -155,7 +177,7 @@ export default function StockPage() {
             </div>
 
             {/* Campo de Busca */}
-            <div className="relative w-full md:w-72">
+            <div className="relative w-full md:w-80">
               <Search
                 size={16}
                 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
@@ -170,113 +192,141 @@ export default function StockPage() {
             </div>
           </div>
 
-          {/* Filtros em Dropdown */}
-          <div className="flex items-center gap-2 pt-2 border-t border-gray-100 flex-wrap">
-            <span className="text-xs text-gray-400 font-medium mr-2">Filtrar por:</span>
-            {["Categoria", "Validade", "Quantidade"].map((filter) => (
+          {/* Filtros rápidos */}
+          <div className="flex items-center justify-between pt-2 border-t border-gray-100 flex-wrap gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs text-gray-400 font-medium mr-1">Filtrar por:</span>
+              {["Categoria", "Validade", "Quantidade"].map((filter) => (
+                <button
+                  key={filter}
+                  type="button"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer"
+                >
+                  <span>{filter}</span>
+                  <ChevronDown size={14} className="text-gray-400" />
+                </button>
+              ))}
+            </div>
+
+            {statusFilter && (
               <button
-                key={filter}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:border-gray-300 hover:bg-gray-50 transition-colors"
+                type="button"
+                onClick={() => setStatusFilter(null)}
+                className="text-xs text-frigus-primary font-bold hover:underline cursor-pointer"
               >
-                <span>{filter}</span>
-                <ChevronDown size={14} className="text-gray-400" />
+                Limpar filtro de status ({statusFilter})
               </button>
-            ))}
+            )}
           </div>
         </div>
 
-        {/* Tabela de Alimentos */}
-        <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="font-montserrat font-bold text-frigus-navy text-base">
-                Alimentos cadastrados
-              </h3>
-              <p className="text-xs text-gray-400">
-                {filteredItems.length} de {stockItems.length} itens no espaço
-              </p>
+        {/* Layout Principal em 2 Colunas: Tabela (Esquerda) + Resumo & Ações (Direita) */}
+        <div className="flex flex-col lg:flex-row items-start gap-6">
+          {/* Tabela de Alimentos */}
+          <div className="flex-1 w-full bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs min-w-0">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-montserrat font-bold text-frigus-navy text-base">
+                  Alimentos cadastrados
+                </h3>
+                <p className="text-xs text-gray-400">
+                  {filteredItems.length} de {items.length} itens no espaço
+                </p>
+              </div>
+              <span className="text-xs font-bold px-3 py-1 bg-[#EAF3FF] text-frigus-primary rounded-xl">
+                128 itens totais
+              </span>
             </div>
-            <span className="text-xs font-bold px-3 py-1 bg-[#EAF3FF] text-frigus-primary rounded-xl">
-              128 itens totais
-            </span>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr className="text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                    <th className="py-3 px-4">Alimento</th>
+                    <th className="py-3 px-4">Categoria</th>
+                    <th className="py-3 px-4">Qtd.</th>
+                    <th className="py-3 px-4">Local</th>
+                    <th className="py-3 px-4">Validade</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4 text-right">Ação</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {filteredItems.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-8 text-center text-gray-400 text-xs">
+                        Nenhum alimento encontrado com os filtros atuais.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredItems.map((item) => (
+                      <tr key={item.id} className="hover:bg-gray-50/70 transition-colors group">
+                        <td className="py-3.5 px-4 font-bold text-frigus-navy">
+                          <div className="flex items-center gap-3">
+                            {item.image ? (
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className="w-9 h-9 rounded-xl object-cover bg-gray-100 border border-gray-100"
+                              />
+                            ) : (
+                              <div className="w-9 h-9 rounded-xl bg-blue-50 text-frigus-primary font-bold flex items-center justify-center text-xs">
+                                {item.name.slice(0, 2).toUpperCase()}
+                              </div>
+                            )}
+                            <div>
+                              <p className="font-bold text-frigus-navy text-sm">
+                                {item.name}
+                              </p>
+                              <p className="text-xs text-gray-400 font-normal">
+                                {item.brand}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4 text-gray-500 text-xs font-medium">
+                          {item.category}
+                        </td>
+                        <td className="py-3.5 px-4 text-frigus-navy text-xs font-bold">
+                          {item.quantity}
+                        </td>
+                        <td className="py-3.5 px-4 text-gray-500 text-xs">
+                          {item.location}
+                        </td>
+                        <td className="py-3.5 px-4 text-gray-500 text-xs">
+                          {item.expiration}
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <Badge variant={item.statusVariant}>{item.status}</Badge>
+                        </td>
+                        <td className="py-3.5 px-4 text-right">
+                          <Link
+                            to={`/stock/${item.id}`}
+                            className="inline-flex items-center justify-center px-3 py-1 rounded-lg text-xs font-bold text-frigus-primary hover:bg-blue-50 transition-colors"
+                          >
+                            Ver
+                          </Link>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-sm">
-              <thead>
-                <tr className="text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
-                  <th className="py-3 px-4">Alimento</th>
-                  <th className="py-3 px-4">Categoria</th>
-                  <th className="py-3 px-4">Qtd.</th>
-                  <th className="py-3 px-4">Local</th>
-                  <th className="py-3 px-4">Validade</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Ação</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {filteredItems.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50/70 transition-colors group">
-                    <td className="py-3.5 px-4 font-bold text-frigus-navy">
-                      <div className="flex items-center gap-3">
-                        {item.image ? (
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="w-9 h-9 rounded-xl object-cover bg-gray-100 border border-gray-100"
-                          />
-                        ) : (
-                          <div className="w-9 h-9 rounded-xl bg-blue-50 text-frigus-primary font-bold flex items-center justify-center text-xs">
-                            {item.name.slice(0, 2).toUpperCase()}
-                          </div>
-                        )}
-                        <div>
-                          <p className="font-bold text-frigus-navy text-sm">
-                            {item.name}
-                          </p>
-                          <p className="text-xs text-gray-400 font-normal">
-                            {item.brand}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4 text-gray-500 text-xs font-medium">
-                      {item.category}
-                    </td>
-                    <td className="py-3.5 px-4 text-frigus-navy text-xs font-bold">
-                      {item.quantity}
-                    </td>
-                    <td className="py-3.5 px-4 text-gray-500 text-xs">
-                      {item.location}
-                    </td>
-                    <td className="py-3.5 px-4 text-gray-500 text-xs">
-                      {item.expiration}
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <Badge variant={item.statusVariant}>{item.status}</Badge>
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
-                      <Link
-                        to={`/stock/${item.id}`}
-                        className="inline-flex items-center justify-center px-3 py-1 rounded-lg text-xs font-bold text-frigus-primary hover:bg-blue-50 transition-colors"
-                      >
-                        Ver
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          {/* Barra Lateral Direita: Resumo do Estoque + Ações Rápidas (Figma 1879:2717 & 1879:2736) */}
+          <StockSidebar
+            onFilterExpired={() => setStatusFilter((prev) => (prev === "Vencido" ? null : "Vencido"))}
+          />
         </div>
       </div>
 
-      {/* Modal de Adicionar Item */}
-      <AddItemModal
+      {/* Modal Dedicado de Adicionar Alimento (Figma 1879:4634) */}
+      <AddFoodModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        title="Adicionar alimento ao estoque"
-        subtitle="Selecione ou cadastre novos alimentos na sua despensa"
+        onAdd={handleAddFood}
       />
     </AppLayout>
   );
