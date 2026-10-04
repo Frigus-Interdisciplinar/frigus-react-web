@@ -158,17 +158,17 @@ export default function CommercialStockPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold font-montserrat text-[#141C55]">
+          <h1 className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">
             Estoque do estabelecimento
           </h1>
-          <p className="text-xs text-[#64748B] mt-1">
+          <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-1">
             Produtos, lotes e quantidades para manter a operação em dia.
           </p>
         </div>
         <button
           type="button"
           onClick={() => setIsAddModalOpen(true)}
-          className="inline-flex items-center gap-2 bg-[#2552C8] hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+          className="inline-flex items-center gap-2 bg-[#2552C8] hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
         >
           <Plus size={16} />
           <span>Adicionar produto</span>
@@ -177,32 +177,32 @@ export default function CommercialStockPage() {
 
       {/* 4 Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-[#e1e7f0] shadow-xs">
-          <span className="text-xs font-medium text-[#64748B]">Produtos em estoque</span>
-          <p className="text-2xl font-bold font-montserrat text-[#141C55] mt-1">486</p>
-          <span className="text-[11px] text-[#64748B] mt-1 block">Distribuídos em 4 locais</span>
+        <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs">
+          <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">Produtos em estoque</span>
+          <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white mt-1">486</p>
+          <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">Distribuídos em 4 locais</span>
         </div>
-        <div className="bg-white p-5 rounded-2xl border border-[#e1e7f0] shadow-xs">
-          <span className="text-xs font-medium text-[#64748B]">Lotes ativos</span>
-          <p className="text-2xl font-bold font-montserrat text-[#141C55] mt-1">128</p>
-          <span className="text-[11px] text-[#64748B] mt-1 block">Rastreabilidade por entrada</span>
+        <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs">
+          <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">Lotes ativos</span>
+          <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white mt-1">128</p>
+          <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">Rastreabilidade por entrada</span>
         </div>
-        <div className="bg-white p-5 rounded-2xl border border-[#e1e7f0] shadow-xs">
-          <span className="text-xs font-medium text-[#64748B]">Valor em estoque</span>
-          <p className="text-2xl font-bold font-montserrat text-[#141C55] mt-1">R$ 18.420</p>
-          <span className="text-[11px] text-[#64748B] mt-1 block">Custo total dos produtos</span>
+        <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs">
+          <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">Valor em estoque</span>
+          <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white mt-1">R$ 18.420</p>
+          <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">Custo total dos produtos</span>
         </div>
-        <div className="bg-white p-5 rounded-2xl border border-[#e1e7f0] shadow-xs">
-          <span className="text-xs font-medium text-[#64748B]">Precisam de reposição</span>
-          <p className="text-2xl font-bold font-montserrat text-orange-600 mt-1">12</p>
-          <span className="text-[11px] text-[#64748B] mt-1 block">Abaixo do estoque mínimo</span>
+        <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs">
+          <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">Precisam de reposição</span>
+          <p className="text-2xl font-bold font-montserrat text-orange-600 dark:text-orange-400 mt-1">12</p>
+          <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">Abaixo do estoque mínimo</span>
         </div>
       </div>
 
       {/* Main Table Card */}
-      <div className="bg-white rounded-3xl border border-[#e1e7f0] shadow-xs overflow-hidden">
+      <div className="bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs overflow-hidden">
         {/* Location Tabs */}
-        <div className="flex items-center gap-6 px-6 pt-5 border-b border-[#e1e7f0] overflow-x-auto">
+        <div className="flex items-center gap-6 px-6 pt-5 border-b border-[#e1e7f0] dark:border-[#343941] overflow-x-auto">
           {locationTabs.map((tab) => {
             const isActive = activeLocation === tab.label;
             return (
@@ -211,17 +211,17 @@ export default function CommercialStockPage() {
                 type="button"
                 onClick={() => setActiveLocation(tab.label)}
                 className={`pb-4 text-xs font-semibold whitespace-nowrap transition-colors relative cursor-pointer ${
-                  isActive ? "text-[#2552C8]" : "text-[#64748B] hover:text-[#141C55]"
+                  isActive ? "text-[#2552C8] dark:text-blue-400" : "text-[#64748B] dark:text-neutral-400 hover:text-[#141C55] dark:hover:text-white"
                 }`}
               >
                 <span>{tab.label}</span>
                 <span className={`ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                  isActive ? "bg-blue-50 text-[#2552C8]" : "bg-gray-100 text-gray-500"
+                  isActive ? "bg-blue-50 dark:bg-blue-900/30 text-[#2552C8] dark:text-blue-400" : "bg-gray-100 dark:bg-[#252A32] text-gray-500 dark:text-neutral-400"
                 }`}>
                   {tab.count}
                 </span>
                 {isActive && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#2552C8]" />
+                  <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#2552C8] dark:bg-blue-400" />
                 )}
               </button>
             );
@@ -229,15 +229,15 @@ export default function CommercialStockPage() {
         </div>
 
         {/* Filter Bar */}
-        <div className="p-5 flex flex-col md:flex-row items-center justify-between gap-4 border-b border-gray-100">
+        <div className="p-5 flex flex-col md:flex-row items-center justify-between gap-4 border-b border-gray-100 dark:border-[#343941]">
           <div className="relative w-full md:w-80">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-400" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar produto, lote ou fornecedor"
-              className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8] bg-gray-50/50"
+              className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 dark:border-[#343941] text-xs focus:outline-hidden focus:border-[#2552C8] dark:focus:border-blue-500 bg-gray-50/50 dark:bg-[#252A32] text-slate-800 dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500"
             />
           </div>
 
@@ -245,17 +245,17 @@ export default function CommercialStockPage() {
             <button
               type="button"
               onClick={() => setIsFilterModalOpen(true)}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-gray-200 dark:border-[#343941] text-xs font-semibold text-gray-600 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-[#252A32] transition-colors cursor-pointer"
             >
-              <Filter size={14} className="text-gray-400" />
+              <Filter size={14} className="text-gray-400 dark:text-neutral-400" />
               <span>{selectedCategory}</span>
-              <ChevronDown size={14} className="text-gray-400" />
+              <ChevronDown size={14} className="text-gray-400 dark:text-neutral-400" />
             </button>
 
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors bg-white cursor-pointer"
+              className="px-3.5 py-2 rounded-xl border border-gray-200 dark:border-[#343941] text-xs font-semibold text-gray-600 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-[#252A32] transition-colors bg-white dark:bg-[#252A32] cursor-pointer"
             >
               <option value="Todas">Situação</option>
               <option value="Em dia">Em dia</option>
@@ -270,7 +270,7 @@ export default function CommercialStockPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-gray-50/70 border-b border-gray-100 text-[11px] font-bold text-[#64748B] uppercase tracking-wider">
+              <tr className="bg-gray-50/70 dark:bg-[#181B1F] border-b border-gray-100 dark:border-[#343941] text-[11px] font-bold text-[#64748B] dark:text-neutral-400 uppercase tracking-wider">
                 <th className="py-3 px-6">Produto / Lote</th>
                 <th className="py-3 px-6">Local</th>
                 <th className="py-3 px-6">Quantidade</th>
@@ -279,37 +279,37 @@ export default function CommercialStockPage() {
                 <th className="py-3 px-6 text-right">Ação</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-[#343941]">
               {filteredBatches.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-8 text-center text-gray-400">
+                  <td colSpan={6} className="py-8 text-center text-gray-400 dark:text-neutral-400">
                     Nenhum produto ou lote encontrado para os filtros atuais.
                   </td>
                 </tr>
               ) : (
                 filteredBatches.map((batch) => (
-                  <tr key={batch.id} className="hover:bg-gray-50/80 transition-colors group">
+                  <tr key={batch.id} className="hover:bg-gray-50/80 dark:hover:bg-[#252A32] transition-colors group">
                     <td className="py-4 px-6">
                       <div className="flex flex-col">
                         <Link
                           to={`/commercial/stock/${batch.id}`}
-                          className="font-bold text-[#141C55] hover:text-[#2552C8] transition-colors"
+                          className="font-bold text-[#141C55] dark:text-white hover:text-[#2552C8] dark:hover:text-blue-400 transition-colors"
                         >
                           {batch.name}
                         </Link>
-                        <span className="text-[11px] text-[#64748B]">
+                        <span className="text-[11px] text-[#64748B] dark:text-neutral-400">
                           {batch.batchCode} · {batch.supplier}
                         </span>
                       </div>
                     </td>
-                    <td className="py-4 px-6 text-gray-600 font-medium">{batch.location}</td>
-                    <td className="py-4 px-6 font-bold text-[#141C55]">{batch.quantity}</td>
-                    <td className="py-4 px-6 text-gray-600">{batch.expiration}</td>
+                    <td className="py-4 px-6 text-gray-600 dark:text-neutral-300 font-medium">{batch.location}</td>
+                    <td className="py-4 px-6 font-bold text-[#141C55] dark:text-white">{batch.quantity}</td>
+                    <td className="py-4 px-6 text-gray-600 dark:text-neutral-300">{batch.expiration}</td>
                     <td className="py-4 px-6">{getStatusBadge(batch.status)}</td>
                     <td className="py-4 px-6 text-right">
                       <Link
                         to={`/commercial/stock/${batch.id}`}
-                        className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold text-[#2552C8] hover:bg-blue-50 transition-colors"
+                        className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold text-[#2552C8] dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
                       >
                         Ver detalhes
                       </Link>
@@ -322,32 +322,32 @@ export default function CommercialStockPage() {
         </div>
 
         {/* Footer / Pagination */}
-        <div className="p-4 px-6 border-t border-gray-100 flex items-center justify-between text-xs text-[#64748B]">
+        <div className="p-4 px-6 border-t border-gray-100 dark:border-[#343941] flex items-center justify-between text-xs text-[#64748B] dark:text-neutral-400">
           <span>Mostrando {filteredBatches.length} de 486 produtos</span>
           <div className="flex items-center gap-1.5">
             <button
               type="button"
-              className="p-1 rounded-lg border border-gray-200 text-gray-400 hover:text-gray-700 disabled:opacity-40"
+              className="p-1 rounded-lg border border-gray-200 dark:border-[#343941] text-gray-400 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-white disabled:opacity-40"
               disabled
             >
               <ChevronLeft size={16} />
             </button>
-            <button type="button" className="w-7 h-7 rounded-lg bg-[#2552C8] text-white font-bold flex items-center justify-center">
+            <button type="button" className="w-7 h-7 rounded-lg bg-[#2552C8] dark:bg-blue-600 text-white font-bold flex items-center justify-center">
               1
             </button>
-            <button type="button" className="w-7 h-7 rounded-lg text-gray-600 hover:bg-gray-100 font-bold flex items-center justify-center">
+            <button type="button" className="w-7 h-7 rounded-lg text-gray-600 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-[#252A32] font-bold flex items-center justify-center">
               2
             </button>
-            <button type="button" className="w-7 h-7 rounded-lg text-gray-600 hover:bg-gray-100 font-bold flex items-center justify-center">
+            <button type="button" className="w-7 h-7 rounded-lg text-gray-600 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-[#252A32] font-bold flex items-center justify-center">
               3
             </button>
-            <span className="px-1 text-gray-400">…</span>
-            <button type="button" className="w-7 h-7 rounded-lg text-gray-600 hover:bg-gray-100 font-bold flex items-center justify-center">
+            <span className="px-1 text-gray-400 dark:text-neutral-500">…</span>
+            <button type="button" className="w-7 h-7 rounded-lg text-gray-600 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-[#252A32] font-bold flex items-center justify-center">
               49
             </button>
             <button
               type="button"
-              className="p-1 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-100"
+              className="p-1 rounded-lg border border-gray-200 dark:border-[#343941] text-gray-600 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-[#252A32]"
             >
               <ChevronRight size={16} />
             </button>

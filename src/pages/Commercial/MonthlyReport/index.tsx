@@ -22,17 +22,17 @@ export default function CommercialMonthlyReportPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold font-montserrat text-[#141C55]">
+          <h1 className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">
             Relatório mensal
           </h1>
-          <p className="text-xs text-[#64748B] mt-1">
+          <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-1">
             O resultado da operação, com os principais movimentos de agosto.
           </p>
         </div>
         <button
           type="button"
           onClick={() => setIsExportModalOpen(true)}
-          className="inline-flex items-center gap-2 bg-[#2552C8] hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+          className="inline-flex items-center gap-2 bg-[#2552C8] hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
         >
           <Download size={16} />
           <span>Exportar relatório</span>
@@ -40,9 +40,9 @@ export default function CommercialMonthlyReportPage() {
       </div>
 
       {/* Hero Banner: FECHAMENTO / AGOSTO 2026 */}
-      <div className="bg-linear-to-br from-[#131C55] via-[#1E2C7A] to-[#2552C8] rounded-3xl p-6 text-white shadow-md relative overflow-hidden">
+      <div className="bg-linear-to-br from-[#131C55] via-[#1E2C7A] to-[#2552C8] dark:from-[#0d1527] dark:via-[#152347] dark:to-[#1e3a8a] rounded-3xl p-6 text-white shadow-md relative overflow-hidden border border-transparent dark:border-blue-900/30">
         <div className="relative z-10 space-y-4">
-          <span className="text-[10px] font-bold tracking-widest text-[#70A2D7] uppercase">
+          <span className="text-[10px] font-bold tracking-widest text-[#70A2D7] dark:text-blue-300 uppercase">
             FECHAMENTO  /  AGOSTO 2026
           </span>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-2 divide-y sm:divide-y-0 sm:divide-x divide-white/10">
@@ -74,12 +74,12 @@ export default function CommercialMonthlyReportPage() {
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Gráfico de Fluxo de Estoque (7 cols) */}
-        <div className="lg:col-span-7 bg-white rounded-3xl border border-[#e1e7f0] shadow-xs p-6 space-y-4">
+        <div className="lg:col-span-7 bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs p-6 space-y-4">
           <div>
-            <h2 className="text-base font-bold font-montserrat text-[#141C55]">
+            <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">
               Movimentações de estoque
             </h2>
-            <p className="text-xs text-[#64748B] mt-0.5">
+            <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-0.5">
               Entradas e saídas registradas por semana
             </p>
           </div>
@@ -87,48 +87,48 @@ export default function CommercialMonthlyReportPage() {
         </div>
 
         {/* Leitura do Mês (5 cols) */}
-        <div className="lg:col-span-5 bg-white rounded-3xl border border-[#e1e7f0] shadow-xs p-6 space-y-4">
+        <div className="lg:col-span-5 bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs p-6 space-y-4">
           <div>
-            <h2 className="text-base font-bold font-montserrat text-[#141C55]">
+            <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">
               Leitura do mês
             </h2>
-            <p className="text-xs text-[#64748B] mt-0.5">
+            <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-0.5">
               Pontos de destaque na rotina do estabelecimento
             </p>
           </div>
 
           <div className="space-y-4 pt-2">
-            <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-gray-50/70 border border-gray-100">
-              <span className="w-7 h-7 rounded-lg bg-[#2552C8]/10 text-[#2552C8] font-bold text-xs flex items-center justify-center shrink-0">
+            <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-gray-50/70 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941]">
+              <span className="w-7 h-7 rounded-lg bg-[#2552C8]/10 dark:bg-blue-900/40 text-[#2552C8] dark:text-blue-400 font-bold text-xs flex items-center justify-center shrink-0">
                 01
               </span>
               <div>
-                <p className="text-xs font-bold text-[#141C55]">Menos perdas</p>
-                <p className="text-xs text-[#64748B] mt-0.5">
+                <p className="text-xs font-bold text-[#141C55] dark:text-white">Menos perdas</p>
+                <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-0.5">
                   86 kg descartados, ante 105 kg em julho.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-gray-50/70 border border-gray-100">
-              <span className="w-7 h-7 rounded-lg bg-[#2552C8]/10 text-[#2552C8] font-bold text-xs flex items-center justify-center shrink-0">
+            <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-gray-50/70 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941]">
+              <span className="w-7 h-7 rounded-lg bg-[#2552C8]/10 dark:bg-blue-900/40 text-[#2552C8] dark:text-blue-400 font-bold text-xs flex items-center justify-center shrink-0">
                 02
               </span>
               <div>
-                <p className="text-xs font-bold text-[#141C55]">Orçamento sob controle</p>
-                <p className="text-xs text-[#64748B] mt-0.5">
+                <p className="text-xs font-bold text-[#141C55] dark:text-white">Orçamento sob controle</p>
+                <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-0.5">
                   74% do orçamento de compras utilizado.
                 </p>
               </div>
             </div>
 
-            <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-gray-50/70 border border-gray-100">
-              <span className="w-7 h-7 rounded-lg bg-[#2552C8]/10 text-[#2552C8] font-bold text-xs flex items-center justify-center shrink-0">
+            <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-gray-50/70 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941]">
+              <span className="w-7 h-7 rounded-lg bg-[#2552C8]/10 dark:bg-blue-900/40 text-[#2552C8] dark:text-blue-400 font-bold text-xs flex items-center justify-center shrink-0">
                 03
               </span>
               <div>
-                <p className="text-xs font-bold text-[#141C55]">Atenção à câmara fria</p>
-                <p className="text-xs text-[#64748B] mt-0.5">
+                <p className="text-xs font-bold text-[#141C55] dark:text-white">Atenção à câmara fria</p>
+                <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-0.5">
                   O setor concentrou 51% do desperdício.
                 </p>
               </div>
@@ -137,25 +137,25 @@ export default function CommercialMonthlyReportPage() {
         </div>
 
         {/* Para onde foram as compras (Full 12 cols) */}
-        <div className="lg:col-span-12 bg-white rounded-3xl border border-[#e1e7f0] shadow-xs p-6 space-y-4">
+        <div className="lg:col-span-12 bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs p-6 space-y-4">
           <div>
-            <h2 className="text-base font-bold font-montserrat text-[#141C55]">
+            <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">
               Para onde foram as compras
             </h2>
-            <p className="text-xs text-[#64748B] mt-0.5">
+            <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-0.5">
               Distribuição dos investimentos por categoria de produtos
             </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
             {purchaseCategories.map((cat, idx) => (
-              <div key={idx} className="p-4 rounded-2xl bg-gray-50/70 border border-gray-100 space-y-2">
-                <span className="text-xs font-medium text-[#64748B]">{cat.name}</span>
-                <p className="text-xl font-bold font-montserrat text-[#141C55]">{cat.value}</p>
-                <div className="w-full h-2 rounded-full bg-gray-200 overflow-hidden">
+              <div key={idx} className="p-4 rounded-2xl bg-gray-50/70 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941] space-y-2">
+                <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">{cat.name}</span>
+                <p className="text-xl font-bold font-montserrat text-[#141C55] dark:text-white">{cat.value}</p>
+                <div className="w-full h-2 rounded-full bg-gray-200 dark:bg-neutral-700 overflow-hidden">
                   <div
                     style={{ width: `${cat.percentage}%` }}
-                    className="h-full bg-[#2552C8] rounded-full"
+                    className="h-full bg-[#2552C8] dark:bg-blue-500 rounded-full"
                   />
                 </div>
               </div>

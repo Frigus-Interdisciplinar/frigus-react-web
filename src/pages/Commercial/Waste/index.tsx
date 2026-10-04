@@ -22,10 +22,10 @@ export default function CommercialWastePage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold font-montserrat text-[#141C55]">
+          <h1 className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">
             Dashboard de desperdícios
           </h1>
-          <p className="text-xs text-[#64748B] mt-1">
+          <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-1">
             Entenda as perdas e encontre as próximas oportunidades de redução.
           </p>
         </div>
@@ -41,42 +41,42 @@ export default function CommercialWastePage() {
 
       {/* 4 Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-[#e1e7f0] shadow-xs">
-          <span className="text-xs font-medium text-[#64748B]">Perdas em agosto</span>
-          <p className="text-2xl font-bold font-montserrat text-[#141C55] mt-1">86 kg</p>
-          <span className="text-[11px] text-emerald-600 font-semibold mt-1 flex items-center gap-1">
+        <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs">
+          <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">Perdas em agosto</span>
+          <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white mt-1">86 kg</p>
+          <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-1 flex items-center gap-1">
             <TrendingDown size={14} /> 18% menos que em julho
           </span>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-[#e1e7f0] shadow-xs">
-          <span className="text-xs font-medium text-[#64748B]">Custo das perdas</span>
-          <p className="text-2xl font-bold font-montserrat text-red-600 mt-1">R$ 1.214</p>
-          <span className="text-[11px] text-[#64748B] mt-1 block">Custo dos produtos descartados</span>
+        <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs">
+          <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">Custo das perdas</span>
+          <p className="text-2xl font-bold font-montserrat text-red-600 dark:text-red-400 mt-1">R$ 1.214</p>
+          <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">Custo dos produtos descartados</span>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-[#e1e7f0] shadow-xs">
-          <span className="text-xs font-medium text-[#64748B]">Taxa de desperdício</span>
-          <p className="text-2xl font-bold font-montserrat text-amber-600 mt-1">4,2%</p>
-          <span className="text-[11px] text-[#64748B] mt-1 block">Meta da operação: até 3,5%</span>
+        <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs">
+          <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">Taxa de desperdício</span>
+          <p className="text-2xl font-bold font-montserrat text-amber-600 dark:text-amber-400 mt-1">4,2%</p>
+          <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">Meta da operação: até 3,5%</span>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-[#e1e7f0] shadow-xs">
-          <span className="text-xs font-medium text-[#64748B]">Meta de setembro</span>
-          <p className="text-2xl font-bold font-montserrat text-[#141C55] mt-1">74 kg</p>
-          <span className="text-[11px] text-[#2552C8] font-semibold mt-1 block">12 kg a menos para descartar</span>
+        <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs">
+          <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">Meta de setembro</span>
+          <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white mt-1">74 kg</p>
+          <span className="text-[11px] text-[#2552C8] dark:text-blue-400 font-semibold mt-1 block">12 kg a menos para descartar</span>
         </div>
       </div>
 
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Gráfico 1: As perdas estão diminuindo (7 cols) */}
-        <div className="lg:col-span-7 bg-white rounded-3xl border border-[#e1e7f0] shadow-xs p-6 space-y-4">
+        <div className="lg:col-span-7 bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs p-6 space-y-4">
           <div>
-            <h2 className="text-base font-bold font-montserrat text-[#141C55]">
+            <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">
               As perdas estão diminuindo
             </h2>
-            <p className="text-xs text-[#64748B] mt-0.5">
+            <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-0.5">
               Volume descartado por período (kg)
             </p>
           </div>
@@ -84,12 +84,12 @@ export default function CommercialWastePage() {
         </div>
 
         {/* Gráfico 2: Motivos do desperdício (5 cols) */}
-        <div className="lg:col-span-5 bg-white rounded-3xl border border-[#e1e7f0] shadow-xs p-6 space-y-4">
+        <div className="lg:col-span-5 bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs p-6 space-y-4">
           <div>
-            <h2 className="text-base font-bold font-montserrat text-[#141C55]">
+            <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">
               Motivos do desperdício
             </h2>
-            <p className="text-xs text-[#64748B] mt-0.5">
+            <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-0.5">
               Composição das perdas registradas no mês
             </p>
           </div>
@@ -97,12 +97,12 @@ export default function CommercialWastePage() {
         </div>
 
         {/* Setores de Atenção (7 cols) */}
-        <div className="lg:col-span-7 bg-white rounded-3xl border border-[#e1e7f0] shadow-xs p-6 space-y-4">
+        <div className="lg:col-span-7 bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs p-6 space-y-4">
           <div>
-            <h2 className="text-base font-bold font-montserrat text-[#141C55]">
+            <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">
               Onde concentrar atenção
             </h2>
-            <p className="text-xs text-[#64748B] mt-0.5">
+            <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-0.5">
               Setores que mais registraram perdas no período
             </p>
           </div>
@@ -111,10 +111,10 @@ export default function CommercialWastePage() {
             {sectorWaste.map((item, idx) => (
               <div key={idx} className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-[#141C55]">{item.sector}</span>
-                  <span className="font-semibold text-gray-700">{item.amount} ({item.percentage}%)</span>
+                  <span className="font-bold text-[#141C55] dark:text-white">{item.sector}</span>
+                  <span className="font-semibold text-gray-700 dark:text-neutral-300">{item.amount} ({item.percentage}%)</span>
                 </div>
-                <div className="w-full h-2.5 rounded-full bg-gray-100 overflow-hidden">
+                <div className="w-full h-2.5 rounded-full bg-gray-100 dark:bg-neutral-700 overflow-hidden">
                   <div
                     style={{ width: `${item.percentage}%` }}
                     className="h-full bg-linear-to-r from-red-500 to-rose-400 rounded-full"
@@ -126,18 +126,18 @@ export default function CommercialWastePage() {
         </div>
 
         {/* Próxima Ação Callout (5 cols) */}
-        <div className="lg:col-span-5 bg-amber-500/10 border border-amber-300/60 rounded-3xl p-6 flex flex-col justify-between space-y-4">
+        <div className="lg:col-span-5 bg-amber-500/10 dark:bg-amber-950/20 border border-amber-300/60 dark:border-amber-800/50 rounded-3xl p-6 flex flex-col justify-between space-y-4">
           <div>
-            <div className="flex items-center gap-2 text-amber-800">
+            <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300">
               <ShieldAlert size={20} />
               <span className="text-[10px] font-bold tracking-widest uppercase">
                 PRÓXIMA AÇÃO
               </span>
             </div>
-            <h3 className="text-lg font-bold font-montserrat text-[#141C55] mt-2">
+            <h3 className="text-lg font-bold font-montserrat text-[#141C55] dark:text-white mt-2">
               7 lotes vencem em até 3 dias
             </h3>
-            <p className="text-xs text-[#64748B] mt-1">
+            <p className="text-xs text-[#64748B] dark:text-neutral-300 mt-1">
               Priorize a saída desses produtos na rotina de preparo para evitar descartes adicionais.
             </p>
           </div>

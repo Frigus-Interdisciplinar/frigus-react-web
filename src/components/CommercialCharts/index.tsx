@@ -9,15 +9,15 @@ export function WeeklySpendingChart() {
 
   return (
     <div className="w-full flex flex-col gap-2">
-      <div className="flex items-end justify-between gap-4 h-48 pt-6 pb-2 border-b border-gray-100 relative">
+      <div className="flex items-end justify-between gap-4 h-48 pt-6 pb-2 border-b border-gray-100 dark:border-[#343941] relative">
         {/* Linhas de grade e valores no eixo Y */}
-        <div className="absolute inset-x-0 top-6 border-b border-dashed border-gray-100 flex items-center justify-between text-[10px] text-gray-400">
+        <div className="absolute inset-x-0 top-6 border-b border-dashed border-gray-100 dark:border-[#343941] flex items-center justify-between text-[10px] text-gray-400 dark:text-neutral-500">
           <span>7 mil</span>
         </div>
-        <div className="absolute inset-x-0 top-24 border-b border-dashed border-gray-100 flex items-center justify-between text-[10px] text-gray-400">
+        <div className="absolute inset-x-0 top-24 border-b border-dashed border-gray-100 dark:border-[#343941] flex items-center justify-between text-[10px] text-gray-400 dark:text-neutral-500">
           <span>3,5 mil</span>
         </div>
-        <div className="absolute inset-x-0 bottom-2 border-b border-gray-200 flex items-center justify-between text-[10px] text-gray-400">
+        <div className="absolute inset-x-0 bottom-2 border-b border-gray-200 dark:border-[#343941] flex items-center justify-between text-[10px] text-gray-400 dark:text-neutral-500">
           <span>0</span>
         </div>
 
@@ -25,12 +25,12 @@ export function WeeklySpendingChart() {
         <div className="flex-1 flex items-end justify-around h-full z-10 pl-8">
           {data.map((item) => (
             <div key={item.week} className="flex flex-col items-center gap-1.5 h-full justify-end group">
-              <span className="text-[11px] font-bold text-[#141C55] opacity-0 group-hover:opacity-100 transition-opacity">
+              <span className="text-[11px] font-bold text-[#141C55] dark:text-white opacity-0 group-hover:opacity-100 transition-opacity">
                 R$ {item.value.toLocaleString("pt-BR")}
               </span>
               <div
                 style={{ height: item.height }}
-                className="w-12 bg-linear-to-t from-[#2552C8] to-[#467bf7] rounded-t-xl transition-all duration-300 group-hover:brightness-110 shadow-xs"
+                className="w-12 bg-linear-to-t from-[#2552C8] to-[#467bf7] dark:from-blue-600 dark:to-blue-400 rounded-t-xl transition-all duration-300 group-hover:brightness-110 shadow-xs"
               />
             </div>
           ))}
@@ -38,7 +38,7 @@ export function WeeklySpendingChart() {
       </div>
 
       {/* Rótulos eixo X */}
-      <div className="flex justify-around pl-8 text-xs font-medium text-gray-500">
+      <div className="flex justify-around pl-8 text-xs font-medium text-gray-500 dark:text-neutral-400">
         {data.map((item) => (
           <span key={item.week}>{item.week}</span>
         ))}
@@ -58,10 +58,10 @@ export function WasteTrendChart() {
 
   return (
     <div className="w-full flex flex-col gap-2">
-      <div className="flex items-end justify-between gap-4 h-48 pt-6 pb-2 border-b border-gray-100 relative">
+      <div className="flex items-end justify-between gap-4 h-48 pt-6 pb-2 border-b border-gray-100 dark:border-[#343941] relative">
         {/* Linha da meta */}
-        <div className="absolute inset-x-0 top-[52%] border-b-2 border-dashed border-amber-400 z-0">
-          <span className="absolute right-0 -top-4 text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md">
+        <div className="absolute inset-x-0 top-[52%] border-b-2 border-dashed border-amber-400 dark:border-amber-500/80 z-0">
+          <span className="absolute right-0 -top-4 text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-md">
             Meta: 18,5 kg / período
           </span>
         </div>
@@ -70,7 +70,7 @@ export function WasteTrendChart() {
         <div className="flex-1 flex items-end justify-around h-full z-10 pl-6">
           {data.map((item) => (
             <div key={item.week} className="flex flex-col items-center gap-1.5 h-full justify-end group">
-              <span className="text-[11px] font-bold text-[#141C55]">
+              <span className="text-[11px] font-bold text-[#141C55] dark:text-white">
                 {item.value} kg
               </span>
               <div
@@ -83,7 +83,7 @@ export function WasteTrendChart() {
       </div>
 
       {/* Rótulos eixo X */}
-      <div className="flex justify-around pl-6 text-xs font-medium text-gray-500">
+      <div className="flex justify-around pl-6 text-xs font-medium text-gray-500 dark:text-neutral-400">
         {data.map((item) => (
           <span key={item.week}>{item.week}</span>
         ))}
@@ -145,8 +145,8 @@ export function WasteDonutChart() {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <span className="text-base font-bold text-[#141C55] leading-tight">86 kg</span>
-          <span className="text-[10px] text-gray-400">descartados</span>
+          <span className="text-base font-bold text-[#141C55] dark:text-white leading-tight">86 kg</span>
+          <span className="text-[10px] text-gray-400 dark:text-neutral-400">descartados</span>
         </div>
       </div>
 
@@ -155,30 +155,30 @@ export function WasteDonutChart() {
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
-            <span className="text-gray-600">Validade expirada</span>
+            <span className="text-gray-600 dark:text-neutral-300">Validade expirada</span>
           </div>
-          <span className="font-bold text-[#141C55]">50%</span>
+          <span className="font-bold text-[#141C55] dark:text-white">50%</span>
         </div>
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-            <span className="text-gray-600">Manuseio</span>
+            <span className="text-gray-600 dark:text-neutral-300">Manuseio</span>
           </div>
-          <span className="font-bold text-[#141C55]">25%</span>
+          <span className="font-bold text-[#141C55] dark:text-white">25%</span>
         </div>
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-            <span className="text-gray-600">Transporte</span>
+            <span className="text-gray-600 dark:text-neutral-300">Transporte</span>
           </div>
-          <span className="font-bold text-[#141C55]">15%</span>
+          <span className="font-bold text-[#141C55] dark:text-white">15%</span>
         </div>
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-purple-500" />
-            <span className="text-gray-600">Excesso de preparo</span>
+            <span className="text-gray-600 dark:text-neutral-300">Excesso de preparo</span>
           </div>
-          <span className="font-bold text-[#141C55]">10%</span>
+          <span className="font-bold text-[#141C55] dark:text-white">10%</span>
         </div>
       </div>
     </div>
@@ -199,22 +199,22 @@ export function StockFlowChart() {
       <div className="flex items-center justify-end gap-5 mb-2 text-xs">
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-sm bg-[#2552C8]" />
-          <span className="text-gray-600 font-medium">Entradas</span>
+          <span className="text-gray-600 dark:text-neutral-300 font-medium">Entradas</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-sm bg-[#70A2D7]" />
-          <span className="text-gray-600 font-medium">Saídas</span>
+          <span className="text-gray-600 dark:text-neutral-300 font-medium">Saídas</span>
         </div>
       </div>
 
-      <div className="flex items-end justify-between gap-4 h-48 pt-6 pb-2 border-b border-gray-100 relative">
-        <div className="absolute inset-x-0 top-6 border-b border-dashed border-gray-100 flex items-center justify-between text-[10px] text-gray-400">
+      <div className="flex items-end justify-between gap-4 h-48 pt-6 pb-2 border-b border-gray-100 dark:border-[#343941] relative">
+        <div className="absolute inset-x-0 top-6 border-b border-dashed border-gray-100 dark:border-[#343941] flex items-center justify-between text-[10px] text-gray-400 dark:text-neutral-500">
           <span>100</span>
         </div>
-        <div className="absolute inset-x-0 top-24 border-b border-dashed border-gray-100 flex items-center justify-between text-[10px] text-gray-400">
+        <div className="absolute inset-x-0 top-24 border-b border-dashed border-gray-100 dark:border-[#343941] flex items-center justify-between text-[10px] text-gray-400 dark:text-neutral-500">
           <span>50</span>
         </div>
-        <div className="absolute inset-x-0 bottom-2 border-b border-gray-200 flex items-center justify-between text-[10px] text-gray-400">
+        <div className="absolute inset-x-0 bottom-2 border-b border-gray-200 dark:border-[#343941] flex items-center justify-between text-[10px] text-gray-400 dark:text-neutral-500">
           <span>0</span>
         </div>
 
@@ -236,7 +236,7 @@ export function StockFlowChart() {
         </div>
       </div>
 
-      <div className="flex justify-around pl-6 text-xs font-medium text-gray-500">
+      <div className="flex justify-around pl-6 text-xs font-medium text-gray-500 dark:text-neutral-400">
         {data.map((item) => (
           <span key={item.week}>{item.week}</span>
         ))}

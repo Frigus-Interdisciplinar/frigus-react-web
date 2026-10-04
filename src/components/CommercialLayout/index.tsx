@@ -14,7 +14,7 @@ export default function CommercialLayout({
   children,
 }: CommercialLayoutProps) {
   return (
-    <div className="flex min-h-screen bg-[#F5F7FB] font-sans text-[#141C55]">
+    <div className="flex min-h-screen bg-[#F5F7FB] dark:bg-[#0F1115] font-sans text-[#141C55] dark:text-neutral-100">
       {/* Sidebar fixo Comercial */}
       <CommercialSidebar activeSection={activeSection} />
 

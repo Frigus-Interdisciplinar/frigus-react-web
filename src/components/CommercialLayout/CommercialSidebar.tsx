@@ -116,7 +116,7 @@ export default function CommercialSidebar({ activeSection }: CommercialSidebarPr
   );
 
   return (
-    <aside className="h-screen sticky top-0 bg-[#131C55] w-64 p-4 flex flex-col justify-between shrink-0 select-none z-20 overflow-y-auto">
+    <aside className="h-screen sticky top-0 bg-[#131C55] dark:bg-[#0B1020] dark:border-r dark:border-white/5 w-64 p-4 flex flex-col justify-between shrink-0 select-none z-20 overflow-y-auto">
       <div className="flex flex-col gap-5">
         {/* Brand / Logo */}
         <div className="flex flex-col gap-1 px-3 pt-2">
@@ -134,7 +134,7 @@ export default function CommercialSidebar({ activeSection }: CommercialSidebarPr
         </div>
 
         {/* Business Box */}
-        <div className="bg-[#1b266b]/60 border border-[#2a388a]/50 rounded-xl p-3 mx-1 flex items-center justify-between">
+        <div className="bg-[#1b266b]/60 dark:bg-white/5 border border-[#2a388a]/50 dark:border-white/10 rounded-xl p-3 mx-1 flex items-center justify-between">
           <div className="flex flex-col min-w-0">
             <span className="text-white text-xs font-bold truncate">Sabor & Cia</span>
             <span className="text-[#8fa9cf] text-[11px] truncate">Unidade Centro</span>
@@ -161,6 +161,14 @@ export default function CommercialSidebar({ activeSection }: CommercialSidebarPr
             <span className="text-[#8fa9cf] text-[11px] truncate">Gerente</span>
           </div>
         </div>
+
+        <Link
+          to="/choose-profile"
+          className="text-[10px] text-[#70A2D7] hover:text-white transition-colors"
+          title="Trocar perfil"
+        >
+          Trocar
+        </Link>
       </div>
     </aside>
   );
