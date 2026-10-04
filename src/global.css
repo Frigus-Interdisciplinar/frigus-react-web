@@ -2,42 +2,51 @@
 @import "tailwindcss";
 
 :root {
-  --bg-app: #F5F8FD;
-  --bg-surface: #F8F8F8;
-  --border-subtle: #C9DEF9;
-  --text-main: #1A1919;
-  --text-muted: #1F5F97;
+  --bg-app: #F5F8FC;
+  --bg-surface: #FFFFFF;
+  --border-subtle: #E1E7F0;
+  --border-card: #C9DEF9;
+  --text-main: #131C55;
+  --text-heading: #1B2C62;
+  --text-muted: #596B85;
   --sidebar-bg: #131C55;
   --sidebar-text: #FFFFFF;
   --sidebar-muted: #C9DEF9;
+  --card-bg: #FFFFFF;
 }
 
 .dark {
-  --bg-app: #0B1024;
-  --bg-surface: #131C55;
-  --border-subtle: #1F5F97;
-  --text-main: #F8F8F8;
-  --text-muted: #C9DEF9;
-  --sidebar-bg: #070B18;
+  --bg-app: #0F172A;
+  --bg-surface: #1C1E22;
+  --border-subtle: #343941;
+  --border-card: #283245;
+  --text-main: #FFFFFF;
+  --text-heading: #F8F8F8;
+  --text-muted: #ADB6C8;
+  --sidebar-bg: #0B1020;
   --sidebar-text: #FFFFFF;
   --sidebar-muted: #70A2D7;
+  --card-bg: #1C1E22;
 }
 
 @theme {
   --font-sans: 'Sarabun', system-ui, -apple-system, sans-serif;
-  --font-title: 'Nasalization', 'Montserrat', sans-serif;
-  --font-display: 'Nasalization', sans-serif;
+  --font-title: 'Montserrat', 'Sarabun', sans-serif;
+  --font-display: 'Montserrat', sans-serif;
   --font-montserrat: 'Montserrat', sans-serif;
   --font-sarabun: 'Sarabun', sans-serif;
 
   --color-bg-app: var(--bg-app);
   --color-surface: var(--bg-surface);
   --color-border-subtle: var(--border-subtle);
+  --color-border-card: var(--border-card);
   --color-text-main: var(--text-main);
+  --color-text-heading: var(--text-heading);
   --color-text-muted: var(--text-muted);
   --color-sidebar-bg: var(--sidebar-bg);
   --color-sidebar-text: var(--sidebar-text);
   --color-sidebar-muted: var(--sidebar-muted);
+  --color-card-bg: var(--card-bg);
 
   --color-frigus-primary: #2552C8;
   --color-frigus-navy: #131C55;
@@ -50,15 +59,25 @@
   --color-frigus-brand: #1B4C7A;
   --color-frigus-white: #FFFFFF;
   
+  --color-dark-bg: #0F172A;
+  --color-dark-card: #1C1E22;
+  --color-dark-border: #343941;
+  --color-dark-muted: #ADB6C8;
+  
   --radius-frigus: 20px;
   --radius-button: 12px;
 }
 
 @layer base {
+  * {
+    box-sizing: border-box;
+  }
+
   body {
     background-color: var(--bg-app);
     color: var(--text-main);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 }

@@ -17,13 +17,20 @@ export type BadgeProps = {
 };
 
 const variantStyles: Record<BadgeVariant, string> = {
-  success: "bg-[#EAF7F0] text-[#2F9B6C] border border-[#2F9B6C]/20",
-  warning: "bg-[#FFF9E6] text-[#D9822B] border border-[#D9822B]/20",
-  danger: "bg-[#FDECEE] text-[#DA5B68] border border-[#DA5B68]/20",
-  info: "bg-[#EAF3FF] text-[#1F5F97] border border-[#1F5F97]/20",
-  neutral: "bg-[#F0F3F8] text-[#5F6B7C] border border-[#5F6B7C]/15",
-  primary: "bg-[#2552C8]/10 text-[#2552C8] border border-[#2552C8]/20 font-semibold",
-  accent: "bg-[#F9C968]/20 text-[#8F6405] border border-[#F9C968]/40 font-semibold",
+  success:
+    "bg-[#EAF7F0] text-[#10B981] border border-[#10B981]/20 dark:bg-[#133829] dark:text-[#34D399] dark:border-[#34D399]/30",
+  warning:
+    "bg-[#FFF9E6] text-[#D97706] border border-[#D97706]/20 dark:bg-[#382C10] dark:text-[#FBBF24] dark:border-[#FBBF24]/30",
+  danger:
+    "bg-[#FCECF0] text-[#A92C49] border border-[#A92C49]/20 dark:bg-[#442B36] dark:text-[#FFB4C4] dark:border-[#FFB4C4]/30",
+  info:
+    "bg-[#EAF1FF] text-[#2552C8] border border-[#2552C8]/20 dark:bg-[#1B2A4A] dark:text-[#A7BCFF] dark:border-[#A7BCFF]/30",
+  neutral:
+    "bg-[#F0F3F8] text-[#596B85] border border-[#596B85]/20 dark:bg-[#252E3E] dark:text-[#ADB6C8] dark:border-[#ADB6C8]/30",
+  primary:
+    "bg-[#2552C8]/10 text-[#2552C8] border border-[#2552C8]/20 font-semibold dark:bg-[#2552C8]/30 dark:text-[#A7BCFF] dark:border-[#2552C8]/50",
+  accent:
+    "bg-[#F9C968]/20 text-[#B45309] border border-[#F9C968]/40 font-semibold dark:bg-[#F9C968]/20 dark:text-[#FDE68A] dark:border-[#F9C968]/40",
 };
 
 export default function Badge({

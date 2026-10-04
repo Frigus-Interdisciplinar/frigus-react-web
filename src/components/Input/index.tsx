@@ -5,6 +5,7 @@ import { cn } from "@/utils/cn.util";
 export type InputProps = ComponentProps<"input"> & {
   label?: string;
   error?: string;
+  helperText?: string;
   showPasswordToggle?: boolean;
 };
 
@@ -15,6 +16,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       label,
       type = "text",
       error,
+      helperText,
       className,
       showPasswordToggle,
       ...props
@@ -35,7 +37,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={id}
-            className="text-frigus-navy text-[15px] font-semibold leading-tight"
+            className="text-frigus-navy dark:text-gray-200 text-sm font-semibold leading-tight"
           >
             {label}
           </label>
@@ -46,10 +48,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             id={id}
             type={actualType}
             className={cn(
-              "w-full h-[52px] bg-white rounded-xl border border-[#D5DEED] px-4 text-[15px] text-frigus-dark placeholder:text-[#70809F]",
+              "w-full h-11 bg-white dark:bg-[#1C1E22] rounded-lg border border-[#D5DEED] dark:border-[#343941] px-3.5 text-sm text-[#1B2C62] dark:text-white placeholder:text-[#70809F] dark:placeholder:text-gray-400",
               "focus:outline-none focus:ring-2 focus:ring-frigus-primary/30 focus:border-frigus-primary transition-all duration-150",
-              isPasswordType && "pr-12",
-              error && "border-red-500 focus:ring-red-300 focus:border-red-500",
+              isPasswordType && "pr-11",
+              error && "border-red-500 dark:border-red-400 focus:ring-red-300 focus:border-red-500",
               className
             )}
             {...props}
@@ -59,18 +61,21 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               type="button"
               onClick={() => setIsPasswordVisible((prev) => !prev)}
               tabIndex={-1}
-              className="absolute right-3.5 text-[#70809F] hover:text-frigus-primary transition-colors p-1 flex items-center justify-center cursor-pointer focus:outline-none"
+              className="absolute right-3 text-[#70809F] hover:text-frigus-primary dark:hover:text-blue-400 transition-colors p-1 flex items-center justify-center cursor-pointer focus:outline-none"
               aria-label={isPasswordVisible ? "Ocultar senha" : "Ver senha"}
             >
               {isPasswordVisible ? (
-                <EyeOff className="size-5" />
+                <EyeOff className="size-4" />
               ) : (
-                <Eye className="size-5" />
+                <Eye className="size-4" />
               )}
             </button>
           )}
         </div>
-        {error && <span className="text-xs text-red-500">{error}</span>}
+        {helperText && !error && (
+          <span className="text-xs text-gray-500 dark:text-gray-400">{helperText}</span>
+        )}
+        {error && <span className="text-xs text-red-500 dark:text-red-400">{error}</span>}
       </div>
     );
   }
