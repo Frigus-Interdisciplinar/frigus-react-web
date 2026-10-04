@@ -7,6 +7,7 @@ export default function WebViewSuccess() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
+  const plan = searchParams.get("plan") || "";
   const planName = searchParams.get("name") || "Familiar Plus";
   const planPrice = searchParams.get("price") || "R$ 19,90";
 
@@ -17,6 +18,10 @@ export default function WebViewSuccess() {
       rnwv.postMessage(
         JSON.stringify({ type: "PAYMENT_SUCCESS", status: "ok" })
       );
+    } else if (plan?.startsWith("enterprise")) {
+      navigate("/enterprise");
+    } else if (plan?.startsWith("commercial")) {
+      navigate("/commercial/stock");
     } else {
       navigate("/home");
     }

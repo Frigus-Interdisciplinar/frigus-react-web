@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { authRoutes } from "./auth.routes";
 import { domesticRoutes } from "./domestic.routes";
 import { commercialRoutes } from "./commercial.routes";
+import { enterpriseRoutes } from "./enterprise.routes";
 import { paymentRoutes } from "./payment.routes";
 
 export default function AppRoutes() {
@@ -21,6 +22,9 @@ export default function AppRoutes() {
 
       {/* Módulo Comercial */}
       {commercialRoutes}
+
+      {/* Módulo Empresarial */}
+      {enterpriseRoutes}
 
       {/* Fallback, implementar page NOT FOUND */}
       <Route path="*" element={<Navigate to="/home" replace />} />
