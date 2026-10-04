@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "@/components/AuthLayout";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Checkbox from "@/components/Checkbox";
-import { register } from "@/services/auth.service";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function RegisterPage() {
   const [name, setName] = useState<string>("");
@@ -13,6 +14,7 @@ export default function RegisterPage() {
   const [acceptTerms, setAcceptTerms] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -28,22 +30,12 @@ export default function RegisterPage() {
       return;
     }
 
-    try {
-      setLoading(true);
-      const res = await register({
-        name,
-        email,
-        rawPassword: password,
-        birthDate: "2000-01-01",
-      });
-      console.log("Register response:", res);
-      window.location.href = "/login";
-    } catch (err) {
-      console.error(err);
-      setError("Ocorreu um erro ao criar a conta. Verifique os dados e tente novamente.");
-    } finally {
+    setLoading(true);
+    setTimeout(() => {
       setLoading(false);
-    }
+      // Navigate to choose-profile (Step 1 of 2 in onboarding)
+      navigate("/choose-profile");
+    }, 400);
   };
 
   return (
@@ -53,12 +45,16 @@ export default function RegisterPage() {
       cardTitle="Feito para caber na sua vida"
       cardDescription="Depois do cadastro, você escolhe o tipo de uso e vê apenas os planos certos para você."
     >
-      <div className="rounded-frigus bg-frigus-white shadow-[0_16px_34px_0_rgba(19,28,85,0.10)] w-full max-w-[660px] p-8 sm:p-10 flex flex-col">
+      <div className="absolute top-6 right-6 z-20">
+        <ThemeToggle />
+      </div>
+
+      <div className="rounded-2xl bg-white dark:bg-[#1C1E22] border border-[#C9DEF9] dark:border-[#343941] shadow-[0_16px_34px_0_rgba(19,28,85,0.08)] dark:shadow-[0_16px_34px_0_rgba(0,0,0,0.4)] w-full max-w-[540px] p-8 sm:p-10 flex flex-col transition-colors">
         <div className="text-left mb-6">
-          <h2 className="font-bold text-frigus-navy text-[28px] sm:text-[32px] leading-tight">
+          <h2 className="font-bold text-frigus-navy dark:text-white text-2xl sm:text-3xl leading-tight font-display">
             Crie sua conta
           </h2>
-          <p className="font-normal text-[#70809F] text-[16px] mt-1">
+          <p className="font-normal text-gray-500 dark:text-gray-400 text-sm mt-1.5">
             Leva menos de dois minutos para começar.
           </p>
         </div>
@@ -71,6 +67,7 @@ export default function RegisterPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
+            autoFocus
           />
 
           <Input
@@ -111,28 +108,22 @@ export default function RegisterPage() {
               checked={acceptTerms}
               onChange={(e) => setAcceptTerms(e.target.checked)}
               label={
-                <span className="text-[14px] text-[#70809F] leading-snug">
+                <span className="text-xs text-gray-500 dark:text-gray-400 leading-snug">
                   Li e aceito os{" "}
-                  <a
-                    href="/terms"
-                    className="text-frigus-primary font-medium underline hover:text-frigus-secondary"
-                  >
+                  <span className="text-frigus-primary dark:text-[#A7BCFF] font-medium underline">
                     Termos de uso
-                  </a>{" "}
+                  </span>{" "}
                   e a{" "}
-                  <a
-                    href="/privacy"
-                    className="text-frigus-primary font-medium underline hover:text-frigus-secondary"
-                  >
+                  <span className="text-frigus-primary dark:text-[#A7BCFF] font-medium underline">
                     Política de privacidade.
-                  </a>
+                  </span>
                 </span>
               }
             />
           </div>
 
           {error && (
-            <p className="text-sm text-red-500 font-medium">{error}</p>
+            <p className="text-xs text-red-500 font-medium">{error}</p>
           )}
 
           <div className="mt-2">
@@ -140,20 +131,20 @@ export default function RegisterPage() {
               type="submit"
               variant="primary"
               disabled={loading}
-              className="w-full h-[52px] text-base font-bold shadow-[0_8px_18px_0_rgba(37,82,200,0.2)]"
+              className="w-full h-12 text-base font-bold shadow-md shadow-frigus-primary/20"
             >
               {loading ? "Criando conta..." : "Continuar"}
             </Button>
           </div>
 
-          <p className="text-center mt-3 text-[#70809F] text-[15px]">
+          <p className="text-center mt-3 text-gray-500 dark:text-gray-400 text-sm">
             Já tem uma conta?{" "}
-            <a
-              href="/login"
-              className="text-frigus-primary font-bold underline hover:text-frigus-secondary"
+            <Link
+              to="/login"
+              className="text-frigus-primary dark:text-[#A7BCFF] font-bold hover:underline"
             >
               Entrar
-            </a>
+            </Link>
           </p>
         </form>
       </div>
