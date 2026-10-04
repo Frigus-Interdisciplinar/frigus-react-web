@@ -23,7 +23,7 @@ export default function ModalFooter({
   return (
     <div
       className={cn(
-        "p-6 pt-4 border-t border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row items-center justify-between gap-4",
+        "p-6 pt-4 border-t border-gray-100 dark:border-[#343941] bg-gray-50/50 dark:bg-[#15181E] flex flex-col sm:flex-row items-center justify-between gap-4",
         className
       )}
     >
@@ -32,7 +32,7 @@ export default function ModalFooter({
       ) : (
         <>
           {helperText && (
-            <p className="text-[11px] text-gray-400 text-center sm:text-left">
+            <p className="text-[11px] text-gray-400 dark:text-neutral-400 text-center sm:text-left">
               {helperText}
             </p>
           )}
@@ -40,7 +40,7 @@ export default function ModalFooter({
             <button
               type="button"
               onClick={onCancel}
-              className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-200/60 transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-xl text-sm font-semibold text-gray-600 dark:text-neutral-300 hover:bg-gray-200/60 dark:hover:bg-[#252A32] transition-colors cursor-pointer"
             >
               {cancelLabel}
             </button>

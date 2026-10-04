@@ -21,26 +21,26 @@ export default function RecipeDetailsPage() {
         {/* Breadcrumb e Ação */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-1.5 text-xs text-gray-400 font-medium mb-1">
-              <Link to="/recipe" className="hover:text-frigus-navy transition-colors">
+            <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-neutral-400 font-medium mb-1">
+              <Link to="/recipe" className="hover:text-frigus-navy dark:hover:text-white transition-colors">
                 Receitas
               </Link>
               <ChevronRight size={12} />
               <span>Café da manhã</span>
               <ChevronRight size={12} />
-              <span className="text-frigus-navy font-semibold">Omelete de tomate</span>
+              <span className="text-frigus-navy dark:text-white font-semibold">Omelete de tomate</span>
             </div>
-            <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-frigus-navy">
+            <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-frigus-navy dark:text-white">
               Omelete de tomate
             </h1>
           </div>
 
           <button
             onClick={() => setIsSaved(!isSaved)}
-            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-bold transition-all shadow-xs ${
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl border text-xs font-bold transition-all shadow-xs cursor-pointer ${
               isSaved
-                ? "bg-amber-50 border-amber-200 text-amber-700"
-                : "bg-white border-gray-200 text-frigus-navy hover:bg-gray-50"
+                ? "bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-300"
+                : "bg-white dark:bg-[#1C1E22] border-gray-200 dark:border-[#343941] text-frigus-navy dark:text-white hover:bg-gray-50 dark:hover:bg-[#252A32]"
             }`}
           >
             <Bookmark size={15} className={isSaved ? "fill-amber-500" : ""} />
@@ -49,18 +49,18 @@ export default function RecipeDetailsPage() {
         </div>
 
         {/* Hero Card da Receita com Imagem e Informações */}
-        <div className="bg-white rounded-3xl overflow-hidden border border-gray-200/80 shadow-xs">
+        <div className="bg-white dark:bg-[#1C1E22] rounded-3xl overflow-hidden border border-gray-200/80 dark:border-[#343941] shadow-xs">
           <div className="h-64 sm:h-80 w-full relative">
             <img
               src="/images/omelete.png"
               alt="Omelete de tomate"
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex items-end p-6 sm:p-8">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex items-end p-6 sm:p-8">
               <div className="space-y-2 text-white">
                 <div className="flex items-center gap-2">
                   <Badge variant="accent">Café da manhã</Badge>
-                  <span className="text-xs bg-black/40 backdrop-blur-xs px-2.5 py-1 rounded-full text-white font-medium">
+                  <span className="text-xs bg-black/50 backdrop-blur-xs px-2.5 py-1 rounded-full text-white font-medium">
                     15 minutos
                   </span>
                 </div>
@@ -75,55 +75,55 @@ export default function RecipeDetailsPage() {
           </div>
 
           {/* Faixa de Métricas e Disponibilidade */}
-          <div className="p-6 bg-gray-50/50 border-t border-gray-100 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white p-3.5 rounded-2xl border border-gray-200/60 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-frigus-primary">
+          <div className="p-6 bg-gray-50/50 dark:bg-[#15181E] border-t border-gray-100 dark:border-[#343941] grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white dark:bg-[#1C1E22] p-3.5 rounded-2xl border border-gray-200/60 dark:border-[#343941] flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 flex items-center justify-center text-frigus-primary dark:text-[#A7BCFF]">
                 <Clock size={18} />
               </div>
               <div>
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                <span className="text-[10px] font-bold text-gray-400 dark:text-neutral-400 uppercase tracking-wider block">
                   Tempo
                 </span>
-                <span className="font-montserrat font-bold text-sm text-frigus-navy">
+                <span className="font-montserrat font-bold text-sm text-frigus-navy dark:text-white">
                   15 min
                 </span>
               </div>
             </div>
 
-            <div className="bg-white p-3.5 rounded-2xl border border-gray-200/60 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
+            <div className="bg-white dark:bg-[#1C1E22] p-3.5 rounded-2xl border border-gray-200/60 dark:border-[#343941] flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 flex items-center justify-center text-amber-600 dark:text-amber-400">
                 <Users size={18} />
               </div>
               <div>
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                <span className="text-[10px] font-bold text-gray-400 dark:text-neutral-400 uppercase tracking-wider block">
                   Porções
                 </span>
-                <span className="font-montserrat font-bold text-sm text-frigus-navy">
+                <span className="font-montserrat font-bold text-sm text-frigus-navy dark:text-white">
                   2 pessoas
                 </span>
               </div>
             </div>
 
-            <div className="bg-white p-3.5 rounded-2xl border border-gray-200/60 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+            <div className="bg-white dark:bg-[#1C1E22] p-3.5 rounded-2xl border border-gray-200/60 dark:border-[#343941] flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                 <ChefHat size={18} />
               </div>
               <div>
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                <span className="text-[10px] font-bold text-gray-400 dark:text-neutral-400 uppercase tracking-wider block">
                   Dificuldade
                 </span>
-                <span className="font-montserrat font-bold text-sm text-frigus-navy">
+                <span className="font-montserrat font-bold text-sm text-frigus-navy dark:text-white">
                   Fácil
                 </span>
               </div>
             </div>
 
-            <div className="bg-white p-3.5 rounded-2xl border border-blue-200/80 bg-blue-50/30 flex items-center justify-between gap-2">
+            <div className="bg-white dark:bg-[#1C1E22] p-3.5 rounded-2xl border border-blue-200/80 dark:border-blue-900 bg-blue-50/30 dark:bg-blue-950/30 flex items-center justify-between gap-2">
               <div>
-                <span className="text-[10px] font-bold text-frigus-primary uppercase tracking-wider block">
+                <span className="text-[10px] font-bold text-frigus-primary dark:text-[#5B89F7] uppercase tracking-wider block">
                   Ingredientes
                 </span>
-                <span className="font-montserrat font-bold text-sm text-frigus-navy">
+                <span className="font-montserrat font-bold text-sm text-frigus-navy dark:text-white">
                   4/5 disponíveis
                 </span>
               </div>
@@ -140,19 +140,19 @@ export default function RecipeDetailsPage() {
         {/* Ingredientes + Modo de Preparo */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Ingredientes (5 colunas) */}
-          <div className="lg:col-span-5 bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-4">
+          <div className="lg:col-span-5 bg-white dark:bg-[#1C1E22] rounded-3xl p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs space-y-4">
             <div>
-              <h3 className="font-montserrat font-bold text-frigus-navy text-base">
+              <h3 className="font-montserrat font-bold text-frigus-navy dark:text-white text-base">
                 Ingredientes
               </h3>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-xs text-gray-400 dark:text-neutral-400 mt-0.5">
                 Você já tem 4 de 5 itens em casa
               </p>
             </div>
 
             {/* Disponíveis */}
             <div className="space-y-2">
-              <span className="text-[11px] font-bold uppercase text-emerald-600 tracking-wider">
+              <span className="text-[11px] font-bold uppercase text-emerald-600 dark:text-emerald-400 tracking-wider">
                 Em casa
               </span>
               {[
@@ -163,47 +163,47 @@ export default function RecipeDetailsPage() {
               ].map((item, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 border border-gray-100"
+                  className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941]"
                 >
                   <div className="flex items-center gap-2.5">
-                    <div className="w-5 h-5 rounded-md bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                    <div className="w-5 h-5 rounded-md bg-emerald-100 dark:bg-[#122C23] text-emerald-600 dark:text-[#48C78E] flex items-center justify-center">
                       <Check size={13} strokeWidth={3} />
                     </div>
-                    <span className="text-xs font-bold text-frigus-navy">
+                    <span className="text-xs font-bold text-frigus-navy dark:text-white">
                       {item.name}
                     </span>
                   </div>
-                  <span className="text-xs text-gray-500">{item.qty}</span>
+                  <span className="text-xs text-gray-500 dark:text-neutral-400">{item.qty}</span>
                 </div>
               ))}
             </div>
 
             {/* Em falta */}
             <div className="space-y-2 pt-2">
-              <span className="text-[11px] font-bold uppercase text-amber-600 tracking-wider">
+              <span className="text-[11px] font-bold uppercase text-amber-600 dark:text-amber-400 tracking-wider">
                 Em falta
               </span>
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-amber-50/50 border border-amber-200/60">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-amber-50/50 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-800">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-5 h-5 rounded-md bg-amber-100 text-amber-700 flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-md bg-amber-100 dark:bg-amber-900/60 text-amber-700 dark:text-amber-300 flex items-center justify-center">
                     <AlertCircle size={13} />
                   </div>
-                  <span className="text-xs font-bold text-frigus-navy">
+                  <span className="text-xs font-bold text-frigus-navy dark:text-white">
                     Salsinha
                   </span>
                 </div>
-                <span className="text-xs text-amber-700 font-medium">a gosto</span>
+                <span className="text-xs text-amber-700 dark:text-amber-300 font-medium">a gosto</span>
               </div>
             </div>
           </div>
 
           {/* Modo de Preparo (7 colunas) */}
-          <div className="lg:col-span-7 bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-4">
+          <div className="lg:col-span-7 bg-white dark:bg-[#1C1E22] rounded-3xl p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs space-y-4">
             <div>
-              <h3 className="font-montserrat font-bold text-frigus-navy text-base">
+              <h3 className="font-montserrat font-bold text-frigus-navy dark:text-white text-base">
                 Modo de preparo
               </h3>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-xs text-gray-400 dark:text-neutral-400 mt-0.5">
                 Siga os passos e aproveite o que já está em casa.
               </p>
             </div>
@@ -229,12 +229,12 @@ export default function RecipeDetailsPage() {
               ].map((s) => (
                 <div
                   key={s.step}
-                  className="flex items-start gap-4 p-4 rounded-2xl bg-gray-50 border border-gray-100"
+                  className="flex items-start gap-4 p-4 rounded-2xl bg-gray-50 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941]"
                 >
-                  <div className="w-8 h-8 rounded-xl bg-frigus-navy text-white font-montserrat font-bold text-sm flex items-center justify-center shrink-0">
+                  <div className="w-8 h-8 rounded-xl bg-frigus-navy dark:bg-frigus-primary text-white font-montserrat font-bold text-sm flex items-center justify-center shrink-0">
                     {s.step}
                   </div>
-                  <p className="text-xs sm:text-sm text-gray-700 leading-relaxed pt-1">
+                  <p className="text-xs sm:text-sm text-gray-700 dark:text-neutral-200 leading-relaxed pt-1">
                     {s.desc}
                   </p>
                 </div>

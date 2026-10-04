@@ -15,14 +15,14 @@ export default function ModalInput({
   return (
     <div className="px-6 pt-4">
       <div className="relative">
-        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-500 pointer-events-none">
           {icon ?? <Search size={18} />}
         </span>
         <input
           type="text"
           placeholder={placeholder}
           className={cn(
-            "w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-hidden focus:border-frigus-primary focus:ring-2 focus:ring-frigus-primary/10 transition-all placeholder:text-gray-400",
+            "w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#343941] bg-white dark:bg-[#252A32] text-sm text-slate-800 dark:text-white focus:outline-hidden focus:border-frigus-primary dark:focus:border-[#5B89F7] focus:ring-2 focus:ring-frigus-primary/10 transition-all placeholder:text-gray-400 dark:placeholder:text-neutral-500",
             className
           )}
           {...props}

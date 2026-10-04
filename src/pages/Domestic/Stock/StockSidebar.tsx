@@ -27,12 +27,12 @@ export default function StockSidebar({
   return (
     <div className="w-full lg:w-[336px] flex flex-col gap-6 shrink-0">
       {/* Card: Como está o seu estoque */}
-      <div className="bg-white rounded-2xl border border-[#E4EAF2] p-6 shadow-2xs">
+      <div className="bg-white dark:bg-[#1C1E22] rounded-2xl border border-[#E4EAF2] dark:border-[#343941] p-6 shadow-2xs">
         <div className="mb-4">
-          <h3 className="font-montserrat font-bold text-base text-[#131C55]">
+          <h3 className="font-montserrat font-bold text-base text-[#131C55] dark:text-white">
             Como está o seu estoque
           </h3>
-          <p className="text-xs text-[#758198] mt-0.5">
+          <p className="text-xs text-[#758198] dark:text-neutral-400 mt-0.5">
             Quantidade de itens por categoria
           </p>
         </div>
@@ -40,13 +40,13 @@ export default function StockSidebar({
         <div className="space-y-4">
           {stats.map((stat) => (
             <div key={stat.name} className="space-y-1.5">
-              <div className="flex items-center justify-between text-xs font-semibold text-[#172033]">
+              <div className="flex items-center justify-between text-xs font-semibold text-[#172033] dark:text-white">
                 <span>{stat.name}</span>
-                <span className="text-[11px] font-normal text-[#758198]">
+                <span className="text-[11px] font-normal text-[#758198] dark:text-neutral-400">
                   {stat.count} itens
                 </span>
               </div>
-              <div className="w-full h-2 rounded-full bg-[#F5F8FC] overflow-hidden">
+              <div className="w-full h-2 rounded-full bg-[#F5F8FC] dark:bg-[#252A32] overflow-hidden">
                 <div
                   className="h-full rounded-full transition-all duration-500"
                   style={{
@@ -61,15 +61,15 @@ export default function StockSidebar({
       </div>
 
       {/* Card: Organize o estoque */}
-      <div className="bg-white rounded-2xl border border-[#E4EAF2] p-6 shadow-2xs flex flex-col justify-between gap-4">
+      <div className="bg-white dark:bg-[#1C1E22] rounded-2xl border border-[#E4EAF2] dark:border-[#343941] p-6 shadow-2xs flex flex-col justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <AlertCircle size={18} className="text-[#2552C8]" />
-            <h3 className="font-montserrat font-bold text-base text-[#131C55]">
+            <AlertCircle size={18} className="text-[#2552C8] dark:text-[#5B89F7]" />
+            <h3 className="font-montserrat font-bold text-base text-[#131C55] dark:text-white">
               Organize o estoque
             </h3>
           </div>
-          <p className="text-xs text-[#758198] leading-relaxed">
+          <p className="text-xs text-[#758198] dark:text-neutral-400 leading-relaxed">
             Revise os itens vencidos e mantenha a casa em dia.
           </p>
         </div>
@@ -78,7 +78,7 @@ export default function StockSidebar({
           <button
             type="button"
             onClick={onFilterExpired}
-            className="w-full h-11 px-4 rounded-xl bg-[#C9DEF9] hover:bg-[#b8d4f7] text-[#131C55] font-bold text-xs flex items-center justify-between transition-colors cursor-pointer"
+            className="w-full h-11 px-4 rounded-xl bg-[#C9DEF9] dark:bg-[#2552C8]/30 hover:bg-[#b8d4f7] dark:hover:bg-[#2552C8]/40 text-[#131C55] dark:text-[#A7BCFF] font-bold text-xs flex items-center justify-between transition-colors cursor-pointer"
           >
             <span>Ver produtos vencidos</span>
             <ArrowRight size={15} />
@@ -86,7 +86,7 @@ export default function StockSidebar({
         ) : (
           <Link
             to="/alerts"
-            className="w-full h-11 px-4 rounded-xl bg-[#C9DEF9] hover:bg-[#b8d4f7] text-[#131C55] font-bold text-xs flex items-center justify-between transition-colors"
+            className="w-full h-11 px-4 rounded-xl bg-[#C9DEF9] dark:bg-[#2552C8]/30 hover:bg-[#b8d4f7] dark:hover:bg-[#2552C8]/40 text-[#131C55] dark:text-[#A7BCFF] font-bold text-xs flex items-center justify-between transition-colors"
           >
             <span>Ver produtos vencidos</span>
             <ArrowRight size={15} />

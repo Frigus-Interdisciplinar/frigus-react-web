@@ -9,10 +9,10 @@ export default function DashboardPage() {
       <div className="space-y-6">
         {/* Cabeçalho de Boas-Vindas */}
         <div>
-          <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-frigus-navy">
+          <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-frigus-navy dark:text-white">
             Bom dia, Henrique
           </h1>
-          <p className="text-gray-500 text-sm mt-1 font-sans">
+          <p className="text-gray-500 dark:text-neutral-400 text-sm mt-1 font-sans">
             Uma visão clara para aproveitar melhor cada item
           </p>
         </div>
@@ -47,7 +47,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Insight Card interno */}
-            <div className="relative z-10 w-full md:w-56 bg-frigus-navy/90 backdrop-blur-xs rounded-2xl p-4 border border-white/10 flex flex-col justify-between shrink-0 shadow-lg">
+            <div className="relative z-10 w-full md:w-56 bg-frigus-navy/90 dark:bg-[#0B1020]/95 backdrop-blur-xs rounded-2xl p-4 border border-white/10 flex flex-col justify-between shrink-0 shadow-lg">
               <div>
                 <span className="text-[10px] uppercase font-bold tracking-wider text-frigus-ice">
                   Estoque em dia
@@ -70,20 +70,20 @@ export default function DashboardPage() {
           </div>
 
           {/* Para usar primeiro (4 colunas) */}
-          <div className="lg:col-span-4 bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs flex flex-col justify-between">
+          <div className="lg:col-span-4 bg-white dark:bg-[#1C1E22] rounded-3xl p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs flex flex-col justify-between">
             <div className="flex items-center justify-between">
-              <h3 className="font-montserrat font-bold text-frigus-navy text-base">
+              <h3 className="font-montserrat font-bold text-frigus-navy dark:text-white text-base">
                 Para usar primeiro
               </h3>
               <Link
                 to="/alerts"
-                className="text-xs font-bold text-frigus-primary hover:underline"
+                className="text-xs font-bold text-frigus-primary dark:text-[#5B89F7] hover:underline"
               >
                 Ver todos
               </Link>
             </div>
 
-            <div className="h-px bg-gray-100 my-4" />
+            <div className="h-px bg-gray-100 dark:bg-[#343941] my-4" />
 
             <div className="space-y-4">
               {/* Item 1 */}
@@ -91,10 +91,10 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-3">
                   <div className="w-1.5 h-8 bg-red-400 rounded-full" />
                   <div>
-                    <h4 className="text-sm font-bold text-frigus-navy group-hover:text-frigus-primary transition-colors">
+                    <h4 className="text-sm font-bold text-frigus-navy dark:text-white group-hover:text-frigus-primary dark:group-hover:text-[#5B89F7] transition-colors">
                       Iogurte natural
                     </h4>
-                    <p className="text-xs text-gray-400">Geladeira · 2 un.</p>
+                    <p className="text-xs text-gray-400 dark:text-neutral-400">Geladeira · 2 un.</p>
                   </div>
                 </div>
                 <Badge variant="danger">Hoje</Badge>
@@ -105,19 +105,19 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-3">
                   <div className="w-1.5 h-8 bg-frigus-accent rounded-full" />
                   <div>
-                    <h4 className="text-sm font-bold text-frigus-navy group-hover:text-frigus-primary transition-colors">
+                    <h4 className="text-sm font-bold text-frigus-navy dark:text-white group-hover:text-frigus-primary dark:group-hover:text-[#5B89F7] transition-colors">
                       Pão integral
                     </h4>
-                    <p className="text-xs text-gray-400">Despensa · 1 un.</p>
+                    <p className="text-xs text-gray-400 dark:text-neutral-400">Despensa · 1 un.</p>
                   </div>
                 </div>
                 <Badge variant="warning">Amanhã</Badge>
               </div>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between text-xs text-gray-400">
+            <div className="mt-4 pt-3 border-t border-gray-100 dark:border-[#343941] flex items-center justify-between text-xs text-gray-400 dark:text-neutral-400">
               <span>Evite desperdícios na despensa</span>
-              <ArrowRight size={14} className="text-gray-300" />
+              <ArrowRight size={14} className="text-gray-400 dark:text-neutral-500" />
             </div>
           </div>
         </div>
@@ -125,37 +125,37 @@ export default function DashboardPage() {
         {/* Linha Intermediária: Consumo da Semana + Distribuição + Próxima Compra */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
           {/* Consumo da Semana (5 colunas) */}
-          <div className="md:col-span-5 bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs flex flex-col justify-between">
+          <div className="md:col-span-5 bg-white dark:bg-[#1C1E22] rounded-3xl p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs flex flex-col justify-between">
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="font-montserrat font-bold text-frigus-navy text-base">
+                <h3 className="font-montserrat font-bold text-frigus-navy dark:text-white text-base">
                   Consumo da semana
                 </h3>
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="text-xs text-gray-400 dark:text-neutral-400 mt-0.5">
                   Itens retirados do estoque
                 </p>
               </div>
-              <span className="px-3 py-1 rounded-xl text-xs font-bold bg-[#EAF3FF] text-frigus-primary">
+              <span className="px-3 py-1 rounded-xl text-xs font-bold bg-[#EAF3FF] dark:bg-blue-950/50 text-frigus-primary dark:text-[#A7BCFF]">
                 18 itens usados
               </span>
             </div>
 
             {/* Gráfico de Barras */}
             <div className="mt-6">
-              <div className="relative h-32 flex items-end justify-between px-4 pb-6 border-b border-gray-100">
+              <div className="relative h-32 flex items-end justify-between px-4 pb-6 border-b border-gray-100 dark:border-[#343941]">
                 {/* Linhas de referência sutis */}
-                <div className="absolute inset-x-0 top-2 border-t border-dashed border-gray-100" />
-                <div className="absolute inset-x-0 top-14 border-t border-dashed border-gray-100" />
+                <div className="absolute inset-x-0 top-2 border-t border-dashed border-gray-100 dark:border-[#343941]" />
+                <div className="absolute inset-x-0 top-14 border-t border-dashed border-gray-100 dark:border-[#343941]" />
 
                 {/* Barras por dia */}
                 {[
-                  { day: "S", h: "35%", color: "bg-frigus-primary" },
-                  { day: "T", h: "65%", color: "bg-frigus-primary" },
-                  { day: "Q", h: "50%", color: "bg-frigus-primary" },
-                  { day: "Q", h: "80%", color: "bg-frigus-secondary" },
-                  { day: "S", h: "55%", color: "bg-frigus-primary" },
-                  { day: "S", h: "90%", color: "bg-frigus-ice" },
-                  { day: "D", h: "70%", color: "bg-frigus-primary" },
+                  { day: "S", h: "35%", color: "bg-frigus-primary dark:bg-[#5B89F7]" },
+                  { day: "T", h: "65%", color: "bg-frigus-primary dark:bg-[#5B89F7]" },
+                  { day: "Q", h: "50%", color: "bg-frigus-primary dark:bg-[#5B89F7]" },
+                  { day: "Q", h: "80%", color: "bg-frigus-secondary dark:bg-[#3D6CE5]" },
+                  { day: "S", h: "55%", color: "bg-frigus-primary dark:bg-[#5B89F7]" },
+                  { day: "S", h: "90%", color: "bg-frigus-ice dark:bg-[#92ACF7]" },
+                  { day: "D", h: "70%", color: "bg-frigus-primary dark:bg-[#5B89F7]" },
                 ].map((col, idx) => (
                   <div
                     key={idx}
@@ -165,7 +165,7 @@ export default function DashboardPage() {
                       className={`w-full ${col.color} rounded-lg transition-all duration-300 hover:brightness-110`}
                       style={{ height: col.h }}
                     />
-                    <span className="text-[11px] font-medium text-gray-400">
+                    <span className="text-[11px] font-medium text-gray-400 dark:text-neutral-400">
                       {col.day}
                     </span>
                   </div>
@@ -175,9 +175,9 @@ export default function DashboardPage() {
           </div>
 
           {/* Distribuição do Estoque (3 colunas) */}
-          <div className="md:col-span-3 bg-frigus-navy text-white rounded-3xl p-6 shadow-xs flex flex-col justify-between">
+          <div className="md:col-span-3 bg-frigus-navy dark:bg-[#15181E] border border-transparent dark:border-[#343941] text-white rounded-3xl p-6 shadow-xs flex flex-col justify-between">
             <div>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-frigus-ice">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-frigus-ice dark:text-neutral-400">
                 Distribuição
               </span>
               <h3 className="font-montserrat font-bold text-white text-base mt-0.5">
@@ -187,12 +187,12 @@ export default function DashboardPage() {
 
             {/* Donut central simples com CSS */}
             <div className="my-4 flex items-center justify-center">
-              <div className="relative w-28 h-28 rounded-full border-8 border-frigus-ice flex items-center justify-center border-t-frigus-primary border-r-frigus-accent border-l-[#6D91EA]">
+              <div className="relative w-28 h-28 rounded-full border-8 border-frigus-ice dark:border-[#2C303B] flex items-center justify-center border-t-frigus-primary border-r-frigus-accent border-l-[#6D91EA]">
                 <div className="text-center">
                   <span className="font-montserrat font-bold text-2xl text-white block leading-none">
                     128
                   </span>
-                  <span className="text-[10px] text-frigus-ice uppercase tracking-wider font-semibold">
+                  <span className="text-[10px] text-frigus-ice dark:text-neutral-400 uppercase tracking-wider font-semibold">
                     itens
                   </span>
                 </div>
@@ -201,28 +201,28 @@ export default function DashboardPage() {
 
             {/* Legenda */}
             <div className="space-y-1.5 text-xs">
-              <div className="flex items-center justify-between text-frigus-ice">
+              <div className="flex items-center justify-between text-frigus-ice dark:text-neutral-300">
                 <span className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-frigus-ice" />
+                  <span className="w-2 h-2 rounded-full bg-frigus-ice dark:bg-neutral-400" />
                   Despensa
                 </span>
                 <span className="font-bold text-white">46</span>
               </div>
-              <div className="flex items-center justify-between text-frigus-ice">
+              <div className="flex items-center justify-between text-frigus-ice dark:text-neutral-300">
                 <span className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-frigus-primary" />
                   Geladeira
                 </span>
                 <span className="font-bold text-white">31</span>
               </div>
-              <div className="flex items-center justify-between text-frigus-ice">
+              <div className="flex items-center justify-between text-frigus-ice dark:text-neutral-300">
                 <span className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-frigus-accent" />
                   Frescos
                 </span>
                 <span className="font-bold text-white">28</span>
               </div>
-              <div className="flex items-center justify-between text-frigus-ice">
+              <div className="flex items-center justify-between text-frigus-ice dark:text-neutral-300">
                 <span className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-[#6D91EA]" />
                   Congelados
@@ -233,12 +233,12 @@ export default function DashboardPage() {
           </div>
 
           {/* Próxima Compra (4 colunas) */}
-          <div className="md:col-span-4 bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs flex flex-col justify-between">
+          <div className="md:col-span-4 bg-white dark:bg-[#1C1E22] rounded-3xl p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs flex flex-col justify-between">
             <div>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400 dark:text-neutral-400">
                 Próxima compra
               </span>
-              <h3 className="font-montserrat font-bold text-frigus-navy text-base mt-0.5">
+              <h3 className="font-montserrat font-bold text-frigus-navy dark:text-white text-base mt-0.5">
                 Faltam 4 itens
               </h3>
             </div>
@@ -252,14 +252,14 @@ export default function DashboardPage() {
               ].map((item, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-between p-2 rounded-xl hover:bg-gray-50 transition-colors"
+                  className="flex items-center justify-between p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-[#252A32] transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <div
                       className={`w-4 h-4 rounded-md border flex items-center justify-center transition-colors ${
                         item.checked
                           ? "bg-frigus-primary border-frigus-primary text-white"
-                          : "border-gray-300"
+                          : "border-gray-300 dark:border-neutral-600 bg-white dark:bg-[#1C1E22]"
                       }`}
                     >
                       {item.checked && <Check size={12} strokeWidth={3} />}
@@ -267,14 +267,14 @@ export default function DashboardPage() {
                     <span
                       className={`text-sm font-medium ${
                         item.checked
-                          ? "line-through text-gray-400"
-                          : "text-frigus-navy font-semibold"
+                          ? "line-through text-gray-400 dark:text-neutral-500"
+                          : "text-frigus-navy dark:text-white font-semibold"
                       }`}
                     >
                       {item.name}
                     </span>
                   </div>
-                  <span className="text-xs text-gray-400 font-medium">
+                  <span className="text-xs text-gray-400 dark:text-neutral-400 font-medium">
                     {item.qty}
                   </span>
                 </div>
@@ -283,7 +283,7 @@ export default function DashboardPage() {
 
             <Link
               to="/shopping-list"
-              className="w-full py-2.5 px-4 bg-frigus-navy hover:bg-slate-900 text-white rounded-xl text-xs font-bold text-center flex items-center justify-center gap-2 transition-colors"
+              className="w-full py-2.5 px-4 bg-frigus-navy dark:bg-frigus-primary hover:bg-slate-900 dark:hover:bg-blue-700 text-white rounded-xl text-xs font-bold text-center flex items-center justify-center gap-2 transition-colors shadow-xs"
             >
               <span>Abrir lista de compras</span>
               <ChevronRight size={14} />
@@ -292,12 +292,12 @@ export default function DashboardPage() {
         </div>
 
         {/* Linha Inferior: Últimas Atualizações (Tabela) */}
-        <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs">
+        <div className="bg-white dark:bg-[#1C1E22] rounded-3xl p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs">
           <div className="mb-4">
-            <h3 className="font-montserrat font-bold text-frigus-navy text-base">
+            <h3 className="font-montserrat font-bold text-frigus-navy dark:text-white text-base">
               Últimas atualizações
             </h3>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-xs text-gray-400 dark:text-neutral-400 mt-0.5">
               Seu estoque foi atualizado pelo aplicativo
             </p>
           </div>
@@ -305,7 +305,7 @@ export default function DashboardPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                <tr className="text-[11px] font-bold text-gray-400 dark:text-neutral-400 uppercase tracking-wider border-b border-gray-100 dark:border-[#343941]">
                   <th className="py-3 px-4">Item</th>
                   <th className="py-3 px-4">Categoria</th>
                   <th className="py-3 px-4">Quantidade</th>
@@ -313,27 +313,27 @@ export default function DashboardPage() {
                   <th className="py-3 px-4 text-right">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
-                <tr className="hover:bg-gray-50/70 transition-colors">
-                  <td className="py-3.5 px-4 font-bold text-frigus-navy flex items-center gap-2.5">
+              <tbody className="divide-y divide-gray-50 dark:divide-[#343941]/50">
+                <tr className="hover:bg-gray-50/70 dark:hover:bg-[#252A32] transition-colors">
+                  <td className="py-3.5 px-4 font-bold text-frigus-navy dark:text-white flex items-center gap-2.5">
                     <div className="w-1.5 h-4 bg-frigus-primary rounded-full" />
                     Leite
                   </td>
-                  <td className="py-3.5 px-4 text-gray-500 text-xs">Laticínios</td>
-                  <td className="py-3.5 px-4 text-gray-500 text-xs">2 un.</td>
-                  <td className="py-3.5 px-4 text-gray-500 text-xs">14 nov.</td>
+                  <td className="py-3.5 px-4 text-gray-500 dark:text-neutral-300 text-xs">Laticínios</td>
+                  <td className="py-3.5 px-4 text-gray-500 dark:text-neutral-300 text-xs">2 un.</td>
+                  <td className="py-3.5 px-4 text-gray-500 dark:text-neutral-300 text-xs">14 nov.</td>
                   <td className="py-3.5 px-4 text-right">
                     <Badge variant="success">Em dia</Badge>
                   </td>
                 </tr>
-                <tr className="hover:bg-gray-50/70 transition-colors">
-                  <td className="py-3.5 px-4 font-bold text-frigus-navy flex items-center gap-2.5">
+                <tr className="hover:bg-gray-50/70 dark:hover:bg-[#252A32] transition-colors">
+                  <td className="py-3.5 px-4 font-bold text-frigus-navy dark:text-white flex items-center gap-2.5">
                     <div className="w-1.5 h-4 bg-frigus-ice rounded-full" />
                     Arroz integral
                   </td>
-                  <td className="py-3.5 px-4 text-gray-500 text-xs">Despensa</td>
-                  <td className="py-3.5 px-4 text-gray-500 text-xs">1 kg</td>
-                  <td className="py-3.5 px-4 text-gray-500 text-xs">28 nov.</td>
+                  <td className="py-3.5 px-4 text-gray-500 dark:text-neutral-300 text-xs">Despensa</td>
+                  <td className="py-3.5 px-4 text-gray-500 dark:text-neutral-300 text-xs">1 kg</td>
+                  <td className="py-3.5 px-4 text-gray-500 dark:text-neutral-300 text-xs">28 nov.</td>
                   <td className="py-3.5 px-4 text-right">
                     <Badge variant="success">Em dia</Badge>
                   </td>

@@ -107,17 +107,17 @@ export default function ShoppingListPage() {
         {/* Cabeçalho */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-frigus-navy">
+            <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-frigus-navy dark:text-white">
               Lista de compras
             </h1>
-            <p className="text-gray-500 text-sm mt-1 font-sans">
+            <p className="text-gray-500 dark:text-neutral-400 text-sm mt-1 font-sans">
               Organize o que está faltando e marque os itens quando comprar
             </p>
           </div>
 
           <button
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-2 bg-frigus-primary hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-xs self-start sm:self-auto"
+            className="inline-flex items-center gap-2 bg-frigus-primary hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-xs self-start sm:self-auto cursor-pointer"
           >
             <Plus size={16} />
             <span>Adicionar itens</span>
@@ -125,37 +125,37 @@ export default function ShoppingListPage() {
         </div>
 
         {/* Faixa de Alerta: Itens em falta */}
-        <div className="p-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 text-amber-800">
-            <AlertTriangle size={18} className="text-amber-600 shrink-0" />
+        <div className="p-4 rounded-2xl bg-amber-50/70 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-800 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 text-amber-800 dark:text-amber-300">
+            <AlertTriangle size={18} className="text-amber-600 dark:text-amber-400 shrink-0" />
             <span className="text-xs sm:text-sm font-semibold">
               3 itens em falta no estoque precisam de reposição urgente
             </span>
           </div>
-          <span className="text-xs font-bold text-amber-700 hover:underline cursor-pointer">
+          <span className="text-xs font-bold text-amber-700 dark:text-amber-300 hover:underline cursor-pointer">
             Ver estoque
           </span>
         </div>
 
         {/* Abas e Filtros */}
-        <div className="bg-white rounded-3xl p-4 md:p-6 border border-gray-200/80 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center bg-gray-100/80 p-1 rounded-2xl w-full sm:w-auto">
+        <div className="bg-white dark:bg-[#1C1E22] rounded-3xl p-4 md:p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center bg-gray-100/80 dark:bg-[#252A32] p-1 rounded-2xl w-full sm:w-auto">
             <button
               onClick={() => setActiveTab("pendentes")}
-              className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === "pendentes"
-                  ? "bg-white text-frigus-navy shadow-xs"
-                  : "text-gray-500 hover:text-frigus-navy"
+                  ? "bg-white dark:bg-[#1C1E22] text-frigus-navy dark:text-white shadow-xs"
+                  : "text-gray-500 dark:text-neutral-400 hover:text-frigus-navy dark:hover:text-white"
               }`}
             >
               Pendentes ({pendingItems.length})
             </button>
             <button
               onClick={() => setActiveTab("comprados")}
-              className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`flex-1 sm:flex-none px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeTab === "comprados"
-                  ? "bg-white text-frigus-navy shadow-xs"
-                  : "text-gray-500 hover:text-frigus-navy"
+                  ? "bg-white dark:bg-[#1C1E22] text-frigus-navy dark:text-white shadow-xs"
+                  : "text-gray-500 dark:text-neutral-400 hover:text-frigus-navy dark:hover:text-white"
               }`}
             >
               Comprados ({completedItems.length})
@@ -163,9 +163,9 @@ export default function ShoppingListPage() {
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
-            <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
+            <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 dark:border-[#343941] text-xs font-semibold text-gray-600 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-[#252A32] transition-colors cursor-pointer">
               <span>Todas as categorias</span>
-              <ChevronDown size={14} className="text-gray-400" />
+              <ChevronDown size={14} className="text-gray-400 dark:text-neutral-400" />
             </button>
 
             {completedItems.length > 0 && (
@@ -173,7 +173,7 @@ export default function ShoppingListPage() {
                 onClick={() =>
                   setItems((prev) => prev.filter((item) => !item.checked))
                 }
-                className="text-xs font-bold text-gray-400 hover:text-red-500 transition-colors"
+                className="text-xs font-bold text-gray-400 dark:text-neutral-500 hover:text-red-500 dark:hover:text-red-400 transition-colors cursor-pointer"
               >
                 Limpar concluídos
               </button>
@@ -184,19 +184,19 @@ export default function ShoppingListPage() {
         {/* Grid de Conteúdo Principal */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Lista de Itens (8 colunas) */}
-          <div className="lg:col-span-8 bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-gray-100">
-              <h3 className="font-montserrat font-bold text-frigus-navy text-base">
+          <div className="lg:col-span-8 bg-white dark:bg-[#1C1E22] rounded-3xl p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-[#343941]">
+              <h3 className="font-montserrat font-bold text-frigus-navy dark:text-white text-base">
                 {activeTab === "pendentes" ? "Para comprar" : "Itens comprados"}
               </h3>
-              <span className="text-xs font-bold text-frigus-primary bg-blue-50 px-2.5 py-1 rounded-lg">
+              <span className="text-xs font-bold text-frigus-primary dark:text-[#A7BCFF] bg-blue-50 dark:bg-blue-950/50 px-2.5 py-1 rounded-lg">
                 {activeTab === "pendentes"
                   ? `${pendingItems.length} itens`
                   : `${completedItems.length} itens`}
               </span>
             </div>
 
-            <div className="divide-y divide-gray-50">
+            <div className="divide-y divide-gray-50 dark:divide-[#343941]/50">
               {(activeTab === "pendentes" ? pendingItems : completedItems).map(
                 (item) => (
                   <div
@@ -206,10 +206,10 @@ export default function ShoppingListPage() {
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => toggleCheck(item.id)}
-                        className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
+                        className={`w-5 h-5 rounded-md border flex items-center justify-center transition-colors cursor-pointer ${
                           item.checked
                             ? "bg-frigus-primary border-frigus-primary text-white"
-                            : "border-gray-300 hover:border-frigus-primary"
+                            : "border-gray-300 dark:border-neutral-600 hover:border-frigus-primary bg-white dark:bg-[#1C1E22]"
                         }`}
                       >
                         {item.checked && <Check size={14} strokeWidth={3} />}
@@ -219,7 +219,7 @@ export default function ShoppingListPage() {
                         <img
                           src={item.image}
                           alt={item.name}
-                          className="w-8 h-8 rounded-lg object-cover bg-gray-50 border border-gray-100"
+                          className="w-8 h-8 rounded-lg object-cover bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-[#343941]"
                         />
                       )}
 
@@ -227,13 +227,13 @@ export default function ShoppingListPage() {
                         <p
                           className={`text-sm font-semibold transition-colors ${
                             item.checked
-                              ? "line-through text-gray-400"
-                              : "text-frigus-navy"
+                              ? "line-through text-gray-400 dark:text-neutral-500"
+                              : "text-frigus-navy dark:text-white"
                           }`}
                         >
                           {item.name}
                         </p>
-                        <p className="text-[11px] text-gray-400 font-medium">
+                        <p className="text-[11px] text-gray-400 dark:text-neutral-400 font-medium">
                           {item.category}
                         </p>
                       </div>
@@ -241,15 +241,15 @@ export default function ShoppingListPage() {
 
                     <div className="flex items-center gap-4">
                       {/* Quantidade */}
-                      <div className="flex items-center gap-2 bg-gray-50 px-2.5 py-1 rounded-xl border border-gray-100">
-                        <span className="text-xs font-bold text-frigus-navy">
+                      <div className="flex items-center gap-2 bg-gray-50 dark:bg-[#252A32] px-2.5 py-1 rounded-xl border border-gray-100 dark:border-[#343941]">
+                        <span className="text-xs font-bold text-frigus-navy dark:text-white">
                           {item.quantity}
                         </span>
                       </div>
 
                       <button
                         onClick={() => removeItem(item.id)}
-                        className="text-gray-300 hover:text-red-500 transition-colors p-1 cursor-pointer"
+                        className="text-gray-300 dark:text-neutral-600 hover:text-red-500 dark:hover:text-red-400 transition-colors p-1 cursor-pointer"
                         title="Remover item"
                       >
                         <Trash2 size={15} />
@@ -262,18 +262,18 @@ export default function ShoppingListPage() {
           </div>
 
           {/* Sugestões da Casa (4 colunas) */}
-          <div className="lg:col-span-4 bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-4">
+          <div className="lg:col-span-4 bg-white dark:bg-[#1C1E22] rounded-3xl p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs space-y-4">
             <div>
-              <div className="flex items-center gap-1.5 text-frigus-primary mb-1">
+              <div className="flex items-center gap-1.5 text-frigus-primary dark:text-[#5B89F7] mb-1">
                 <Sparkles size={16} />
                 <span className="text-[10px] font-bold uppercase tracking-wider">
                   Sugestões para você
                 </span>
               </div>
-              <h3 className="font-montserrat font-bold text-frigus-navy text-base">
+              <h3 className="font-montserrat font-bold text-frigus-navy dark:text-white text-base">
                 Com base na sua rotina
               </h3>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-xs text-gray-400 dark:text-neutral-400 mt-0.5">
                 Alimentos que estão acabando no estoque da sua casa
               </p>
             </div>
@@ -298,15 +298,15 @@ export default function ShoppingListPage() {
               ].map((sug, idx) => (
                 <div
                   key={idx}
-                  className="p-3 rounded-2xl bg-gray-50/70 border border-gray-100 flex items-center justify-between gap-3 hover:border-gray-200 transition-colors"
+                  className="p-3 rounded-2xl bg-gray-50/70 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941] flex items-center justify-between gap-3 hover:border-gray-200 dark:hover:border-neutral-500 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-blue-50 text-frigus-primary font-bold text-xs flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-frigus-primary dark:text-[#A7BCFF] font-bold text-xs flex items-center justify-center">
                       {sug.letter}
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-frigus-navy">{sug.name}</p>
-                      <p className="text-[10px] text-gray-400">{sug.desc}</p>
+                      <p className="text-xs font-bold text-frigus-navy dark:text-white">{sug.name}</p>
+                      <p className="text-[10px] text-gray-400 dark:text-neutral-400">{sug.desc}</p>
                     </div>
                   </div>
 
@@ -323,7 +323,7 @@ export default function ShoppingListPage() {
                         },
                       ]);
                     }}
-                    className="p-1.5 rounded-lg text-frigus-primary hover:bg-blue-50 transition-colors cursor-pointer"
+                    className="p-1.5 rounded-lg text-frigus-primary dark:text-[#5B89F7] hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors cursor-pointer"
                     title="Adicionar à lista"
                   >
                     <Plus size={16} />
@@ -339,7 +339,6 @@ export default function ShoppingListPage() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onConfirm={() => {
-          // mock adding item
           setItems((prev) => [
             ...prev,
             {

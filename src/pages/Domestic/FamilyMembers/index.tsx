@@ -85,10 +85,10 @@ export default function FamilyMembersPage() {
         {/* Cabeçalho */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-frigus-navy">
+            <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-frigus-navy dark:text-white">
               Membros da casa
             </h1>
-            <p className="text-gray-500 text-sm mt-1 font-sans">
+            <p className="text-gray-500 dark:text-neutral-400 text-sm mt-1 font-sans">
               Defina quem pode acompanhar e atualizar o estoque da família
             </p>
           </div>
@@ -96,7 +96,7 @@ export default function FamilyMembersPage() {
           <button
             type="button"
             onClick={() => setIsInviteOpen(true)}
-            className="inline-flex items-center gap-2 bg-[#2552C8] hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-xs self-start sm:self-auto cursor-pointer"
+            className="inline-flex items-center gap-2 bg-[#2552C8] hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-xs self-start sm:self-auto cursor-pointer"
           >
             <UserPlus size={16} />
             <span>Convidar membro</span>
@@ -104,35 +104,35 @@ export default function FamilyMembersPage() {
         </div>
 
         {/* Hero Banner */}
-        <div className="bg-frigus-primary rounded-3xl p-6 md:p-8 text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
+        <div className="bg-frigus-primary dark:bg-[#18233C] rounded-3xl p-6 md:p-8 text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm border border-transparent dark:border-blue-900/30">
           <div className="space-y-2 max-w-xl z-10">
-            <span className="text-[11px] uppercase tracking-wider font-bold text-frigus-ice font-sans">
+            <span className="text-[11px] uppercase tracking-wider font-bold text-frigus-ice dark:text-blue-200 font-sans">
               Sua casa
             </span>
             <h2 className="font-montserrat font-bold text-2xl md:text-3xl leading-tight">
               Todo mundo alinhado para cuidar do estoque
             </h2>
-            <p className="text-frigus-ice text-sm font-sans leading-relaxed">
+            <p className="text-frigus-ice/90 dark:text-blue-200/80 text-sm font-sans leading-relaxed">
               Mantenha os familiares a par do que precisa ser comprado e evite desperdícios na rotina doméstica.
             </p>
           </div>
 
           {/* Quick Stats Card */}
-          <div className="bg-white/10 backdrop-blur-xs rounded-2xl p-5 border border-white/20 w-full sm:w-auto flex items-center gap-6 z-10 shrink-0">
+          <div className="bg-white/10 dark:bg-black/20 backdrop-blur-xs rounded-2xl p-5 border border-white/20 dark:border-white/10 w-full sm:w-auto flex items-center gap-6 z-10 shrink-0">
             <div className="text-center">
               <span className="font-montserrat font-bold text-2xl text-white block">
                 {members.length}
               </span>
-              <span className="text-[11px] text-frigus-ice uppercase tracking-wider font-semibold">
+              <span className="text-[11px] text-frigus-ice dark:text-blue-200 uppercase tracking-wider font-semibold">
                 Membros
               </span>
             </div>
-            <div className="w-px h-10 bg-white/20" />
+            <div className="w-px h-10 bg-white/20 dark:bg-white/10" />
             <div className="text-center">
               <span className="font-montserrat font-bold text-2xl text-white block">
                 1
               </span>
-              <span className="text-[11px] text-frigus-ice uppercase tracking-wider font-semibold">
+              <span className="text-[11px] text-frigus-ice dark:text-blue-200 uppercase tracking-wider font-semibold">
                 Administrador
               </span>
             </div>
@@ -145,43 +145,43 @@ export default function FamilyMembersPage() {
 
         {/* Informações sobre Permissões */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white rounded-2xl p-4 border border-gray-200/80 flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-blue-50 text-frigus-primary flex items-center justify-center shrink-0">
+          <div className="bg-white dark:bg-[#1C1E22] rounded-2xl p-4 border border-gray-200/80 dark:border-[#343941] flex items-start gap-3">
+            <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-frigus-primary dark:text-blue-400 flex items-center justify-center shrink-0">
               <Shield size={16} />
             </div>
             <div>
-              <h3 className="font-montserrat font-bold text-xs text-frigus-navy">
+              <h3 className="font-montserrat font-bold text-xs text-frigus-navy dark:text-white">
                 Administrador
               </h3>
-              <p className="text-[11px] text-gray-500 mt-0.5">
+              <p className="text-[11px] text-gray-500 dark:text-neutral-400 mt-0.5">
                 Controle total, convite de novos membros e alteração de planos.
               </p>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-4 border border-gray-200/80 flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+          <div className="bg-white dark:bg-[#1C1E22] rounded-2xl p-4 border border-gray-200/80 dark:border-[#343941] flex items-start gap-3">
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
               <Shield size={16} />
             </div>
             <div>
-              <h3 className="font-montserrat font-bold text-xs text-frigus-navy">
+              <h3 className="font-montserrat font-bold text-xs text-frigus-navy dark:text-white">
                 Pode editar
               </h3>
-              <p className="text-[11px] text-gray-500 mt-0.5">
+              <p className="text-[11px] text-gray-500 dark:text-neutral-400 mt-0.5">
                 Adiciona, remove e atualiza itens no estoque e lista de compras.
               </p>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-4 border border-gray-200/80 flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
+          <div className="bg-white dark:bg-[#1C1E22] rounded-2xl p-4 border border-gray-200/80 dark:border-[#343941] flex items-start gap-3">
+            <div className="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
               <Shield size={16} />
             </div>
             <div>
-              <h3 className="font-montserrat font-bold text-xs text-frigus-navy">
+              <h3 className="font-montserrat font-bold text-xs text-frigus-navy dark:text-white">
                 Visualizar
               </h3>
-              <p className="text-[11px] text-gray-500 mt-0.5">
+              <p className="text-[11px] text-gray-500 dark:text-neutral-400 mt-0.5">
                 Acompanha a disponibilidade dos alimentos e status das listas.
               </p>
             </div>
@@ -189,13 +189,13 @@ export default function FamilyMembersPage() {
         </div>
 
         {/* Tabela de Membros */}
-        <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs">
+        <div className="bg-white dark:bg-[#1C1E22] rounded-3xl p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="font-montserrat font-bold text-frigus-navy text-base">
+              <h3 className="font-montserrat font-bold text-frigus-navy dark:text-white text-base">
                 Pessoas com acesso
               </h3>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-400 dark:text-neutral-400">
                 {members.length} membros conectados à sua conta familiar
               </p>
             </div>
@@ -204,20 +204,20 @@ export default function FamilyMembersPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                <tr className="text-[11px] font-bold text-gray-400 dark:text-neutral-400 uppercase tracking-wider border-b border-gray-100 dark:border-[#343941]">
                   <th className="py-3 px-4">Membro</th>
                   <th className="py-3 px-4">Permissão</th>
                   <th className="py-3 px-4">Último acesso</th>
                   <th className="py-3 px-4 text-right">Ações</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
+              <tbody className="divide-y divide-gray-50 dark:divide-[#343941]">
                 {members.map((member) => (
                   <tr
                     key={member.id}
-                    className="hover:bg-gray-50/70 transition-colors group"
+                    className="hover:bg-gray-50/70 dark:hover:bg-[#252A32] transition-colors group"
                   >
-                    <td className="py-3.5 px-4 font-bold text-frigus-navy">
+                    <td className="py-3.5 px-4 font-bold text-frigus-navy dark:text-white">
                       <div className="flex items-center gap-3">
                         <div
                           className={`w-9 h-9 rounded-full ${member.avatarBg} font-bold flex items-center justify-center text-xs shrink-0`}
@@ -226,16 +226,16 @@ export default function FamilyMembersPage() {
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-bold text-frigus-navy text-sm">
+                            <span className="font-bold text-frigus-navy dark:text-white text-sm">
                               {member.name}
                             </span>
                             {member.isCurrentUser && (
-                              <span className="text-[10px] font-bold px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md">
+                              <span className="text-[10px] font-bold px-2 py-0.5 bg-gray-100 dark:bg-[#252A32] text-gray-600 dark:text-neutral-300 rounded-md">
                                 Você
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-gray-400 font-normal">
+                          <p className="text-xs text-gray-400 dark:text-neutral-400 font-normal">
                             {member.email}
                           </p>
                         </div>
@@ -254,19 +254,19 @@ export default function FamilyMembersPage() {
                       )}
                     </td>
 
-                    <td className="py-3.5 px-4 text-gray-500 text-xs">
+                    <td className="py-3.5 px-4 text-gray-500 dark:text-neutral-400 text-xs">
                       {member.lastAccess}
                     </td>
 
                     <td className="py-3.5 px-4 text-right">
                       {member.isCurrentUser ? (
-                        <span className="text-xs text-gray-400 italic">
+                        <span className="text-xs text-gray-400 dark:text-neutral-500 italic">
                           Titular
                         </span>
                       ) : (
                         <button
                           type="button"
-                          className="text-xs font-semibold text-gray-500 hover:text-frigus-primary transition-colors cursor-pointer"
+                          className="text-xs font-semibold text-gray-500 hover:text-frigus-primary dark:text-neutral-400 dark:hover:text-blue-400 transition-colors cursor-pointer"
                         >
                           Gerenciar
                         </button>

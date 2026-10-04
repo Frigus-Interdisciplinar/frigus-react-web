@@ -85,7 +85,7 @@ export type SidebarProps = {
 
 export default function Sidebar({ activeSection }: SidebarProps) {
   return (
-    <aside className="h-screen sticky top-0 bg-sidebar-bg w-60 p-4 flex flex-col justify-between shrink-0 select-none z-20">
+    <aside className="h-screen sticky top-0 bg-sidebar-bg dark:bg-[#0B1020] border-r border-transparent dark:border-white/5 w-60 p-4 flex flex-col justify-between shrink-0 select-none z-20 transition-colors">
       {/* Header com Logo */}
       <div className="flex flex-col gap-6">
         <Link

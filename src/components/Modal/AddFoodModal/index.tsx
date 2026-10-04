@@ -50,23 +50,23 @@ export default function AddFoodModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-[#DFE7F2] p-8 relative flex flex-col gap-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-[#1C1E22] rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-[#DFE7F2] dark:border-[#343941] p-8 relative flex flex-col gap-6">
         {/* Botão Fechar */}
         <button
           onClick={onClose}
           aria-label="Fechar"
-          className="absolute top-6 right-6 w-9 h-9 rounded-xl flex items-center justify-center text-[#758198] hover:bg-gray-100 hover:text-frigus-navy transition-colors cursor-pointer"
+          className="absolute top-6 right-6 w-9 h-9 rounded-xl flex items-center justify-center text-[#758198] dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-[#252A32] hover:text-frigus-navy dark:hover:text-white transition-colors cursor-pointer"
         >
           <X size={20} />
         </button>
 
         {/* Cabeçalho */}
         <div className="space-y-1">
-          <h2 className="font-montserrat font-bold text-2xl text-[#131C55]">
+          <h2 className="font-montserrat font-bold text-2xl text-[#131C55] dark:text-white">
             Adicionar alimento
           </h2>
-          <p className="text-sm text-[#758198]">
+          <p className="text-sm text-[#758198] dark:text-neutral-400">
             Inclua um alimento no estoque da casa.
           </p>
         </div>
@@ -75,7 +75,7 @@ export default function AddFoodModal({
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {/* Nome do alimento */}
           <div>
-            <label className="text-xs font-semibold text-[#131C55] uppercase tracking-wider block mb-2">
+            <label className="text-xs font-semibold text-[#131C55] dark:text-neutral-200 uppercase tracking-wider block mb-2">
               NOME DO ALIMENTO
             </label>
             <input
@@ -84,20 +84,20 @@ export default function AddFoodModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Informe o nome"
-              className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] border border-[#DFE7F2] text-sm text-[#131C55] placeholder:text-[#758198] focus:outline-hidden focus:border-frigus-primary transition-colors"
+              className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] dark:bg-[#252A32] border border-[#DFE7F2] dark:border-[#343941] text-sm text-[#131C55] dark:text-white placeholder:text-[#758198] dark:placeholder:text-neutral-500 focus:outline-hidden focus:border-frigus-primary transition-colors"
             />
           </div>
 
           {/* Categoria e Local */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-semibold text-[#131C55] uppercase tracking-wider block mb-2">
+              <label className="text-xs font-semibold text-[#131C55] dark:text-neutral-200 uppercase tracking-wider block mb-2">
                 CATEGORIA
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] border border-[#DFE7F2] text-sm text-[#131C55] focus:outline-hidden focus:border-frigus-primary transition-colors"
+                className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] dark:bg-[#252A32] border border-[#DFE7F2] dark:border-[#343941] text-sm text-[#131C55] dark:text-white focus:outline-hidden focus:border-frigus-primary transition-colors"
               >
                 <option value="">Selecione a categoria</option>
                 <option value="Laticínios">Laticínios</option>
@@ -111,13 +111,13 @@ export default function AddFoodModal({
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-[#131C55] uppercase tracking-wider block mb-2">
+              <label className="text-xs font-semibold text-[#131C55] dark:text-neutral-200 uppercase tracking-wider block mb-2">
                 LOCAL
               </label>
               <select
                 value={location}
                 onChange={(e) => setLocation(e.target.value as "Despensa" | "Geladeira" | "Freezer")}
-                className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] border border-[#DFE7F2] text-sm text-[#131C55] focus:outline-hidden focus:border-frigus-primary transition-colors"
+                className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] dark:bg-[#252A32] border border-[#DFE7F2] dark:border-[#343941] text-sm text-[#131C55] dark:text-white focus:outline-hidden focus:border-frigus-primary transition-colors"
               >
                 <option value="Despensa">Despensa</option>
                 <option value="Geladeira">Geladeira</option>
@@ -129,7 +129,7 @@ export default function AddFoodModal({
           {/* Quantidade e Validade */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-semibold text-[#131C55] uppercase tracking-wider block mb-2">
+              <label className="text-xs font-semibold text-[#131C55] dark:text-neutral-200 uppercase tracking-wider block mb-2">
                 QUANTIDADE
               </label>
               <input
@@ -138,12 +138,12 @@ export default function AddFoodModal({
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 placeholder="Informe a quantidade (ex: 2 un, 1 kg)"
-                className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] border border-[#DFE7F2] text-sm text-[#131C55] placeholder:text-[#758198] focus:outline-hidden focus:border-frigus-primary transition-colors"
+                className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] dark:bg-[#252A32] border border-[#DFE7F2] dark:border-[#343941] text-sm text-[#131C55] dark:text-white placeholder:text-[#758198] dark:placeholder:text-neutral-500 focus:outline-hidden focus:border-frigus-primary transition-colors"
               />
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-[#131C55] uppercase tracking-wider block mb-2">
+              <label className="text-xs font-semibold text-[#131C55] dark:text-neutral-200 uppercase tracking-wider block mb-2">
                 VALIDADE
               </label>
               <input
@@ -152,17 +152,17 @@ export default function AddFoodModal({
                 value={expiration}
                 onChange={(e) => setExpiration(e.target.value)}
                 placeholder="Informe a validade (ex: 20 out)"
-                className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] border border-[#DFE7F2] text-sm text-[#131C55] placeholder:text-[#758198] focus:outline-hidden focus:border-frigus-primary transition-colors"
+                className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] dark:bg-[#252A32] border border-[#DFE7F2] dark:border-[#343941] text-sm text-[#131C55] dark:text-white placeholder:text-[#758198] dark:placeholder:text-neutral-500 focus:outline-hidden focus:border-frigus-primary transition-colors"
               />
             </div>
           </div>
 
           {/* Ações */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#DFE7F2] mt-2">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#DFE7F2] dark:border-[#343941] mt-2">
             <button
               type="button"
               onClick={onClose}
-              className="h-10 px-6 rounded-xl border border-[#DFE7F2] text-sm font-semibold text-[#131C55] hover:bg-gray-50 transition-colors cursor-pointer"
+              className="h-10 px-6 rounded-xl border border-[#DFE7F2] dark:border-[#343941] text-sm font-semibold text-[#131C55] dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-[#252A32] transition-colors cursor-pointer"
             >
               Cancelar
             </button>

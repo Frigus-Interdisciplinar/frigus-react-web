@@ -13,11 +13,11 @@ export default function ModalTitle({
 }: ModalTitleProps) {
   return (
     <div className={cn("text-left", className)}>
-      <h3 className="font-montserrat font-bold text-frigus-navy text-xl">
+      <h3 className="font-montserrat font-bold text-frigus-navy dark:text-white text-xl">
         {title}
       </h3>
       {subtitle && (
-        <p className="text-xs text-gray-500 mt-1 font-sans">{subtitle}</p>
+        <p className="text-xs text-gray-500 dark:text-neutral-400 mt-1 font-sans">{subtitle}</p>
       )}
     </div>
   );

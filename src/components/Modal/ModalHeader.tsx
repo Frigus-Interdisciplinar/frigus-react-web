@@ -21,7 +21,7 @@ export default function ModalHeader({
   return (
     <div
       className={cn(
-        "p-6 pb-4 flex items-start justify-between border-b border-gray-100",
+        "p-6 pb-4 flex items-start justify-between border-b border-gray-100 dark:border-[#343941]",
         className
       )}
     >
@@ -36,7 +36,7 @@ export default function ModalHeader({
           type="button"
           onClick={onClose}
           aria-label="Fechar modal"
-          className="p-1.5 rounded-full text-gray-400 hover:text-frigus-navy hover:bg-gray-100 transition-colors cursor-pointer"
+          className="p-1.5 rounded-full text-gray-400 hover:text-frigus-navy dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#252A32] transition-colors cursor-pointer"
         >
           <X size={20} />
         </button>

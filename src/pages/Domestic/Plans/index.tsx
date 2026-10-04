@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Check, Sparkles } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import Badge from "@/components/Badge";
@@ -11,6 +12,7 @@ type Plan = {
   badge?: string;
   features: string[];
   ctaLabel: string;
+  checkoutPlanId?: string;
   isCurrent?: boolean;
   highlight?: boolean;
 };
@@ -44,6 +46,7 @@ const plans: Plan[] = [
       "Produtos próprios, receitas e Money Saving",
     ],
     ctaLabel: "Escolher Plus",
+    checkoutPlanId: "domestic_plus",
     highlight: true,
   },
   {
@@ -59,6 +62,7 @@ const plans: Plan[] = [
       "Produtos próprios, receitas e Money Saving",
     ],
     ctaLabel: "Escolher Família",
+    checkoutPlanId: "domestic_family",
   },
 ];
 
@@ -71,10 +75,10 @@ export default function PlansPage() {
           <Badge variant="primary" className="mb-2">
             Usuário Doméstico
           </Badge>
-          <h1 className="font-montserrat font-bold text-3xl md:text-4xl text-frigus-navy">
+          <h1 className="font-montserrat font-bold text-3xl md:text-4xl text-frigus-navy dark:text-white">
             Escolha seu plano
           </h1>
-          <p className="text-gray-500 text-sm font-sans">
+          <p className="text-gray-500 dark:text-neutral-400 text-sm font-sans">
             Três opções simples para a rotina da sua casa
           </p>
         </div>
@@ -86,8 +90,8 @@ export default function PlansPage() {
               key={plan.id}
               className={`rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all relative ${
                 plan.highlight
-                  ? "bg-white border-2 border-frigus-primary shadow-lg ring-4 ring-blue-50"
-                  : "bg-white border border-gray-200/80 shadow-xs hover:border-gray-300"
+                  ? "bg-white dark:bg-[#1C1E22] border-2 border-frigus-primary dark:border-blue-500 shadow-lg ring-4 ring-blue-50 dark:ring-blue-950/30"
+                  : "bg-white dark:bg-[#1C1E22] border border-gray-200/80 dark:border-[#343941] shadow-xs hover:border-gray-300 dark:hover:border-neutral-500"
               }`}
             >
               {plan.badge && (
@@ -101,34 +105,34 @@ export default function PlansPage() {
 
               <div className="space-y-4">
                 <div>
-                  <h3 className="font-montserrat font-bold text-xl text-frigus-navy">
+                  <h3 className="font-montserrat font-bold text-xl text-frigus-navy dark:text-white">
                     {plan.name}
                   </h3>
-                  <p className="text-xs text-gray-400 mt-1 min-h-[32px]">
+                  <p className="text-xs text-gray-400 dark:text-neutral-400 mt-1 min-h-[32px]">
                     {plan.tagline}
                   </p>
                 </div>
 
                 <div className="py-2">
-                  <span className="font-montserrat font-bold text-3xl sm:text-4xl text-frigus-navy">
+                  <span className="font-montserrat font-bold text-3xl sm:text-4xl text-frigus-navy dark:text-white">
                     {plan.price}
                   </span>
                   {plan.period && (
-                    <span className="text-xs text-gray-400 ml-1.5 font-medium">
+                    <span className="text-xs text-gray-400 dark:text-neutral-400 ml-1.5 font-medium">
                       {plan.period}
                     </span>
                   )}
                 </div>
 
-                <div className="h-px bg-gray-100" />
+                <div className="h-px bg-gray-100 dark:bg-[#343941]" />
 
                 <div className="space-y-3 pt-2">
-                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">
+                  <span className="text-[11px] font-bold text-gray-400 dark:text-neutral-400 uppercase tracking-wider block">
                     Incluso no plano:
                   </span>
                   {plan.features.map((feat, idx) => (
-                    <div key={idx} className="flex items-start gap-2.5 text-xs text-gray-600">
-                      <div className="w-4 h-4 rounded-full bg-blue-50 text-frigus-primary flex items-center justify-center shrink-0 mt-0.5">
+                    <div key={idx} className="flex items-start gap-2.5 text-xs text-gray-600 dark:text-neutral-300">
+                      <div className="w-4 h-4 rounded-full bg-blue-50 dark:bg-blue-900/40 text-frigus-primary dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
                         <Check size={12} strokeWidth={3} />
                       </div>
                       <span className="leading-tight">{feat}</span>
@@ -138,18 +142,25 @@ export default function PlansPage() {
               </div>
 
               <div className="pt-8">
-                <button
-                  disabled={plan.isCurrent}
-                  className={`w-full py-3 px-4 rounded-xl text-xs font-bold text-center transition-all shadow-xs cursor-pointer ${
-                    plan.isCurrent
-                      ? "bg-gray-100 text-gray-400 cursor-default"
-                      : plan.highlight
-                      ? "bg-frigus-primary hover:bg-blue-700 text-white shadow-md hover:shadow-lg"
-                      : "bg-frigus-navy hover:bg-slate-900 text-white"
-                  }`}
-                >
-                  {plan.ctaLabel}
-                </button>
+                {plan.isCurrent ? (
+                  <button
+                    disabled
+                    className="w-full py-3 px-4 rounded-xl text-xs font-bold text-center transition-all shadow-xs bg-gray-100 dark:bg-[#252A32] text-gray-400 dark:text-neutral-500 cursor-default"
+                  >
+                    {plan.ctaLabel}
+                  </button>
+                ) : (
+                  <Link
+                    to={`/checkout?plan=${plan.checkoutPlanId}`}
+                    className={`block w-full py-3 px-4 rounded-xl text-xs font-bold text-center transition-all shadow-xs cursor-pointer ${
+                      plan.highlight
+                        ? "bg-frigus-primary hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white shadow-md hover:shadow-lg"
+                        : "bg-frigus-navy dark:bg-neutral-800 hover:bg-slate-900 dark:hover:bg-neutral-700 text-white"
+                    }`}
+                  >
+                    {plan.ctaLabel}
+                  </Link>
+                )}
               </div>
             </div>
           ))}

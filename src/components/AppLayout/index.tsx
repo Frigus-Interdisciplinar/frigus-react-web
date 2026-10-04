@@ -16,7 +16,7 @@ export default function AppLayout({
   children,
 }: AppLayoutProps) {
   return (
-    <div className="flex min-h-screen bg-bg-app font-sans text-text-main">
+    <div className="flex min-h-screen bg-[#F5F8FC] dark:bg-[#0F1115] font-sans text-slate-800 dark:text-neutral-100 transition-colors">
       {/* Sidebar fixo */}
       <Sidebar activeSection={activeSection} />
 

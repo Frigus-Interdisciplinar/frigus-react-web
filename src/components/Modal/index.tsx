@@ -61,8 +61,8 @@ export default function Modal({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-100 flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+      <div className="bg-white dark:bg-[#1C1E22] rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-100 dark:border-[#343941] flex flex-col">
         {/* Cabeçalho */}
         <ModalHeader title={title} subtitle={subtitle} onClose={onClose} />
 

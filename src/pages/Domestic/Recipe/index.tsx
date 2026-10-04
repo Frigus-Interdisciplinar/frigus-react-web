@@ -50,53 +50,53 @@ export default function RecipePage() {
         {/* Cabeçalho */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-frigus-navy">
+            <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-frigus-navy dark:text-white">
               Receitas
             </h1>
-            <p className="text-gray-500 text-sm mt-1 font-sans">
+            <p className="text-gray-500 dark:text-neutral-400 text-sm mt-1 font-sans">
               Ideias para aproveitar melhor o que já existe na sua casa
             </p>
           </div>
 
-          <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 bg-white text-xs font-bold text-frigus-navy hover:bg-gray-50 shadow-xs transition-colors self-start sm:self-auto">
+          <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#343941] bg-white dark:bg-[#1C1E22] text-xs font-bold text-frigus-navy dark:text-white hover:bg-gray-50 dark:hover:bg-[#252A32] shadow-xs transition-colors self-start sm:self-auto cursor-pointer">
             <Star size={15} className="text-amber-500 fill-amber-500" />
             <span>Favoritas</span>
           </button>
         </div>
 
         {/* Filtros e Busca */}
-        <div className="bg-white rounded-3xl p-4 md:p-6 border border-gray-200/80 shadow-xs space-y-4">
+        <div className="bg-white dark:bg-[#1C1E22] rounded-3xl p-4 md:p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs space-y-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="relative w-full md:w-96">
               <Search
                 size={16}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-400"
               />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar receita por nome"
-                className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-frigus-primary transition-all placeholder:text-gray-400 bg-gray-50/50"
+                className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 dark:border-[#343941] text-xs focus:outline-hidden focus:border-frigus-primary dark:focus:border-[#5B89F7] transition-all placeholder:text-gray-400 dark:placeholder:text-neutral-500 bg-gray-50/50 dark:bg-[#252A32] text-slate-800 dark:text-white"
               />
             </div>
 
             <div className="flex items-center gap-3 w-full md:w-auto flex-wrap">
-              <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
+              <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 dark:border-[#343941] text-xs font-semibold text-gray-600 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-[#252A32] transition-colors cursor-pointer">
                 <span>Categoria</span>
-                <ChevronDown size={14} className="text-gray-400" />
+                <ChevronDown size={14} className="text-gray-400 dark:text-neutral-400" />
               </button>
-              <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
+              <button className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 dark:border-[#343941] text-xs font-semibold text-gray-600 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-[#252A32] transition-colors cursor-pointer">
                 <span>Tempo de preparo</span>
-                <ChevronDown size={14} className="text-gray-400" />
+                <ChevronDown size={14} className="text-gray-400 dark:text-neutral-400" />
               </button>
 
-              <label className="inline-flex items-center gap-2 text-xs font-semibold text-gray-600 cursor-pointer select-none">
+              <label className="inline-flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-neutral-300 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={onlyAvailable}
                   onChange={(e) => setOnlyAvailable(e.target.checked)}
-                  className="rounded-md border-gray-300 text-frigus-primary focus:ring-frigus-primary/20 w-4 h-4"
+                  className="rounded-md border-gray-300 dark:border-neutral-600 text-frigus-primary focus:ring-frigus-primary/20 w-4 h-4 bg-white dark:bg-[#1C1E22]"
                 />
                 <span>Só com meu estoque</span>
               </label>
@@ -137,30 +137,30 @@ export default function RecipePage() {
         </div>
 
         {/* Itens para Aproveitar */}
-        <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="bg-white dark:bg-[#1C1E22] rounded-3xl p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="space-y-0.5">
-            <div className="flex items-center gap-2 text-amber-600">
+            <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400">
               <Sparkles size={16} />
-              <h3 className="font-montserrat font-bold text-frigus-navy text-sm">
+              <h3 className="font-montserrat font-bold text-frigus-navy dark:text-white text-sm">
                 Itens para aproveitar
               </h3>
             </div>
-            <p className="text-xs text-gray-400">Estão próximos do vencimento</p>
+            <p className="text-xs text-gray-400 dark:text-neutral-400">Estão próximos do vencimento</p>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="px-3 py-1 bg-amber-50 text-amber-700 font-bold text-xs rounded-xl border border-amber-200">
+            <span className="px-3 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-bold text-xs rounded-xl border border-amber-200 dark:border-amber-800">
               Tomate (6 un.)
             </span>
-            <span className="px-3 py-1 bg-amber-50 text-amber-700 font-bold text-xs rounded-xl border border-amber-200">
+            <span className="px-3 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-bold text-xs rounded-xl border border-amber-200 dark:border-amber-800">
               Ovos (4 un.)
             </span>
-            <span className="px-3 py-1 bg-amber-50 text-amber-700 font-bold text-xs rounded-xl border border-amber-200">
+            <span className="px-3 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-bold text-xs rounded-xl border border-amber-200 dark:border-amber-800">
               Iogurte (3 un.)
             </span>
             <Link
               to="/alerts"
-              className="text-xs font-bold text-frigus-primary hover:underline ml-2"
+              className="text-xs font-bold text-frigus-primary dark:text-[#5B89F7] hover:underline ml-2"
             >
               Ver todos os alertas
             </Link>
@@ -171,14 +171,14 @@ export default function RecipePage() {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-montserrat font-bold text-frigus-navy text-lg">
+              <h3 className="font-montserrat font-bold text-frigus-navy dark:text-white text-lg">
                 Receitas recomendadas
               </h3>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-gray-400 dark:text-neutral-400">
                 Baseadas nos ingredientes disponíveis agora
               </p>
             </div>
-            <span className="text-xs font-bold text-frigus-primary cursor-pointer hover:underline">
+            <span className="text-xs font-bold text-frigus-primary dark:text-[#5B89F7] cursor-pointer hover:underline">
               Ver catálogo
             </span>
           </div>
@@ -187,7 +187,7 @@ export default function RecipePage() {
             {recipes.map((rec) => (
               <div
                 key={rec.id}
-                className="bg-white rounded-3xl border border-gray-200/80 shadow-xs overflow-hidden flex flex-col justify-between group hover:border-frigus-primary/40 transition-all hover:shadow-md"
+                className="bg-white dark:bg-[#1C1E22] rounded-3xl border border-gray-200/80 dark:border-[#343941] shadow-xs overflow-hidden flex flex-col justify-between group hover:border-frigus-primary/40 dark:hover:border-[#5B89F7]/40 transition-all hover:shadow-md"
               >
                 <div>
                   <div className="h-44 overflow-hidden relative">
@@ -202,14 +202,14 @@ export default function RecipePage() {
                   </div>
 
                   <div className="p-5 space-y-2">
-                    <div className="flex items-center gap-1 text-xs text-gray-400">
+                    <div className="flex items-center gap-1 text-xs text-gray-400 dark:text-neutral-400">
                       <Clock size={14} />
                       <span>{rec.time}</span>
                     </div>
-                    <h4 className="font-montserrat font-bold text-frigus-navy text-base group-hover:text-frigus-primary transition-colors">
+                    <h4 className="font-montserrat font-bold text-frigus-navy dark:text-white text-base group-hover:text-frigus-primary dark:group-hover:text-[#5B89F7] transition-colors">
                       {rec.title}
                     </h4>
-                    <p className="text-xs text-emerald-600 font-medium">
+                    <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
                       {rec.availableIngredients}
                     </p>
                   </div>
@@ -218,7 +218,7 @@ export default function RecipePage() {
                 <div className="p-5 pt-0">
                   <Link
                     to={`/recipe/${rec.id}`}
-                    className="w-full py-2.5 px-4 bg-frigus-navy hover:bg-slate-900 text-white rounded-xl text-xs font-bold text-center block transition-colors shadow-xs"
+                    className="w-full py-2.5 px-4 bg-frigus-navy dark:bg-frigus-primary hover:bg-slate-900 dark:hover:bg-blue-700 text-white rounded-xl text-xs font-bold text-center block transition-colors shadow-xs"
                   >
                     Ver receita
                   </Link>

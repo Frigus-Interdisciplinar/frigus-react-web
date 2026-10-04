@@ -76,23 +76,23 @@ export default function NotificationsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-frigus-navy">
+              <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-frigus-navy dark:text-white">
                 Notificações
               </h1>
               {unreadCount > 0 && (
                 <Badge variant="accent">{unreadCount} novas</Badge>
               )}
             </div>
-            <p className="text-gray-500 text-sm mt-1 font-sans">
+            <p className="text-gray-500 dark:text-neutral-400 text-sm mt-1 font-sans">
               Fique por dentro do que precisa da sua atenção
             </p>
           </div>
 
           <button
             onClick={markAllRead}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 bg-white text-xs font-bold text-frigus-navy hover:bg-gray-50 transition-colors shadow-2xs self-start sm:self-auto cursor-pointer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 dark:border-[#343941] bg-white dark:bg-[#1C1E22] text-xs font-bold text-frigus-navy dark:text-white hover:bg-gray-50 dark:hover:bg-[#252A32] transition-colors shadow-2xs self-start sm:self-auto cursor-pointer"
           >
-            <CheckCircle size={14} className="text-emerald-600" />
+            <CheckCircle size={14} className="text-emerald-600 dark:text-emerald-400" />
             <span>Marcar como lidas</span>
           </button>
         </div>
@@ -105,8 +105,8 @@ export default function NotificationsPage() {
               onClick={() => setFilter(tab)}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 filter === tab
-                  ? "bg-frigus-primary text-white shadow-xs"
-                  : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300"
+                  ? "bg-frigus-primary dark:bg-blue-600 text-white shadow-xs"
+                  : "bg-white dark:bg-[#1C1E22] text-gray-600 dark:text-neutral-300 border border-gray-200 dark:border-[#343941] hover:border-gray-300 dark:hover:border-neutral-500"
               }`}
             >
               {tab}
@@ -117,26 +117,26 @@ export default function NotificationsPage() {
         {/* Grid: Feed de Notificações + Painel Lateral de Preferências */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Feed de Notificações (8 colunas) */}
-          <div className="lg:col-span-8 bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-3">
-            <h3 className="font-montserrat font-bold text-frigus-navy text-base mb-2">
+          <div className="lg:col-span-8 bg-white dark:bg-[#1C1E22] rounded-3xl p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs space-y-3">
+            <h3 className="font-montserrat font-bold text-frigus-navy dark:text-white text-base mb-2">
               Recentes
             </h3>
 
-            <div className="divide-y divide-gray-100">
+            <div className="divide-y divide-gray-100 dark:divide-[#343941]">
               {filteredNotifications.map((item) => (
                 <div
                   key={item.id}
                   className={`py-4 flex items-start gap-4 transition-colors rounded-xl px-2 ${
-                    item.unread ? "bg-blue-50/30" : ""
+                    item.unread ? "bg-blue-50/30 dark:bg-blue-900/10" : ""
                   }`}
                 >
                   <div
                     className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 mt-0.5 ${
                       item.type === "Estoque"
-                        ? "bg-amber-50 text-amber-600 border border-amber-200/60"
+                        ? "bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200/60 dark:border-amber-900/40"
                         : item.type === "Compras"
-                        ? "bg-blue-50 text-frigus-primary border border-blue-200/60"
-                        : "bg-emerald-50 text-emerald-600 border border-emerald-200/60"
+                        ? "bg-blue-50 dark:bg-blue-950/40 text-frigus-primary dark:text-blue-400 border border-blue-200/60 dark:border-blue-900/40"
+                        : "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-900/40"
                     }`}
                   >
                     {item.type === "Estoque" && <Clock size={18} />}
@@ -146,20 +146,20 @@ export default function NotificationsPage() {
 
                   <div className="flex-1 space-y-0.5">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-bold text-frigus-navy text-sm">
+                      <h4 className="font-bold text-frigus-navy dark:text-white text-sm">
                         {item.title}
                       </h4>
-                      <span className="text-[11px] text-gray-400 font-medium">
+                      <span className="text-[11px] text-gray-400 dark:text-neutral-400 font-medium">
                         {item.time}
                       </span>
                     </div>
-                    <p className="text-xs text-gray-500 leading-relaxed font-sans">
+                    <p className="text-xs text-gray-500 dark:text-neutral-400 leading-relaxed font-sans">
                       {item.desc}
                     </p>
                   </div>
 
                   {item.unread && (
-                    <div className="w-2 h-2 rounded-full bg-frigus-primary shrink-0 mt-2" />
+                    <div className="w-2 h-2 rounded-full bg-frigus-primary dark:bg-blue-500 shrink-0 mt-2" />
                   )}
                 </div>
               ))}
@@ -167,20 +167,20 @@ export default function NotificationsPage() {
           </div>
 
           {/* Painel de Preferências (4 colunas) */}
-          <div className="lg:col-span-4 bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs space-y-4 flex flex-col justify-between">
+          <div className="lg:col-span-4 bg-white dark:bg-[#1C1E22] rounded-3xl p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs space-y-4 flex flex-col justify-between">
             <div className="space-y-4">
               <div>
-                <h3 className="font-montserrat font-bold text-frigus-navy text-base">
+                <h3 className="font-montserrat font-bold text-frigus-navy dark:text-white text-base">
                   Preferências
                 </h3>
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="text-xs text-gray-400 dark:text-neutral-400 mt-0.5">
                   Escolha como deseja ser avisado.
                 </p>
               </div>
 
               <div className="space-y-3 pt-2">
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 border border-gray-100">
-                  <span className="text-xs font-bold text-frigus-navy">
+                <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941]">
+                  <span className="text-xs font-bold text-frigus-navy dark:text-white">
                     Por e-mail
                   </span>
                   <input
@@ -191,8 +191,8 @@ export default function NotificationsPage() {
                   />
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 border border-gray-100">
-                  <span className="text-xs font-bold text-frigus-navy">
+                <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941]">
+                  <span className="text-xs font-bold text-frigus-navy dark:text-white">
                     No navegador
                   </span>
                   <input
@@ -203,9 +203,9 @@ export default function NotificationsPage() {
                   />
                 </div>
 
-                <div className="p-3 rounded-2xl bg-gray-50 border border-gray-100 space-y-2">
+                <div className="p-3 rounded-2xl bg-gray-50 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941] space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-frigus-navy">
+                    <span className="text-xs font-bold text-frigus-navy dark:text-white">
                       Somente importantes
                     </span>
                     <input
@@ -215,14 +215,14 @@ export default function NotificationsPage() {
                       className="rounded text-frigus-primary focus:ring-frigus-primary"
                     />
                   </div>
-                  <p className="text-[10px] text-gray-400 leading-tight">
+                  <p className="text-[10px] text-gray-400 dark:text-neutral-400 leading-tight">
                     Validades, compras e atualizações de conta.
                   </p>
                 </div>
               </div>
             </div>
 
-            <button className="w-full py-2.5 px-4 bg-gray-100 hover:bg-gray-200 text-frigus-navy rounded-xl text-xs font-bold transition-colors cursor-pointer">
+            <button className="w-full py-2.5 px-4 bg-gray-100 dark:bg-[#252A32] hover:bg-gray-200 dark:hover:bg-[#2e343e] text-frigus-navy dark:text-white rounded-xl text-xs font-bold transition-colors cursor-pointer">
               Editar preferências
             </button>
           </div>
