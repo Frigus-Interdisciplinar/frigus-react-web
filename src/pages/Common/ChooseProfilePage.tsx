@@ -68,14 +68,23 @@ export default function ChooseProfilePage() {
               </ul>
             </div>
 
-            <button
-              type="button"
-              onClick={() => navigate("/plans/domestic")}
-              className="mt-8 w-full h-11 bg-frigus-primary hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
-            >
-              <span>Escolher doméstico</span>
-              <ArrowRight className="size-4" />
-            </button>
+            <div className="mt-8 space-y-2.5">
+              <button
+                type="button"
+                onClick={() => navigate("/plans/domestic")}
+                className="w-full h-11 bg-frigus-primary hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+              >
+                <span>Escolher doméstico</span>
+                <ArrowRight className="size-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/home")}
+                className="w-full text-center text-xs font-semibold text-gray-500 hover:text-frigus-primary dark:text-neutral-400 dark:hover:text-white transition-colors cursor-pointer py-1"
+              >
+                Acessar painel doméstico →
+              </button>
+            </div>
           </div>
 
           {/* Card 2: Comercial */}
@@ -112,14 +121,23 @@ export default function ChooseProfilePage() {
               </ul>
             </div>
 
-            <button
-              type="button"
-              onClick={() => navigate("/plans/commercial")}
-              className="mt-8 w-full h-11 bg-frigus-primary hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
-            >
-              <span>Escolher comercial</span>
-              <ArrowRight className="size-4" />
-            </button>
+            <div className="mt-8 space-y-2.5">
+              <button
+                type="button"
+                onClick={() => navigate("/plans/commercial")}
+                className="w-full h-11 bg-frigus-primary hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+              >
+                <span>Escolher comercial</span>
+                <ArrowRight className="size-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/commercial/stock")}
+                className="w-full text-center text-xs font-semibold text-gray-500 hover:text-frigus-primary dark:text-neutral-400 dark:hover:text-white transition-colors cursor-pointer py-1"
+              >
+                Acessar painel comercial →
+              </button>
+            </div>
           </div>
 
           {/* Card 3: Empresarial */}
@@ -156,14 +174,23 @@ export default function ChooseProfilePage() {
               </ul>
             </div>
 
-            <button
-              type="button"
-              onClick={() => navigate("/plans/enterprise")}
-              className="mt-8 w-full h-11 bg-frigus-primary hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
-            >
-              <span>Escolher empresarial</span>
-              <ArrowRight className="size-4" />
-            </button>
+            <div className="mt-8 space-y-2.5">
+              <button
+                type="button"
+                onClick={() => navigate("/plans/enterprise")}
+                className="w-full h-11 bg-frigus-primary hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+              >
+                <span>Escolher empresarial</span>
+                <ArrowRight className="size-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate("/enterprise")}
+                className="w-full text-center text-xs font-semibold text-gray-500 hover:text-frigus-primary dark:text-neutral-400 dark:hover:text-white transition-colors cursor-pointer py-1"
+              >
+                Acessar painel empresarial →
+              </button>
+            </div>
           </div>
         </div>
       </main>
