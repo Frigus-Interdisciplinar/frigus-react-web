@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import NavigationItem from "./NavigationItem";
 import frigusLogo from "@/assets/frigus-logo.svg";
+import { useStore } from "@/store/store";
 
 export type SectionString =
   | "home"
@@ -42,6 +43,8 @@ type SidebarProps = {
 };
 
 export default function Sidebar({ activeSection }: SidebarProps) {
+  const user = useStore((state) => state.user);
+  const initials = user?.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("") || "?";
   return (
     <aside className="h-screen sticky top-0 bg-sidebar-bg w-60 p-4 flex flex-col justify-between shrink-0 select-none">
       {/* Header com Logo */}
@@ -68,11 +71,11 @@ export default function Sidebar({ activeSection }: SidebarProps) {
       {/* Perfil do Usuário na Base */}
       <div className="pt-4 border-t border-white/10 flex items-center gap-3 px-2">
         <div className="w-9 h-9 rounded-full bg-frigus-ice flex items-center justify-center text-frigus-navy font-bold text-xs shrink-0">
-          HP
+          {initials}
         </div>
         <div className="flex flex-col overflow-hidden">
-          <span className="text-white text-xs font-bold truncate">Henrique Paulo</span>
-          <span className="text-sidebar-muted text-[11px] truncate">Plano doméstico</span>
+          <span className="text-white text-xs font-bold truncate">{user?.name || "Visitante"}</span>
+          <span className="text-sidebar-muted text-[11px] truncate">{user ? { DOMESTIC: "Conta doméstica", COMMERCIAL: "Conta comercial", BUSINESS: "Conta empresarial" }[user.accountType] : ""}</span>
         </div>
       </div>
     </aside>

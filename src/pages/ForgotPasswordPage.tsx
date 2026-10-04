@@ -3,22 +3,26 @@ import { Info, ArrowLeft, CheckCircle2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
+import { requestPasswordRecovery } from "@/services/password-recovery.service";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [submitted, setSubmitted] = useState<boolean>(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!email) return;
 
     setLoading(true);
-    // Simula envio de e-mail de recuperação
-    setTimeout(() => {
-      setLoading(false);
+    setError("");
+    try {
+      await requestPasswordRecovery(email);
       setSubmitted(true);
-    }, 600);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro ao solicitar recuperação.");
+    } finally { setLoading(false); }
   };
 
   return (
@@ -42,10 +46,10 @@ export default function ForgotPasswordPage() {
           <div className="flex flex-col items-center text-center py-4 gap-4">
             <CheckCircle2 className="size-16 text-green-500" />
             <h3 className="text-xl font-bold text-frigus-navy">
-              E-mail de recuperação enviado!
+              Solicitação simulada
             </h3>
             <p className="text-[#70809F] text-[15px] max-w-[400px]">
-              Se houver uma conta associada a <strong className="text-frigus-navy">{email}</strong>, você receberá um link com as instruções para redefinir sua senha.
+              A recuperação para <strong className="text-frigus-navy">{email}</strong> foi simulada. Nenhum e-mail foi enviado.
             </p>
             <a
               href="/login"
@@ -67,6 +71,7 @@ export default function ForgotPasswordPage() {
             />
 
             {/* Aviso link seguro */}
+            {error && <p role="alert" className="text-sm text-red-500">{error}</p>}
             <div className="bg-[#ECF2FD] rounded-xl p-4 flex items-start sm:items-center gap-3">
               <Info className="size-5 text-frigus-primary shrink-0 mt-0.5 sm:mt-0" />
               <p className="text-[14px] text-[#70809F] leading-snug">

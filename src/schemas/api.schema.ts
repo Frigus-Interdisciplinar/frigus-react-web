@@ -1,0 +1,46 @@
+import { z } from "zod";
+import { registerSchema } from "./auth.schema";
+
+export const uuid = z.uuid();
+export const id = z.number().int().positive();
+const count = z.number().int().nonnegative();
+const date = z.iso.date();
+const instant = z.iso.datetime({ offset: true });
+export const accountTypeSchema = z.enum(["DOMESTIC", "COMMERCIAL", "BUSINESS"]);
+export const userSchema = z.object({ id: uuid, name: z.string(), email: z.email(), birthDate: registerSchema.shape.birthDate, accountType: accountTypeSchema });
+export const loginResponseSchema = z.object({ accessToken: z.string().min(1), refreshToken: z.string().min(1), user: userSchema });
+export const pagingSchema = z.object({ page: count.optional(), size: id.optional(), sort: z.string().optional() });
+export type Paging = z.infer<typeof pagingSchema>;
+export const pageSchema = <T extends z.ZodType>(item: T) => z.object({ content: z.array(item), totalElements: count, totalPages: count, size: count, number: count });
+export const profilePutSchema = registerSchema.pick({ name: true, birthDate: true });
+export const profilePatchSchema = profilePutSchema.partial();
+export const changePasswordSchema = z.object({ oldPassword: z.string().min(1), newPassword: registerSchema.shape.rawPassword });
+export const groupMemberSchema = z.object({ userId: uuid, name: z.string(), email: z.email(), isOwner: z.boolean(), joinedAt: instant });
+export const groupSchema = z.object({ id: uuid, name: z.string(), ownerId: uuid, ownerName: z.string(), isOwner: z.boolean(), defaultConversationId: uuid.nullish(), bannerPicture: z.string().nullish(), membersCount: count, members: z.array(groupMemberSchema), createdAt: instant, updatedAt: instant.nullish() });
+export const groupCreateSchema = z.object({ name: z.string().min(1), bannerPicture: z.url().optional() });
+export const groupUpdateSchema = groupCreateSchema.partial();
+export const stockSchema = z.object({ id, groupId: uuid, name: z.string() });
+export const stockInputSchema = z.object({ groupId: uuid, name: z.string().min(1) });
+export const categorySchema = z.enum(["FRUIT", "VEGETABLE", "DAIRY", "GRAIN", "MEAT", "BEVERAGE", "CLEANING", "PERSONAL_HYGIENE"]);
+export const productSchema = z.object({ id, name: z.string(), category: categorySchema, storagePlace: z.enum(["FRIDGE", "FREEZER", "PANTRY", "CABINET", "SHELF"]), unitPrice: z.number(), unitOfMeasure: z.enum(["KILOGRAM", "GRAM", "LITER", "MILLILITER", "UNIT", "DOZEN", "PACKAGE"]) });
+export const stockProductSchema = z.object({ id, productId: id, stockId: id, quantity: count, minimalQuantity: count.nullish(), expireDate: date, productStatus: z.enum(["FRESH", "NEAR_EXPIRATION", "EXPIRED"]).nullish(), category: categorySchema });
+export const stockProductCreateSchema = z.object({ productId: id, stockId: id, quantity: count, minimalQuantity: count.optional(), expireDate: date });
+export const stockProductUpdateSchema = z.object({ minimalQuantity: count.optional(), expireDate: date });
+export const movementInputSchema = z.object({ movementType: z.enum(["IN", "OUT", "ADJUSTMENT"]), quantity: count });
+export const movementSchema = movementInputSchema.extend({ id, stockProductId: id, userId: uuid, balanceAfter: count, date: instant });
+export const discardSchema = z.object({ id, stockProductId: id, reason: z.string().nullish(), date: instant });
+export const discardInputSchema = z.object({ stockProductId: id, reason: z.string().max(2000).optional() });
+export const messageInputSchema = z.object({ content: z.string().min(1), messageType: z.enum(["TEXT", "IMAGE", "SYSTEM"]).optional(), relatedShoppingListProductId: id.optional() });
+export const messageSchema = z.object({ id, conversationId: uuid, senderId: uuid, senderName: z.string(), messageType: z.enum(["TEXT", "IMAGE", "SYSTEM"]), content: z.string(), relatedShoppingListProductId: id.nullish(), createdAt: instant, updatedAt: instant.nullish() });
+const participantSchema = z.object({ userId: uuid, name: z.string(), email: z.email(), joinedAt: instant, leftAt: instant.nullish() });
+export const conversationSchema = z.object({ id: uuid, conversationType: z.enum(["PRIVATE", "GROUP"]), groupId: uuid.nullish(), groupName: z.string().nullish(), name: z.string().nullish(), pairKey: z.string().nullish(), participants: z.array(participantSchema), latestMessage: messageSchema.nullish(), createdAt: instant, updatedAt: instant.nullish() });
+export const groupConversationInputSchema = z.object({ groupId: uuid, name: z.string().min(1), participantUserIds: z.array(uuid).optional() });
+export const planCodeSchema = z.enum(["FREE", "PLUS", "FAMILY", "COMMERCIAL", "ENTERPRISE"]);
+export const limitsSchema = z.object({ planCode: planCodeSchema, maxGroupsCreated: z.number().int(), maxGroupMembers: z.number().int(), maxStocks: z.number().int(), maxProductsPerStock: z.number().int(), allowOwnProducts: z.boolean(), allowSavedRecipes: z.boolean(), allowMoneySaving: z.boolean(), enterprise: z.boolean(), costPerPublishedAd: z.number().nullish(), hasMonthlyReport: z.boolean() });
+export const planSchema = z.object({ id, planCode: planCodeSchema, name: z.string(), description: z.string().nullish(), price: z.number(), billingInterval: z.enum(["MONTHLY", "YEARLY"]).nullable(), active: z.boolean(), limits: limitsSchema, createdAt: instant, updatedAt: instant.nullish() });
+export const subscriptionSchema = z.object({ id: uuid, userId: uuid, userEmail: z.email(), userName: z.string(), plan: planSchema, status: z.enum(["TRIAL", "ACTIVE", "CANCELED", "EXPIRED", "DELINQUENT"]), startedAt: instant, currentPeriodStart: instant.nullish(), currentPeriodEnd: instant.nullish(), canceledAt: instant.nullish(), limits: limitsSchema, autoRenew: z.boolean() });
+export const paymentMethodSchema = z.enum(["PIX", "BOLETO", "CREDIT_CARD", "DEBIT_CARD"]);
+export const checkoutSchema = z.object({ planCode: z.string().min(1), paymentMethod: paymentMethodSchema, fakeCardLast4: z.string().regex(/^\d{4}$/).optional(), fakePixKey: z.string().min(10).max(150).optional() });
+export const transactionSchema = z.object({ id: uuid, status: z.enum(["PENDING", "PROCESSING", "APPROVED", "REJECTED", "CANCELED", "ERROR"]), amount: z.number(), paymentMethod: paymentMethodSchema, idempotencyKey: z.string().nullish(), planCode: z.string(), errorMessage: z.string().nullish(), createdAt: instant, queuedAt: instant.nullish(), processedAt: instant.nullish() });
+
+

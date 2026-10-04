@@ -4,9 +4,13 @@ import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Checkbox from "@/components/Checkbox";
 import { register } from "@/services/auth.service";
+import { useNavigate } from "react-router-dom";
+import { z } from "zod";
 
 export default function RegisterPage() {
   const [name, setName] = useState<string>("");
+  const [birthDate, setBirthDate] = useState<string>("");
+  const navigate = useNavigate();
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
@@ -30,17 +34,16 @@ export default function RegisterPage() {
 
     try {
       setLoading(true);
-      const res = await register({
+      const [year, month, day] = birthDate.split("-");
+      await register({
         name,
         email,
         rawPassword: password,
-        birthDate: "2000-01-01",
+        birthDate: `${day}/${month}/${year}`,
       });
-      console.log("Register response:", res);
-      window.location.href = "/login";
+      navigate("/login", { replace: true });
     } catch (err) {
-      console.error(err);
-      setError("Ocorreu um erro ao criar a conta. Verifique os dados e tente novamente.");
+      setError(err instanceof z.ZodError ? err.issues[0].message : err instanceof Error ? err.message : "Ocorreu um erro ao criar a conta.");
     } finally {
       setLoading(false);
     }
@@ -80,6 +83,15 @@ export default function RegisterPage() {
             placeholder="Digite seu e-mail"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+
+          <Input
+            id="register-input-birth-date"
+            label="Data de nascimento"
+            type="date"
+            value={birthDate}
+            onChange={(e) => setBirthDate(e.target.value)}
             required
           />
 

@@ -3,8 +3,9 @@ import AuthLayout from "@/components/AuthLayout";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Checkbox from "@/components/Checkbox";
-import { login } from "@/services/auth.service";
+import { login, logout } from "@/services/auth.service";
 import { useStore } from "@/store/store";
+import { z } from "zod";
 
 export default function LoginPage() {
   const [email, setEmail] = useState<string>("");
@@ -22,13 +23,19 @@ export default function LoginPage() {
       setLoading(true);
       const res = await login({ email, rawPassword });
       store.login(res.user, res.accessToken, res.refreshToken);
-      console.log(store.user, store.accessToken, store.refreshToken, rememberMe);
     } catch (err) {
-      console.error(err);
-      setError("Credenciais inválidas. Verifique seu e-mail e senha.");
+      setError(err instanceof z.ZodError ? err.issues[0].message : err instanceof Error ? err.message : "Erro ao entrar.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleLogout = async () => {
+    setError("");
+    setLoading(true);
+    try { await logout(); }
+    catch (err) { setError(err instanceof Error ? err.message : "Erro ao sair."); }
+    finally { setLoading(false); }
   };
 
   return (
@@ -59,7 +66,13 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full mt-8">
+        {store.user ? (
+          <div className="flex flex-col gap-4 w-full mt-8" role="status">
+            <p className="text-frigus-navy">Você está conectado como {store.user.name}.</p>
+            {error && <p className="text-sm text-red-500">{error}</p>}
+            <Button type="button" disabled={loading} onClick={handleLogout}>Sair</Button>
+          </div>
+        ) : <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full mt-8">
           <Input
             id="login-input-email"
             label="Email"
@@ -120,7 +133,7 @@ export default function LoginPage() {
               Cadastre-se
             </a>
           </p>
-        </form>
+        </form>}
       </div>
     </AuthLayout>
   );
