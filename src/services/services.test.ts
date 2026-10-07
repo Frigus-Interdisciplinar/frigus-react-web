@@ -7,7 +7,7 @@ import { groupService } from "./group.service";
 import { chatService } from "./chat.service";
 import { transactionService } from "./transaction.service";
 import { userService } from "./user.service";
-import { requestPasswordRecovery } from "./password-recovery.service";
+import { requestPasswordRecovery, resetPassword, verifyPasswordRecoveryCode } from "./password-recovery.service";
 import { useStore } from "@/store/store";
 import { groupSchema, conversationSchema } from "@/schemas/api.schema";
 
@@ -72,8 +72,30 @@ describe("contratos e rotas do BFF", () => {
     await logout();
     expect(useStore.getState().user).toBeNull();
   });
-  it("recuperação permanece mockada sem fazer requisição", async () => {
-    expect(await requestPasswordRecovery(user.email)).toEqual({ mocked: true });
-    expect(mockedApi).not.toHaveBeenCalled();
+  it("solicita, valida código e redefine a senha usando o contrato do BFF", async () => {
+    mockedApi.mockResolvedValue(undefined);
+    await requestPasswordRecovery(user.email);
+    expect(mockedApi).toHaveBeenLastCalledWith(
+      "/web/auth/forgot-password",
+      "POST",
+      { email: user.email },
+    );
+    await verifyPasswordRecoveryCode({ email: user.email, code: "123456" });
+    expect(mockedApi).toHaveBeenLastCalledWith(
+      "/web/auth/verify-reset-code",
+      "POST",
+      { email: user.email, code: "123456" },
+    );
+    await resetPassword({
+      email: user.email,
+      code: "123456",
+      newPassword: "NewPassword123!",
+    });
+    expect(mockedApi).toHaveBeenLastCalledWith(
+      "/web/auth/reset-password",
+      "POST",
+      { email: user.email, code: "123456", newPassword: "NewPassword123!" },
+    );
+    expect(mockedApi).toHaveBeenCalledTimes(3);
   });
 });

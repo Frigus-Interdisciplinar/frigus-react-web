@@ -1,106 +1,204 @@
-import { useState, type FormEvent } from "react";
-import { Info, ArrowLeft, CheckCircle2 } from "lucide-react";
+import { useEffect, useState, type FormEvent } from "react";
 import AuthLayout from "@/components/AuthLayout";
-import Input from "@/components/Input";
-import Button from "@/components/Button";
-import { requestPasswordRecovery } from "@/services/password-recovery.service";
+import {
+  CodeStep,
+  CompleteStep,
+  EmailStep,
+  PasswordStep,
+} from "@/components/PasswordRecoverySteps";
+import { registerSchema } from "@/schemas/auth.schema";
+import {
+  requestPasswordRecovery,
+  resetPassword,
+  verifyPasswordRecoveryCode,
+} from "@/services/password-recovery.service";
+
+const RESEND_COOLDOWN_SECONDS = 60;
+
+type RecoveryStep = "email" | "code" | "password" | "done";
+
+const layoutContent = {
+  email: {
+    title: "Recupere o acesso\ncom segurança",
+    description: "Vamos ajudar você a criar uma nova senha para sua conta.",
+    cardTitle: "Código de segurança",
+    cardDescription: "O código enviado por e-mail expira em 10 minutos.",
+  },
+  code: {
+    title: "Só mais um passo\npara recuperar o acesso",
+    description: "Confirme sua identidade com o código enviado por e-mail.",
+    cardTitle: "Não recebeu o código?",
+    cardDescription: "Confira a caixa de spam ou solicite um novo código após o intervalo indicado.",
+  },
+  password: {
+    title: "Defina uma senha\nnova e segura",
+    description: "Escolha uma senha forte para voltar a usar sua conta.",
+    cardTitle: "Sua conta protegida",
+    cardDescription: "Use uma senha exclusiva que você ainda não compartilhou com ninguém.",
+  },
+  done: {
+    title: "Acesso recuperado\ncom segurança",
+    description: "Sua senha foi atualizada e já pode ser usada no login.",
+    cardTitle: "Tudo certo por aqui",
+    cardDescription: "Entre novamente com sua nova senha para continuar.",
+  },
+} satisfies Record<RecoveryStep, {
+  title: string;
+  description: string;
+  cardTitle: string;
+  cardDescription: string;
+}>;
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
-  const [submitted, setSubmitted] = useState<boolean>(false);
+  const [step, setStep] = useState<RecoveryStep>("email");
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [resendSeconds, setResendSeconds] = useState(0);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
 
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!email) return;
+  useEffect(() => {
+    if (resendSeconds === 0) return;
+
+    const timer = window.setTimeout(
+      () => setResendSeconds((seconds) => seconds - 1),
+      1000,
+    );
+    return () => window.clearTimeout(timer);
+  }, [resendSeconds]);
+
+  async function handleRequestCode(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLoading(true);
+    setError("");
+    setNotice("");
+
+    try {
+      await requestPasswordRecovery(email);
+      setResendSeconds(RESEND_COOLDOWN_SECONDS);
+      setStep("code");
+    } catch (requestError) {
+      setError(getErrorMessage(requestError, "Não foi possível enviar o código."));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleVerifyCode(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      await verifyPasswordRecoveryCode({ email, code });
+      setStep("password");
+    } catch (requestError) {
+      setError(getErrorMessage(requestError, "Confira o código e tente novamente."));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleResetPassword(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+
+    const passwordResult = registerSchema.shape.rawPassword.safeParse(password);
+    if (!passwordResult.success) {
+      setError(passwordResult.error.issues[0]?.message ?? "A senha informada é inválida.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("As senhas não coincidem.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await resetPassword({ email, code, newPassword: password });
+      setStep("done");
+    } catch (requestError) {
+      setError(getErrorMessage(requestError, "Não foi possível redefinir sua senha."));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleResendCode() {
+    if (resendSeconds > 0 || loading) return;
 
     setLoading(true);
     setError("");
+    setNotice("");
+
     try {
       await requestPasswordRecovery(email);
-      setSubmitted(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao solicitar recuperação.");
-    } finally { setLoading(false); }
-  };
+      setResendSeconds(RESEND_COOLDOWN_SECONDS);
+      setNotice("Se existir uma conta com esse e-mail, enviaremos um novo código.");
+    } catch (requestError) {
+      setError(getErrorMessage(requestError, "Não foi possível reenviar o código."));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleChangeEmail() {
+    setStep("email");
+    setCode("");
+    setError("");
+    setNotice("");
+  }
 
   return (
-    <AuthLayout
-      title={"Recupere o acesso\nsem complicação"}
-      description="Informe seu e-mail e receba as instruções para criar uma nova senha com segurança."
-      cardTitle="Tudo certo por aqui"
-      cardDescription="O link de recuperação é protegido e fica disponível por tempo limitado."
-    >
-      <div className="rounded-frigus bg-frigus-white shadow-[0_16px_34px_0_rgba(19,28,85,0.10)] w-full max-w-[576px] p-8 sm:p-12 flex flex-col">
-        <div className="text-left mb-6">
-          <h2 className="font-bold text-frigus-navy text-[28px] sm:text-[32px] leading-tight">
-            Esqueceu sua senha?
-          </h2>
-          <p className="font-normal text-[#70809F] text-[16px] mt-1">
-            Digite o e-mail cadastrado para receber o link de recuperação.
-          </p>
-        </div>
-
-        {submitted ? (
-          <div className="flex flex-col items-center text-center py-4 gap-4">
-            <CheckCircle2 className="size-16 text-green-500" />
-            <h3 className="text-xl font-bold text-frigus-navy">
-              Solicitação simulada
-            </h3>
-            <p className="text-[#70809F] text-[15px] max-w-[400px]">
-              A recuperação para <strong className="text-frigus-navy">{email}</strong> foi simulada. Nenhum e-mail foi enviado.
-            </p>
-            <a
-              href="/login"
-              className="inline-flex items-center gap-2 text-frigus-primary font-bold text-[15px] underline hover:text-frigus-secondary mt-4"
-            >
-              <ArrowLeft className="size-4" /> Voltar para o login
-            </a>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-            <Input
-              id="forgot-password-email"
-              label="E-mail"
-              type="email"
-              placeholder="seuemail@exemplo.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-
-            {/* Aviso link seguro */}
-            {error && <p role="alert" className="text-sm text-red-500">{error}</p>}
-            <div className="bg-[#ECF2FD] rounded-xl p-4 flex items-start sm:items-center gap-3">
-              <Info className="size-5 text-frigus-primary shrink-0 mt-0.5 sm:mt-0" />
-              <p className="text-[14px] text-[#70809F] leading-snug">
-                O link é válido por 30 minutos e será enviado apenas para o e-mail cadastrado.
-              </p>
-            </div>
-
-            <div className="mt-2">
-              <Button
-                type="submit"
-                variant="primary"
-                disabled={loading}
-                className="w-full h-[54px] text-base font-bold shadow-[0_8px_18px_0_rgba(37,82,200,0.2)]"
-              >
-                {loading ? "Enviando..." : "Enviar link de recuperação"}
-              </Button>
-            </div>
-
-            <div className="text-center mt-3">
-              <a
-                href="/login"
-                className="inline-flex items-center gap-2 text-frigus-primary font-bold text-[15px] underline hover:text-frigus-secondary"
-              >
-                <ArrowLeft className="size-4" /> Voltar para o login
-              </a>
-            </div>
-          </form>
+    <AuthLayout {...layoutContent[step]}>
+      <section className="w-full max-w-[576px] rounded-frigus bg-frigus-white p-7 shadow-[0_16px_34px_0_rgba(19,28,85,0.10)] sm:p-12">
+        {step === "email" && (
+          <EmailStep
+            email={email}
+            error={error}
+            loading={loading}
+            onEmailChange={setEmail}
+            onSubmit={handleRequestCode}
+          />
         )}
-      </div>
+
+        {step === "code" && (
+          <CodeStep
+            code={code}
+            email={email}
+            error={error}
+            loading={loading}
+            notice={notice}
+            resendSeconds={resendSeconds}
+            onBack={handleChangeEmail}
+            onCodeChange={setCode}
+            onResend={handleResendCode}
+            onSubmit={handleVerifyCode}
+          />
+        )}
+
+        {step === "password" && (
+          <PasswordStep
+            confirmPassword={confirmPassword}
+            error={error}
+            loading={loading}
+            password={password}
+            onConfirmPasswordChange={setConfirmPassword}
+            onPasswordChange={setPassword}
+            onSubmit={handleResetPassword}
+          />
+        )}
+
+        {step === "done" && <CompleteStep />}
+      </section>
     </AuthLayout>
   );
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
 }

@@ -21,7 +21,7 @@ export default function LoginPage() {
 
     try {
       setLoading(true);
-      const res = await login({ email, rawPassword });
+      const res = await login({ email, rawPassword, rememberMe });
       store.login(res.user, res.accessToken, res.refreshToken);
     } catch (err) {
       setError(err instanceof z.ZodError ? err.issues[0].message : err instanceof Error ? err.message : "Erro ao entrar.");

@@ -48,7 +48,14 @@ describe.skipIf(!baseUrl)("contratos reais BFF → core-api", () => {
     expect(transaction.status).toBe("APPROVED");
     contracts.pageSchema(contracts.transactionSchema).parse(await call("/web/transactions"));
     contracts.subscriptionSchema.parse(await call("/web/plans/subscription"));
-    z.array(contracts.groupSchema).parse(await call("/web/core/groups"));
+    const groups = z.array(contracts.groupSchema).parse(await call("/web/core/groups"));
+    expect(groups).toHaveLength(0);
+    const group = contracts.groupSchema.parse(await call("/web/core/groups", "POST", { name: "Grupo de integração" }));
+    expect(group.defaultConversationId).toBeTruthy();
+    const stock = contracts.stockSchema.parse(await call("/web/core/inventory/stocks", "POST", { groupId: group.id, name: "Cozinha" }));
+    expect(stock.groupId).toBe(group.id);
+    const message = contracts.messageSchema.parse(await call(`/web/core/chat/conversations/${group.defaultConversationId}/messages`, "POST", { content: "Fluxo web integrado" }));
+    expect(message.conversationId).toBe(group.defaultConversationId);
     contracts.pageSchema(contracts.discardSchema).parse(await call("/web/core/discards"));
     z.array(contracts.conversationSchema).parse(await call("/web/core/chat/conversations"));
     contracts.subscriptionSchema.parse(await call("/web/plans/subscription/cancel", "POST"));
@@ -56,8 +63,4 @@ describe.skipIf(!baseUrl)("contratos reais BFF → core-api", () => {
     expect(await call("/web/auth/logout", "POST", {})).toBeUndefined();
     expect(cookies.get("accessToken")).toBe("accessToken=");
   }, 90000);
-  // POST /web/core/groups currently fails inside PlanLimitsResolverService:
-  // the user loaded by SecurityFilter contains a detached subscription.plan proxy.
-  // Keep the missing end-to-end coverage visible instead of mocking a persisted group.
-  it.todo("criar grupo, estoque e mensagens: bloqueado por LazyInitializationException na core-api");
 });

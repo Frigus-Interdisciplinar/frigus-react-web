@@ -7,7 +7,7 @@ Não há fallback automático para mocks quando a API falha.
 
 | Service | Contrato |
 | --- | --- |
-| auth | `/web/auth/login`, `register`, `refresh`, `logout` |
+| auth | `/web/auth/login`, `register`, `refresh`, `logout`, `forgot-password`, `verify-reset-code`, `reset-password` |
 | profile | `/web/profile`, `/web/profile/password` |
 | user (admin) | `/web/user`, busca por email, role, tipo de conta, senha, exclusão |
 | group | `/web/core/groups`, detalhe e membros por `userId` |
@@ -38,11 +38,13 @@ data de nascimento real. O app restaura o perfil via cookie ao carregar e
 oferece logout após login. O componente Sidebar também usa o usuário da sessão.
 Os demais services estão disponíveis para conexão quando suas telas existirem.
 
-Recuperação de senha usa `password-recovery.service.ts`, explicitamente mockado:
-nenhum email é enviado. Home, receitas, compras, preferências e demais lacunas
-de `frigus-bff/docs/core-api-todo.md` não têm telas ou contrato BFF neste checkout.
-Não foram inventadas chamadas para esses recursos nem para `/web/domestic/*`,
-que responde 501. Notificações novas da core-api ainda não estão expostas no BFF.
+Recuperação de senha usa código de seis dígitos por e-mail, validado no servidor,
+com expiração de 10 minutos e troca de senha com revogação das sessões anteriores.
+“Manter conectado” controla se o cookie de refresh persiste após fechar o
+navegador. Home, estoque, compras, notificações, receitas, família, chat, perfil,
+configurações, planos e telas comerciais ainda não existem no router deste
+checkout. Os contratos BFF disponíveis e pendentes estão em
+`frigus-bff/docs/core-api-todo.md`. `/web/domestic/*` responde 501 de propósito.
 
 ## Validação
 
@@ -56,38 +58,20 @@ npm test
 Remove-Item Env:FRIGUS_INTEGRATION_URL
 ```
 
-Ele cria usuários e dados sintéticos no banco local e percorre cadastro,
-login, perfil, refresh, planos, checkout simulado, listagens de grupos/conversas/
-descartes, assinatura e logout. Não executar apontando o BFF para um banco compartilhado.
-Criação de grupo/estoque e envio de chat têm cobertura dos services com transporte
-simulado; a cobertura ponta a ponta está marcada como TODO por uma falha de lazy
-loading da core-api ao resolver os limites do plano do usuário autenticado.
+Ele cria usuários e dados sintéticos no banco local e percorre cadastro, login,
+perfil, refresh, planos, checkout simulado, grupo, estoque, mensagem, descartes,
+assinatura e logout. Não executar apontando o BFF para um banco compartilhado.
+O teste de integração não foi executado nesta sessão porque o Docker Desktop não
+estava disponível. O resolver de limites da core-api agora busca assinatura e
+plano explicitamente, evitando depender do proxy destacado no usuário autenticado.
 
 ## Ambiente local usado
 
 Web: `http://localhost:5173`; BFF: `http://localhost:3000`;
 core-api: `http://localhost:8080`.
 
-Core-api roda do JAR atual em `frigus-integration-core`, usando os containers
-`frigus-integration-postgres` (porta local 5433) e `frigus-integration-redis`
-(porta local 6379). O schema foi inicializado com `frigus-core-api/db/script.sql`
-somente no banco novo. O banco configurado no `.env` não foi alterado.
-
-Limitações existentes no backend:
-
-- A configuração original não inicia com o banco do `.env`: falta `notifications`.
-- Com `spring.jpa.open-in-view=false`, consulta de transação falha com
-  `LazyInitializationException` ao acessar `Plan`. O container local usa
-  `SPRING_JPA_OPEN_IN_VIEW=true` para permitir a conferência dos contratos.
-  A correção definitiva deve manter as leituras/mapeamento dentro de transação
-  ou carregar as associações necessárias. Não houve mudança de código na core-api.
-- Mesmo com essa configuração, criar grupo retorna 500: `PlanLimitsResolverService`
-  acessa o plano da assinatura do usuário carregado pelo filtro de segurança,
-  fora da sessão de origem. Esse erro impede validar criação de estoque/chat
-  em sequência. Os services propagam o erro real e não retornam mocks nesse caso.
-- H2 não suporta diretamente os tipos enum PostgreSQL declarados nas entidades;
-  por isso a integração usa PostgreSQL real local.
-
-Para retomar os containers: `docker start frigus-integration-postgres frigus-integration-redis frigus-integration-core`.
-O JAR está montado a partir de `frigus-core-api/target`; após alterações nele,
-empacote novamente e reinicie o container da core-api.
+Use o `docker-compose.yml` de `frigus-core-api` para subir PostgreSQL, Redis e
+core-api. A integração precisa de Docker e de um banco descartável com as
+migrações atuais; H2 não suporta diretamente os enums PostgreSQL usados pelas
+entidades. Configure as credenciais de e-mail da Brevo na core-api para validar
+a entrega de códigos na recuperação de senha.

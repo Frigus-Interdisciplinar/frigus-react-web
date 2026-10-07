@@ -3,6 +3,7 @@ import { z } from "zod";
 export const loginSchema = z.object({
   email: z.email("Email inválido"),
   rawPassword: z.string("Senha inválida").min(1, "Senha deve ser preenchida"),
+  rememberMe: z.boolean().default(false),
 });
 
 export const registerSchema = z.object({
@@ -21,5 +22,5 @@ export const registerSchema = z.object({
   }, "Data de nascimento inválida"),
 });
 
-export type LoginInput = z.infer<typeof loginSchema>;
+export type LoginInput = z.input<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
