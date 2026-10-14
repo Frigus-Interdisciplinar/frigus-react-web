@@ -96,7 +96,7 @@ export default function PlansDomesticPage() {
               </p>
 
               <div className="mt-6 flex items-baseline gap-1">
-                <span className="text-4xl font-extrabold text-frigus-navy dark:text-white">R$ 14,90</span>
+                <span className="text-4xl font-extrabold text-frigus-navy dark:text-white">R$ 49,99</span>
                 <span className="text-sm text-gray-500 dark:text-gray-400">/mês</span>
               </div>
 
@@ -144,7 +144,7 @@ export default function PlansDomesticPage() {
               </p>
 
               <div className="mt-6 flex items-baseline gap-1">
-                <span className="text-4xl font-extrabold text-white">R$ 19,90</span>
+                <span className="text-4xl font-extrabold text-white">R$ 29,99</span>
                 <span className="text-sm text-[#C9DEF9]">/mês</span>
               </div>
 

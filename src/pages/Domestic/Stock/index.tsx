@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Search, ChevronDown } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
@@ -6,9 +6,10 @@ import Badge, { type BadgeVariant } from "@/components/Badge";
 import { AddFoodModal } from "@/components/Modal";
 import type { NewFoodData } from "@/components/Modal/AddFoodModal";
 import StockSidebar from "./StockSidebar";
+import { createProduct, createStockProduct, getInventoryContext, listStockProducts, type AccountInventoryContext, type StockProduct } from "@/services/inventory.service";
 
 type StockItem = {
-  id: string;
+  id: number;
   name: string;
   brand: string;
   category: string;
@@ -20,100 +21,68 @@ type StockItem = {
   image?: string;
 };
 
-const initialStockItems: StockItem[] = [
-  {
-    id: "1",
-    name: "Leite integral",
-    brand: "Fazenda Bela",
-    category: "Laticínios",
-    quantity: "2 L",
-    location: "Geladeira",
-    expiration: "18 ago",
-    status: "Dentro do prazo",
-    statusVariant: "success",
-    image: "/images/food-leite.png",
-  },
-  {
-    id: "2",
-    name: "Tomate italiano",
-    brand: "Hortifruti",
-    category: "Vegetais",
-    quantity: "6 un",
-    location: "Geladeira",
-    expiration: "15 ago",
-    status: "Vence em breve",
-    statusVariant: "warning",
-    image: "/images/food-tomate.png",
-  },
-  {
-    id: "3",
-    name: "Filé de frango",
-    brand: "Seara",
-    category: "Carnes",
-    quantity: "1,2 kg",
-    location: "Freezer",
-    expiration: "22 set",
-    status: "Dentro do prazo",
-    statusVariant: "success",
-  },
-  {
-    id: "4",
-    name: "Banana prata",
-    brand: "Hortifruti",
-    category: "Frutas",
-    quantity: "1 dúzia",
-    location: "Despensa",
-    expiration: "14 ago",
-    status: "Vence em breve",
-    statusVariant: "warning",
-    image: "/images/food-banana.png",
-  },
-  {
-    id: "5",
-    name: "Feijão carioca",
-    brand: "Camil",
-    category: "Mercearia",
-    quantity: "2 kg",
-    location: "Despensa",
-    expiration: "10 nov",
-    status: "Dentro do prazo",
-    statusVariant: "success",
-    image: "/images/food-feijao.png",
-  },
-  {
-    id: "6",
-    name: "Iogurte natural",
-    brand: "Nestlé",
-    category: "Laticínios",
-    quantity: "3 un",
-    location: "Geladeira",
-    expiration: "12 ago",
-    status: "Vencido",
-    statusVariant: "danger",
-    image: "/images/food-iogurte.png",
-  },
-];
+const categoryLabels: Record<string, string> = { FRUIT: "Frutas", VEGETABLE: "Vegetais", DAIRY: "Laticínios", GRAIN: "Grãos e mercearia", MEAT: "Carnes", BEVERAGE: "Bebidas", CLEANING: "Limpeza", PERSONAL_HYGIENE: "Higiene pessoal" };
+const unitLabels: Record<string, string> = { KILOGRAM: "kg", GRAM: "g", LITER: "L", MILLILITER: "ml", UNIT: "un", DOZEN: "dúzia", PACKAGE: "pct" };
+const storageLabels: Record<string, StockItem["location"]> = { PANTRY: "Despensa", CABINET: "Despensa", SHELF: "Despensa", FRIDGE: "Geladeira", FREEZER: "Freezer" };
+
+function mapStockItem(row: StockProduct): StockItem {
+  const status = row.productStatus ?? "FRESH";
+  return {
+    id: row.id,
+    name: row.product?.name ?? `Produto ${row.productId}`,
+    brand: row.product?.brand ?? "",
+    category: categoryLabels[row.product?.category ?? row.category] ?? row.category,
+    quantity: `${row.quantity} ${unitLabels[row.product?.unitOfMeasure ?? "UNIT"] ?? "un"}`,
+    location: storageLabels[row.product?.storagePlace ?? "PANTRY"] ?? "Despensa",
+    expiration: new Date(`${row.expireDate}T12:00:00`).toLocaleDateString("pt-BR"),
+    status: status === "EXPIRED" ? "Vencido" : status === "NEAR_EXPIRATION" ? "Vence em breve" : "Dentro do prazo",
+    statusVariant: status === "EXPIRED" ? "danger" : status === "NEAR_EXPIRATION" ? "warning" : "success",
+    image: row.product?.imageUrl,
+  };
+}
 
 export default function StockPage() {
-  const [items, setItems] = useState<StockItem[]>(initialStockItems);
+  const [items, setItems] = useState<StockItem[]>([]);
+  const [context, setContext] = useState<AccountInventoryContext | null>(null);
+  const [selectedStockId, setSelectedStockId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const [activeTab, setActiveTab] = useState<"Todos" | "Despensa" | "Geladeira" | "Freezer">("Todos");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const handleAddFood = (data: NewFoodData) => {
-    const newItem: StockItem = {
-      id: String(Date.now()),
+  const loadStock = async (activeContext?: AccountInventoryContext) => {
+    setLoading(true);
+    setLoadError("");
+    try {
+      const current = activeContext ?? await getInventoryContext();
+      setContext(current);
+      const stockId = selectedStockId && current.stocks.some((stock) => stock.id === selectedStockId) ? selectedStockId : current.stocks[0]?.id;
+      setSelectedStockId(stockId ?? null);
+      setItems(stockId ? (await listStockProducts(stockId)).map(mapStockItem) : []);
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : "Não foi possível carregar o estoque.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { void loadStock(); }, []);
+
+  const handleAddFood = async (data: NewFoodData) => {
+    const current = context ?? await getInventoryContext();
+    const stockId = selectedStockId ?? current.stocks[0]?.id;
+    if (!stockId) throw new Error("Nenhum estoque ativo está disponível para esta conta.");
+    const product = await createProduct(current.groupId, {
       name: data.name,
-      brand: "Geral",
       category: data.category,
-      quantity: data.quantity,
-      location: data.location,
-      expiration: data.expiration,
-      status: "Dentro do prazo",
-      statusVariant: "success",
-    };
-    setItems((prev) => [newItem, ...prev]);
+      storagePlace: data.location === "Geladeira" ? "FRIDGE" : data.location === "Freezer" ? "FREEZER" : "PANTRY",
+      unitPrice: data.unitPrice,
+      unitOfMeasure: data.unitOfMeasure,
+    });
+    await createStockProduct({ productId: product.id, stockId, quantity: data.quantity, expireDate: data.expiration });
+    await loadStock(current);
   };
 
   const filteredItems = items.filter((item) => {
@@ -124,6 +93,10 @@ export default function StockPage() {
       item.category.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter ? item.status === statusFilter : true;
     return matchesTab && matchesSearch && matchesStatus;
+  });
+  const stockStats = (["Despensa", "Geladeira", "Freezer"] as const).map((name, index) => {
+    const count = items.filter((item) => item.location === name).length;
+    return { name, count, color: ["#2552C8", "#6D91EA", "#E1A11B"][index], percentage: items.length ? Math.round(count / items.length * 100) : 0 };
   });
 
   return (
@@ -141,9 +114,6 @@ export default function StockPage() {
           </div>
 
           <div className="flex items-center gap-4">
-            <span className="text-xs text-gray-400 dark:text-neutral-400 hidden md:inline">
-              Atualizado hoje, 09:41
-            </span>
             <button
               type="button"
               onClick={() => setIsAddModalOpen(true)}
@@ -234,7 +204,7 @@ export default function StockPage() {
                 </p>
               </div>
               <span className="text-xs font-bold px-3 py-1 bg-[#EAF3FF] dark:bg-blue-950/50 text-frigus-primary dark:text-[#A7BCFF] rounded-xl">
-                128 itens totais
+                {items.length} itens totais
               </span>
             </div>
 
@@ -255,7 +225,7 @@ export default function StockPage() {
                   {filteredItems.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="py-8 text-center text-gray-400 dark:text-neutral-500 text-xs">
-                        Nenhum alimento encontrado com os filtros atuais.
+                        {loading ? "Carregando estoque…" : loadError || "Seu estoque ainda está vazio. Adicione o primeiro produto para começar."}
                       </td>
                     </tr>
                   ) : (
@@ -317,6 +287,7 @@ export default function StockPage() {
 
           {/* Barra Lateral Direita: Resumo do Estoque + Ações Rápidas (Figma 1879:2717 & 1879:2736) */}
           <StockSidebar
+            stats={stockStats}
             onFilterExpired={() => setStatusFilter((prev) => (prev === "Vencido" ? null : "Vencido"))}
           />
         </div>

@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AlertTriangle, Clock, Package, ChevronRight, Utensils } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import Badge, { type BadgeVariant } from "@/components/Badge";
+import { getInventoryContext, listStockProducts } from "@/services/inventory.service";
 
 type AlertItem = {
   id: string;
@@ -14,45 +15,31 @@ type AlertItem = {
   type: "Validade" | "Quantidade" | "Vencidos";
 };
 
-const alertItems: AlertItem[] = [
-  {
-    id: "2",
-    name: "Tomate italiano",
-    detail: "6 unidades • Geladeira",
-    badge: "Vence amanhã",
-    badgeVariant: "warning",
-    image: "/images/food-tomate.png",
-    type: "Validade",
-  },
-  {
-    id: "6",
-    name: "Iogurte natural",
-    detail: "3 unidades • Geladeira",
-    badge: "Vencido há 1 dia",
-    badgeVariant: "danger",
-    image: "/images/food-iogurte.png",
-    type: "Vencidos",
-  },
-  {
-    id: "7",
-    name: "Ovos brancos",
-    detail: "4 unidades • Geladeira",
-    badge: "Vence em 2 dias",
-    badgeVariant: "warning",
-    type: "Validade",
-  },
-  {
-    id: "8",
-    name: "Azeite de oliva",
-    detail: "Restam 120 ml • Despensa",
-    badge: "Quantidade baixa",
-    badgeVariant: "info",
-    type: "Quantidade",
-  },
-];
-
 export default function AlertsPage() {
   const [filter, setFilter] = useState<"Todos" | "Validade" | "Quantidade" | "Vencidos">("Todos");
+  const [alertItems, setAlertItems] = useState<AlertItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    void getInventoryContext().then(async (context) => {
+      const lists = await Promise.all(context.stocks.map((stock) => listStockProducts(stock.id)));
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const items = lists.flat().flatMap((product) => {
+        const days = Math.ceil((new Date(`${product.expireDate}T00:00:00`).getTime() - today.getTime()) / 86400000);
+        const low = product.minimalQuantity !== undefined && product.quantity <= product.minimalQuantity;
+        if (days > 3 && !low) return [];
+        const expired = days < 0;
+        const type: AlertItem["type"] = expired ? "Vencidos" : low && days > 3 ? "Quantidade" : low && days < 0 ? "Vencidos" : low ? "Quantidade" : "Validade";
+        const name = product.product?.name ?? `Produto #${product.productId}`;
+        return [{ id: String(product.id), name, detail: `${product.quantity} ${product.product?.unitOfMeasure ?? "un"} • ${product.product?.storagePlace ?? "Estoque"}`, badge: low ? "Estoque baixo" : expired ? `Vencido há ${Math.abs(days)} dia(s)` : days === 0 ? "Vence hoje" : `Vence em ${days} dia(s)`, badgeVariant: low ? "info" as const : expired ? "danger" as const : "warning" as const, type }];
+      });
+      if (active) setAlertItems(items);
+    }).catch(() => active && setError("Não foi possível carregar os alertas do estoque."))
+      .finally(() => active && setLoading(false));
+    return () => { active = false; };
+  }, []);
 
   const filtered = alertItems.filter(
     (item) => filter === "Todos" || item.type === filter
@@ -72,7 +59,7 @@ export default function AlertsPage() {
             </p>
           </div>
           <span className="self-start sm:self-auto px-3.5 py-1.5 rounded-full text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200/60 dark:border-amber-800">
-            11 alertas ativos
+            {alertItems.length} alertas ativos
           </span>
         </div>
 
@@ -90,7 +77,7 @@ export default function AlertsPage() {
               <p className="text-xs text-gray-500 dark:text-neutral-400">Consuma nos próximos 3 dias</p>
             </div>
             <span className="font-montserrat font-bold text-3xl text-frigus-navy dark:text-white">
-              6
+              {alertItems.filter((item) => item.type === "Validade").length}
             </span>
           </div>
 
@@ -106,7 +93,7 @@ export default function AlertsPage() {
               <p className="text-xs text-gray-500 dark:text-neutral-400">Retire ou descarte do estoque</p>
             </div>
             <span className="font-montserrat font-bold text-3xl text-red-600 dark:text-red-400">
-              2
+              {alertItems.filter((item) => item.type === "Vencidos").length}
             </span>
           </div>
 
@@ -122,7 +109,7 @@ export default function AlertsPage() {
               <p className="text-xs text-gray-500 dark:text-neutral-400">Inclua na lista de compras</p>
             </div>
             <span className="font-montserrat font-bold text-3xl text-frigus-navy dark:text-white">
-              3
+              {alertItems.filter((item) => item.type === "Quantidade").length}
             </span>
           </div>
         </div>
@@ -159,6 +146,9 @@ export default function AlertsPage() {
             </div>
 
             <div className="divide-y divide-gray-100 dark:divide-[#343941]">
+              {error && <p role="alert" className="py-4 text-sm text-red-700 dark:text-red-300">{error}</p>}
+              {loading && <p className="py-4 text-sm text-gray-500">Carregando alertas…</p>}
+              {!loading && !error && filtered.length === 0 && <p className="py-4 text-sm text-gray-500">Nenhum alerta para os produtos atuais.</p>}
               {filtered.map((item) => (
                 <div
                   key={item.id}

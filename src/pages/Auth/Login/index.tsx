@@ -6,6 +6,8 @@ import Button from "@/components/Button";
 import Checkbox from "@/components/Checkbox";
 import ThemeToggle from "@/components/ThemeToggle";
 import { ShieldCheck } from "lucide-react";
+import { ensureStarterWorkspace, login } from "@/services/auth.service";
+import { useStore } from "@/store/store";
 
 export default function LoginPage() {
   const [email, setEmail] = useState<string>("");
@@ -14,6 +16,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const navigate = useNavigate();
+  const saveUser = useStore((state) => state.login);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -25,11 +28,16 @@ export default function LoginPage() {
     }
 
     setLoading(true);
-    // UI-only flow for now (sem services por hora)
-    setTimeout(() => {
+    try {
+      const session = await login({ email: email.trim(), rawPassword, rememberMe });
+      await ensureStarterWorkspace(session.user.accountType);
+      saveUser(session.user, session.accessToken, session.refreshToken);
+      navigate(session.user.accountType === "COMMERCIAL" ? "/commercial" : session.user.accountType === "BUSINESS" ? "/enterprise" : "/home", { replace: true });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível entrar. Confira seus dados e tente novamente.");
+    } finally {
       setLoading(false);
-      navigate("/home");
-    }, 400);
+    }
   };
 
   return (

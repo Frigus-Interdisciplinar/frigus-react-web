@@ -5,20 +5,27 @@ import AuthLayout from "@/components/AuthLayout";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import ThemeToggle from "@/components/ThemeToggle";
+import { requestPasswordRecovery } from "@/services/auth.service";
 
 export default function ForgotPasswordStep1() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!email) return;
+    setError("");
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await requestPasswordRecovery({ email: email.trim() });
       navigate("/recover-password/step-2", { state: { email } });
-    }, 400);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível enviar o código. Tente novamente.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -53,6 +60,8 @@ export default function ForgotPasswordStep1() {
             required
             autoFocus
           />
+
+          {error && <p role="alert" className="text-xs text-red-500 font-medium">{error}</p>}
 
           <div className="flex items-center gap-2 p-3 rounded-lg bg-blue-50/70 dark:bg-[#131C55]/30 border border-blue-100 dark:border-blue-900/40 text-xs text-[#1F5F97] dark:text-[#A7BCFF]">
             <ShieldCheck className="size-4 shrink-0 text-frigus-primary" />

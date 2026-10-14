@@ -1,66 +1,40 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertOctagon, AlertCircle } from "lucide-react";
 import CommercialLayout from "@/components/CommercialLayout";
 import { CommercialRegisterWasteModal } from "@/components/CommercialModals";
+import { api } from "@/utils/api.util";
+import { getInventoryContext, listStockProducts, type StockProduct } from "@/services/inventory.service";
 
 export default function CommercialValidityPage() {
   const [isWasteModalOpen, setIsWasteModalOpen] = useState(false);
+  const [products, setProducts] = useState<StockProduct[]>([]);
+  const [error, setError] = useState("");
+  const loadStock = async () => {
+    try {
+      const context = await getInventoryContext();
+      setProducts((await Promise.all(context.stocks.map((stock) => listStockProducts(stock.id)))).flat());
+      setError("");
+    } catch { setError("Não foi possível carregar validades e quantidades do estoque."); }
+  };
+  useEffect(() => { void loadStock(); }, []);
 
-  const expiryPriorities = [
-    {
-      product: "Iogurte natural food service",
-      batch: "YG-082 · Câmara fria",
-      quantity: "12 caixas",
-      date: "05 set",
-      status: "Vencido",
-      statusColor: "bg-red-50 text-red-700 border-red-200",
-    },
-    {
-      product: "Pão brioche",
-      batch: "PB-119 · Área de venda",
-      quantity: "8 pacotes",
-      date: "04 set",
-      status: "Vencido",
-      statusColor: "bg-red-50 text-red-700 border-red-200",
-    },
-    {
-      product: "Tomate italiano para molho",
-      batch: "TM-318 · Câmara fria",
-      quantity: "24 kg",
-      date: "08 set",
-      status: "Em 2 dias",
-      statusColor: "bg-amber-50 text-amber-700 border-amber-200",
-    },
-    {
-      product: "Peito de frango",
-      batch: "FR-2052 · Câmara fria",
-      quantity: "18 kg",
-      date: "09 set",
-      status: "Em 3 dias",
-      statusColor: "bg-amber-50 text-amber-700 border-amber-200",
-    },
-  ];
-
-  const lowStockItems = [
-    {
-      product: "Arroz parboilizado 5 kg",
-      minimum: "Mínimo: 20",
-      available: "6 pacotes disponíveis",
-      percentage: 30,
-    },
-    {
-      product: "Óleo de soja 5 L",
-      minimum: "Mínimo: 8",
-      available: "2 unidades disponíveis",
-      percentage: 25,
-    },
-    {
-      product: "Queijo muçarela fatiado",
-      minimum: "Mínimo: 15 kg",
-      available: "4 kg disponíveis",
-      percentage: 26,
-    },
-  ];
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const expiring = products.map((item) => ({ item, days: Math.ceil((new Date(`${item.expireDate}T00:00:00`).getTime() - today.getTime()) / 86400000) })).filter(({ days }) => days <= 3);
+  const expiryPriorities = expiring.map(({ item, days }) => ({
+    product: item.product?.name ?? `Produto #${item.productId}`,
+    batch: `Lote #${item.id} · ${item.product?.storagePlace ?? "Estoque"}`,
+    quantity: `${item.quantity} ${item.product?.unitOfMeasure ?? "un"}`,
+    date: new Date(`${item.expireDate}T00:00:00`).toLocaleDateString("pt-BR"),
+    status: days < 0 ? "Vencido" : days === 0 ? "Vence hoje" : `Em ${days} dia(s)`,
+    statusColor: days < 0 ? "bg-red-50 text-red-700 border-red-200" : "bg-amber-50 text-amber-700 border-amber-200",
+  }));
+  const lowStockItems = products.filter((item) => item.minimalQuantity !== undefined && item.quantity <= item.minimalQuantity).map((item) => ({
+    product: item.product?.name ?? `Produto #${item.productId}`,
+    minimum: `Mínimo: ${item.minimalQuantity} ${item.product?.unitOfMeasure ?? "un"}`,
+    available: `${item.quantity} ${item.product?.unitOfMeasure ?? "un"} disponíveis`,
+    percentage: item.minimalQuantity ? Math.min(100, Math.round(item.quantity / item.minimalQuantity * 100)) : 0,
+  }));
+  const recordDiscard = async (input: { stockProductId: number; quantity: number; reason: string }) => { await api.post("/web/core/discards", input); await loadStock(); };
 
   return (
     <CommercialLayout activeSection="validity" breadcrumb="Área comercial    /    Validades">
@@ -76,13 +50,15 @@ export default function CommercialValidityPage() {
         </div>
         <button
           type="button"
+          disabled={products.length === 0}
           onClick={() => setIsWasteModalOpen(true)}
-          className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+          className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
         >
           <AlertOctagon size={16} />
           <span>Registrar perda</span>
         </button>
       </div>
+      {error && <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error} <button onClick={() => void loadStock()} className="underline">Tentar novamente</button></p>}
 
       {/* 3 Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -94,7 +70,7 @@ export default function CommercialValidityPage() {
               Ação imediata
             </span>
           </div>
-          <p className="text-3xl font-bold font-montserrat text-red-600 dark:text-red-400 mt-2">5</p>
+          <p className="text-3xl font-bold font-montserrat text-red-600 dark:text-red-400 mt-2">{expiryPriorities.filter((item) => item.status === "Vencido").length}</p>
           <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">lotes para retirar</span>
         </div>
 
@@ -106,7 +82,7 @@ export default function CommercialValidityPage() {
               Usar primeiro
             </span>
           </div>
-          <p className="text-3xl font-bold font-montserrat text-amber-600 dark:text-amber-400 mt-2">7</p>
+          <p className="text-3xl font-bold font-montserrat text-amber-600 dark:text-amber-400 mt-2">{expiring.filter((item) => item.days >= 0).length}</p>
           <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">vencem em até 3 dias</span>
         </div>
 
@@ -118,7 +94,7 @@ export default function CommercialValidityPage() {
               Repor estoque
             </span>
           </div>
-          <p className="text-3xl font-bold font-montserrat text-orange-600 dark:text-orange-400 mt-2">12</p>
+          <p className="text-3xl font-bold font-montserrat text-orange-600 dark:text-orange-400 mt-2">{lowStockItems.length}</p>
           <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">abaixo do mínimo</span>
         </div>
       </div>
@@ -135,7 +111,7 @@ export default function CommercialValidityPage() {
               <p className="text-xs text-[#64748B] dark:text-neutral-400">Lotes que precisam de atenção primeiro.</p>
             </div>
             <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-400 border border-red-200/60 dark:border-red-900/50">
-              4 prioridades
+              {expiryPriorities.length} prioridades
             </span>
           </div>
 
@@ -181,7 +157,7 @@ export default function CommercialValidityPage() {
                 <p className="text-xs text-[#64748B] dark:text-neutral-400">Itens abaixo da quantidade mínima.</p>
               </div>
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-50 dark:bg-orange-950/50 text-orange-700 dark:text-orange-400 border border-orange-200/60 dark:border-orange-900/50">
-                12 itens
+                {lowStockItems.length} itens
               </span>
             </div>
 
@@ -221,6 +197,8 @@ export default function CommercialValidityPage() {
       <CommercialRegisterWasteModal
         isOpen={isWasteModalOpen}
         onClose={() => setIsWasteModalOpen(false)}
+        products={products.map((item) => ({ id: item.id, name: item.product?.name ?? `Produto #${item.productId}`, quantity: item.quantity, unit: item.product?.unitOfMeasure ?? "un" }))}
+        onRecord={recordDiscard}
       />
     </CommercialLayout>
   );

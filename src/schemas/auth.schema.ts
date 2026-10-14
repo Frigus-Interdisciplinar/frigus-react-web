@@ -3,6 +3,7 @@ import { z } from "zod";
 export const loginSchema = z.object({
   email: z.email("Email inválido"),
   rawPassword: z.string("Senha inválida").min(8, "Senha inválida"),
+  rememberMe: z.boolean().optional(),
 });
 
 export const registerSchema = z.object({
@@ -17,6 +18,7 @@ export const registerSchema = z.object({
   birthDate: z.coerce
     .date()
     .transform((date) => date.toISOString().split("T")[0]),
+  accountType: z.enum(["DOMESTIC", "COMMERCIAL", "BUSINESS"]),
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;

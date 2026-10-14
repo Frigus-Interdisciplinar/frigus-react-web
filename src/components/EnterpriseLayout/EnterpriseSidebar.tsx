@@ -2,12 +2,11 @@ import { Link, useLocation } from "react-router-dom";
 import {
   LayoutGrid,
   Megaphone,
-  BarChart3,
   Eye,
-  Target,
   ArrowLeftRight,
 } from "lucide-react";
 import FrigusLogo from "@/assets/frigus-logo-text.svg";
+import { useStore } from "@/store/store";
 
 interface EnterpriseSidebarProps {
   activeSection?: "overview" | "ads" | "report" | "views" | "audience";
@@ -17,6 +16,7 @@ export default function EnterpriseSidebar({
   activeSection = "overview",
 }: EnterpriseSidebarProps) {
   const location = useLocation();
+  const user = useStore((state) => state.user);
 
   const navItems = [
     {
@@ -32,22 +32,10 @@ export default function EnterpriseSidebar({
       icon: Megaphone,
     },
     {
-      id: "report",
-      label: "Relatório mensal",
-      path: "/enterprise/report",
-      icon: BarChart3,
-    },
-    {
       id: "views",
-      label: "Visualizações",
+      label: "Métricas",
       path: "/enterprise/views",
       icon: Eye,
-    },
-    {
-      id: "audience",
-      label: "Público atingido",
-      path: "/enterprise/audience",
-      icon: Target,
     },
   ];
 
@@ -105,10 +93,10 @@ export default function EnterpriseSidebar({
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-xs font-bold text-[#141C55] dark:text-white truncate">
-              Rede Aurora
+              {user?.name ?? "Conta empresarial"}
             </p>
             <p className="text-[10px] text-[#64748B] dark:text-neutral-400 truncate">
-              CNPJ 12.345.678/0001-90
+              {user?.email ?? "Anunciante"}
             </p>
           </div>
         </div>

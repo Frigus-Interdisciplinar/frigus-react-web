@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search, ChevronDown, Clock, Star, ArrowRight, Sparkles } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import Badge from "@/components/Badge";
+import { api } from "@/utils/api.util";
 
 type RecipeCard = {
   id: string;
@@ -11,38 +12,49 @@ type RecipeCard = {
   time: string;
   availableIngredients: string;
   image: string;
+  favorite: boolean;
+  available: number;
+  total: number;
 };
-
-const recipes: RecipeCard[] = [
-  {
-    id: "1",
-    title: "Omelete de tomate",
-    category: "Café da manhã",
-    time: "15 min",
-    availableIngredients: "4 de 5 ingredientes disponíveis",
-    image: "/images/omelete.png",
-  },
-  {
-    id: "2",
-    title: "Arroz cremoso de legumes",
-    category: "Almoço",
-    time: "25 min",
-    availableIngredients: "5 de 7 ingredientes disponíveis",
-    image: "/images/arroz-cremoso.png",
-  },
-  {
-    id: "3",
-    title: "Frango com legumes",
-    category: "Jantar",
-    time: "35 min",
-    availableIngredients: "3 de 4 ingredientes disponíveis",
-    image: "/images/frango-legumes.png",
-  },
-];
 
 export default function RecipePage() {
   const [search, setSearch] = useState("");
   const [onlyAvailable, setOnlyAvailable] = useState(false);
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [recipes, setRecipes] = useState<RecipeCard[]>([]);
+  const [suggestionCount, setSuggestionCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true); setError("");
+    const url = favoritesOnly ? "/web/core/recipes/favorites?page=0&size=100" : `/web/core/recipes?page=0&size=100${search ? `&name=${encodeURIComponent(search)}` : ""}`;
+    void Promise.all([
+      api.get<{ content: Array<{ id: number; name: string; favorite: boolean; ingredients?: Array<{ inStock?: boolean }> }> }>(url),
+      api.get<Array<{ recipe: { id: number; name: string; favorite: boolean; ingredients?: Array<{ inStock?: boolean }> } }>>("/web/core/recipes/suggestions?limit=20"),
+    ]).then(([page, suggestions]) => {
+      if (!active) return;
+      setRecipes(page.content.map((recipe) => {
+        const available = recipe.ingredients?.filter((ingredient) => ingredient.inStock).length ?? 0;
+        const total = recipe.ingredients?.length ?? 0;
+        return { id: String(recipe.id), title: recipe.name, category: "Receita", time: "Tempo não informado", availableIngredients: `${available} de ${total} ingredientes disponíveis`, image: "", favorite: recipe.favorite, available, total };
+      }));
+      setSuggestionCount(suggestions.length);
+    }).catch(() => active && setError("Não foi possível carregar as receitas."))
+      .finally(() => active && setLoading(false));
+    return () => { active = false; };
+  }, [search, favoritesOnly]);
+
+  const toggleFavorite = async (recipe: RecipeCard) => {
+    try {
+      if (recipe.favorite) await api.delete(`/web/core/recipes/${recipe.id}/favorite`);
+      else await api.put(`/web/core/recipes/${recipe.id}/favorite`, undefined);
+      setRecipes((current) => current.map((item) => item.id === recipe.id ? { ...item, favorite: !item.favorite } : item));
+    } catch { setError("Não foi possível atualizar a receita favorita."); }
+  };
+
+  const visibleRecipes = recipes.filter((recipe) => !onlyAvailable || recipe.available === recipe.total);
 
   return (
     <AppLayout activeSection="recipe">
@@ -58,9 +70,9 @@ export default function RecipePage() {
             </p>
           </div>
 
-          <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#343941] bg-white dark:bg-[#1C1E22] text-xs font-bold text-frigus-navy dark:text-white hover:bg-gray-50 dark:hover:bg-[#252A32] shadow-xs transition-colors self-start sm:self-auto cursor-pointer">
+          <button onClick={() => setFavoritesOnly((value) => !value)} className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#343941] bg-white dark:bg-[#1C1E22] text-xs font-bold text-frigus-navy dark:text-white hover:bg-gray-50 dark:hover:bg-[#252A32] shadow-xs transition-colors self-start sm:self-auto cursor-pointer">
             <Star size={15} className="text-amber-500 fill-amber-500" />
-            <span>Favoritas</span>
+            <span>{favoritesOnly ? "Todas as receitas" : "Favoritas"}</span>
           </button>
         </div>
 
@@ -114,11 +126,11 @@ export default function RecipePage() {
               Cozinhe com o que você já tem
             </h2>
             <p className="text-frigus-ice text-sm font-sans leading-relaxed">
-              Encontramos 8 receitas com ingredientes disponíveis no seu estoque
+              Encontramos {suggestionCount} receitas sugeridas pela API
             </p>
             <div className="pt-2">
               <Link
-                to="/recipe/1"
+                to={recipes[0] ? `/recipe/${recipes[0].id}` : "/recipe"}
                 className="inline-flex items-center gap-2 bg-frigus-accent hover:bg-[#F2BD50] text-frigus-navy px-5 py-2.5 rounded-xl text-xs font-bold transition-all shadow-xs"
               >
                 <span>Ver sugestões</span>
@@ -127,13 +139,7 @@ export default function RecipePage() {
             </div>
           </div>
 
-          <div className="relative z-10 w-full md:w-64 h-36 rounded-2xl overflow-hidden shadow-md border-2 border-white/20">
-            <img
-              src="/images/omelete-tomate.png"
-              alt="Prato do dia"
-              className="w-full h-full object-cover"
-            />
-          </div>
+          <div className="relative z-10 w-full md:w-64 h-36 rounded-2xl overflow-hidden shadow-md border-2 border-white/20 bg-linear-to-br from-emerald-400/70 to-amber-300/70" aria-hidden="true" />
         </div>
 
         {/* Itens para Aproveitar */}
@@ -150,13 +156,7 @@ export default function RecipePage() {
 
           <div className="flex items-center gap-2 flex-wrap">
             <span className="px-3 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-bold text-xs rounded-xl border border-amber-200 dark:border-amber-800">
-              Tomate (6 un.)
-            </span>
-            <span className="px-3 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-bold text-xs rounded-xl border border-amber-200 dark:border-amber-800">
-              Ovos (4 un.)
-            </span>
-            <span className="px-3 py-1 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-bold text-xs rounded-xl border border-amber-200 dark:border-amber-800">
-              Iogurte (3 un.)
+              Alertas reais estão na área de Alertas
             </span>
             <Link
               to="/alerts"
@@ -184,27 +184,27 @@ export default function RecipePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {recipes.map((rec) => (
+            {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
+            {loading && <p className="text-sm text-gray-500">Carregando receitas…</p>}
+            {!loading && visibleRecipes.length === 0 && <p className="text-sm text-gray-500">Nenhuma receita encontrada.</p>}
+            {visibleRecipes.map((rec) => (
               <div
                 key={rec.id}
                 className="bg-white dark:bg-[#1C1E22] rounded-3xl border border-gray-200/80 dark:border-[#343941] shadow-xs overflow-hidden flex flex-col justify-between group hover:border-frigus-primary/40 dark:hover:border-[#5B89F7]/40 transition-all hover:shadow-md"
               >
                 <div>
-                  <div className="h-44 overflow-hidden relative">
-                    <img
-                      src={rec.image}
-                      alt={rec.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
+                  <div className="h-44 overflow-hidden relative bg-linear-to-br from-[#131C55] to-[#2552C8] flex items-end p-5">
+                    <p className="text-white font-montserrat font-bold text-lg">{rec.title}</p>
                     <div className="absolute top-3 left-3">
                       <Badge variant="accent">{rec.category}</Badge>
                     </div>
                   </div>
 
                   <div className="p-5 space-y-2">
-                    <div className="flex items-center gap-1 text-xs text-gray-400 dark:text-neutral-400">
+                    <div className="flex items-center justify-between text-xs text-gray-400 dark:text-neutral-400">
                       <Clock size={14} />
                       <span>{rec.time}</span>
+                      <button type="button" aria-label={rec.favorite ? "Remover das favoritas" : "Adicionar às favoritas"} onClick={() => void toggleFavorite(rec)}><Star size={15} className={rec.favorite ? "fill-amber-400 text-amber-500" : ""} /></button>
                     </div>
                     <h4 className="font-montserrat font-bold text-frigus-navy dark:text-white text-base group-hover:text-frigus-primary dark:group-hover:text-[#5B89F7] transition-colors">
                       {rec.title}

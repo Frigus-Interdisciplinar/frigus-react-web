@@ -1,72 +1,67 @@
-import { useState } from "react";
-import { UserPlus, Shield, Users, Mail, Clock } from "lucide-react";
+import { useEffect, useState } from "react";
+import { UserPlus, Shield, Users, Mail } from "lucide-react";
 import CommercialLayout from "@/components/CommercialLayout";
 import {
   CommercialInviteEmployeeModal,
   CommercialManageAccessModal,
-  CommercialResendInviteModal,
 } from "@/components/CommercialModals";
+import { api } from "@/utils/api.util";
+
+type Employee = { userId: string; name: string; email: string; isOwner?: boolean; memberRole?: string };
 
 export default function CommercialEmployeesPage() {
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isManageModalOpen, setIsManageModalOpen] = useState(false);
-  const [isResendModalOpen, setIsResendModalOpen] = useState(false);
-  const [selectedEmployee, setSelectedEmployee] = useState({
-    name: "Ana Souza",
-    email: "ana@saborecia.com",
-  });
+  const [groupId, setGroupId] = useState<string>();
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [invitations, setInvitations] = useState<Array<{ id: string; name?: string; email: string; acceptedAt?: string; revokedAt?: string }>>([]);
+  const [loadError, setLoadError] = useState("");
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee>();
 
-  const employees = [
-    {
-      avatar: "AS",
-      name: "Ana Souza",
-      email: "ana@saborecia.com",
-      role: "Gerente",
-      lastAccess: "Agora",
-    },
-    {
-      avatar: "CL",
-      name: "Carlos Lima",
-      email: "carlos@saborecia.com",
-      role: "Estoquista",
-      lastAccess: "Hoje, 08:32",
-    },
-    {
-      avatar: "JM",
-      name: "Júlia Mendes",
-      email: "julia@saborecia.com",
-      role: "Compras",
-      lastAccess: "Ontem, 20:16",
-    },
-    {
-      avatar: "RA",
-      name: "Rafael Alves",
-      email: "rafael@saborecia.com",
-      role: "Operador",
-      lastAccess: "Ontem, 19:40",
-    },
-  ];
+  useEffect(() => {
+    let active = true;
+    void api.get<{ groupId: string }>("/web/core/inventory/active-context")
+      .then(async (context) => {
+        if (!active) return;
+        setGroupId(context.groupId);
+        const result = await api.get<Employee[]>(`/web/core/commercial/groups/${context.groupId}/employees`);
+        if (active) setEmployees(result);
+        const pending = await api.get<typeof invitations>(`/web/core/groups/${context.groupId}/invitations`);
+        if (active) setInvitations(pending.filter((invite) => !invite.acceptedAt && !invite.revokedAt));
+      })
+      .catch(() => active && setLoadError("Não foi possível carregar a equipe comercial."));
+    return () => { active = false; };
+  }, []);
+
+  const inviteEmployee = async (data: { name: string; email: string; memberRole: "EDITOR" | "VIEWER" }) => {
+    if (!groupId) throw new Error("Grupo comercial indisponível");
+    await api.post(`/web/core/commercial/groups/${groupId}/employees/invitations`, data);
+    const pending = await api.get<typeof invitations>(`/web/core/groups/${groupId}/invitations`);
+    setInvitations(pending.filter((invite) => !invite.acceptedAt && !invite.revokedAt));
+  };
+
+  const saveRole = async (role: "EDITOR" | "VIEWER") => {
+    if (!groupId || !selectedEmployee) throw new Error("Membro indisponível");
+    await api.patch(`/web/core/groups/${groupId}/members/${selectedEmployee.userId}/role`, { memberRole: role });
+    setEmployees((current) => current.map((member) => member.userId === selectedEmployee.userId ? { ...member, memberRole: role } : member));
+  };
 
   const roleDescriptions = [
     {
-      role: "Gerente",
-      description: "Gerencia acessos, compras e os resultados da operação.",
+      role: "Proprietário",
+      description: "Responsável pelo grupo e pelo gerenciamento dos membros.",
     },
     {
-      role: "Estoquista",
-      description: "Atualiza produtos, lotes, quantidades e validades.",
+      role: "Equipe · edição",
+      description: "Pode atualizar o estoque, as listas e os registros comerciais.",
     },
     {
-      role: "Compras",
-      description: "Organiza a lista, registra pedidos e acompanha os fornecedores.",
-    },
-    {
-      role: "Operador",
-      description: "Consulta o estoque e registra as movimentações do dia.",
+      role: "Operador · leitura",
+      description: "Pode consultar os dados, sem alterar registros.",
     },
   ];
 
-  const handleOpenManage = (emp: { name: string; email: string }) => {
+  const handleOpenManage = (emp: Employee) => {
     setSelectedEmployee(emp);
     setIsManageModalOpen(true);
   };
@@ -103,7 +98,7 @@ export default function CommercialEmployeesPage() {
             <Users size={22} />
           </div>
           <div>
-            <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">4</p>
+            <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">{employees.length}</p>
             <span className="text-xs text-[#64748B] dark:text-neutral-400">Pessoas ativas</span>
           </div>
         </div>
@@ -113,7 +108,7 @@ export default function CommercialEmployeesPage() {
             <Mail size={22} />
           </div>
           <div>
-            <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">1</p>
+            <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">{invitations.length}</p>
             <span className="text-xs text-[#64748B] dark:text-neutral-400">Convite pendente</span>
           </div>
         </div>
@@ -123,7 +118,7 @@ export default function CommercialEmployeesPage() {
             <Shield size={22} />
           </div>
           <div>
-            <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">4</p>
+            <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">3</p>
             <span className="text-xs text-[#64748B] dark:text-neutral-400">Perfis de acesso</span>
           </div>
         </div>
@@ -145,12 +140,14 @@ export default function CommercialEmployeesPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-[#343941]">
+                  {loadError && <tr><td colSpan={4} className="py-4 text-sm text-red-700">{loadError}</td></tr>}
+                  {!loadError && employees.length === 0 && <tr><td colSpan={4} className="py-4 text-sm text-gray-500">Nenhum membro cadastrado na equipe.</td></tr>}
                   {employees.map((emp, idx) => (
                     <tr key={idx} className="hover:bg-gray-50/70 dark:hover:bg-[#252A32]/50 transition-colors">
                       <td className="py-3.5 px-3">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-[#EAF1FF] dark:bg-blue-950/60 text-[#131C55] dark:text-blue-200 font-bold text-xs flex items-center justify-center shrink-0">
-                            {emp.avatar}
+                            {emp.name.split(/\s+/).map((part) => part[0]).slice(0, 2).join("").toUpperCase()}
                           </div>
                           <div>
                             <p className="font-bold text-[#141C55] dark:text-white">{emp.name}</p>
@@ -160,20 +157,20 @@ export default function CommercialEmployeesPage() {
                       </td>
                       <td className="py-3.5 px-3">
                         <span className="inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 dark:bg-[#252A32] text-gray-700 dark:text-neutral-300">
-                          {emp.role}
+                          {emp.isOwner ? "Proprietário" : emp.memberRole === "VIEWER" ? "Operador · leitura" : "Equipe · edição"}
                         </span>
                       </td>
                       <td className="py-3.5 px-3 text-gray-500 dark:text-neutral-400 font-medium">
-                        {emp.lastAccess}
+                        {emp.isOwner ? "Proprietário" : "Membro da equipe"}
                       </td>
                       <td className="py-3.5 px-3 text-right">
-                        <button
+                        {!emp.isOwner && <button
                           type="button"
                           onClick={() => handleOpenManage(emp)}
                           className="px-3 py-1 rounded-lg text-xs font-semibold text-[#2552C8] dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors cursor-pointer"
                         >
                           Gerenciar
-                        </button>
+                        </button>}
                       </td>
                     </tr>
                   ))}
@@ -182,30 +179,12 @@ export default function CommercialEmployeesPage() {
             </div>
           </div>
 
-          {/* Convite Pendente Card */}
-          <div className="p-4 rounded-2xl bg-purple-50/60 dark:bg-purple-950/30 border border-purple-200/80 dark:border-purple-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-purple-200 dark:bg-purple-900/60 text-purple-800 dark:text-purple-200 font-bold text-xs flex items-center justify-center shrink-0">
-                BC
-              </div>
-              <div>
-                <p className="text-xs font-bold text-[#141C55] dark:text-white">
-                  Beatriz Costa <span className="font-normal text-[#64748B] dark:text-neutral-400">beatriz@saborecia.com</span>
-                </p>
-                <span className="inline-flex items-center gap-1 text-[11px] text-purple-700 dark:text-purple-300 font-medium mt-0.5">
-                  <Clock size={12} /> Convite pendente há 2 dias
-                </span>
-              </div>
+          {invitations.map((invite) => (
+            <div key={invite.id} className="p-4 rounded-2xl bg-purple-50/60 dark:bg-purple-950/30 border border-purple-200/80 dark:border-purple-800/50 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-purple-200 dark:bg-purple-900/60 text-purple-800 dark:text-purple-200 font-bold text-xs flex items-center justify-center shrink-0">{(invite.name || invite.email).slice(0, 2).toUpperCase()}</div>
+              <div><p className="text-xs font-bold text-[#141C55] dark:text-white">{invite.name || invite.email}</p><span className="text-[11px] text-purple-700 dark:text-purple-300">Convite pendente · {invite.email}</span></div>
             </div>
-
-            <button
-              type="button"
-              onClick={() => setIsResendModalOpen(true)}
-              className="px-3.5 py-2 rounded-xl border border-purple-300 dark:border-purple-700 text-purple-800 dark:text-purple-200 hover:bg-purple-100 dark:hover:bg-purple-900/40 text-xs font-semibold transition-colors cursor-pointer self-start sm:self-auto"
-            >
-              Reenviar convite
-            </button>
-          </div>
+          ))}
         </div>
 
         {/* Acessos por Função (5 cols) */}
@@ -236,17 +215,17 @@ export default function CommercialEmployeesPage() {
       <CommercialInviteEmployeeModal
         isOpen={isInviteModalOpen}
         onClose={() => setIsInviteModalOpen(false)}
+        onInvite={inviteEmployee}
       />
-      <CommercialManageAccessModal
+      {selectedEmployee && <CommercialManageAccessModal
+        key={selectedEmployee.userId}
         isOpen={isManageModalOpen}
         onClose={() => setIsManageModalOpen(false)}
         employeeName={selectedEmployee.name}
         employeeEmail={selectedEmployee.email}
-      />
-      <CommercialResendInviteModal
-        isOpen={isResendModalOpen}
-        onClose={() => setIsResendModalOpen(false)}
-      />
+        memberRole={selectedEmployee.memberRole === "VIEWER" ? "VIEWER" : "EDITOR"}
+        onSaveRole={saveRole}
+      />}
     </CommercialLayout>
   );
 }

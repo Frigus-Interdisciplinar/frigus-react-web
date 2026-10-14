@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { User, Lock, AlertOctagon, Check } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import { useTheme } from "@/hooks/useTheme";
+import { api } from "@/utils/api.util";
 
 export default function SettingsPage() {
   const [expiryReminder, setExpiryReminder] = useState(true);
@@ -9,10 +10,35 @@ export default function SettingsPage() {
   const [weeklySummary, setWeeklySummary] = useState(false);
   const { theme, setTheme } = useTheme();
   const [savedFeedback, setSavedFeedback] = useState(false);
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    void api.get<{ expirationAlertsEnabled: boolean; shoppingRemindersEnabled: boolean; weeklySummaryEnabled: boolean; theme: "LIGHT" | "DARK" | "SYSTEM" }>("/web/core/preferences").then((preferences) => {
+      setExpiryReminder(preferences.expirationAlertsEnabled);
+      setShoppingReminder(preferences.shoppingRemindersEnabled);
+      setWeeklySummary(preferences.weeklySummaryEnabled);
+      setTheme(preferences.theme === "DARK" ? "dark" : preferences.theme === "LIGHT" ? "light" : window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    }).catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "Não foi possível carregar as preferências."));
+  }, [setTheme]);
 
-  const handleSave = () => {
-    setSavedFeedback(true);
-    setTimeout(() => setSavedFeedback(false), 2000);
+  const handleSave = async () => {
+    setSaving(true);
+    setError("");
+    try {
+      await api.put("/web/core/preferences", {
+        expirationAlertsEnabled: expiryReminder,
+        lowStockAlertsEnabled: true,
+        shoppingRemindersEnabled: shoppingReminder,
+        weeklySummaryEnabled: weeklySummary,
+        theme: theme.toUpperCase(),
+      });
+      setSavedFeedback(true);
+      setTimeout(() => setSavedFeedback(false), 2000);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Não foi possível salvar as preferências.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -34,9 +60,10 @@ export default function SettingsPage() {
             className="inline-flex items-center gap-2 bg-[#2552C8] hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-xs self-start sm:self-auto cursor-pointer"
           >
             {savedFeedback ? <Check size={16} /> : null}
-            <span>{savedFeedback ? "Salvo com sucesso!" : "Salvar alterações"}</span>
+            <span>{saving ? "Salvando…" : savedFeedback ? "Salvo com sucesso!" : "Salvar alterações"}</span>
           </button>
         </div>
+        {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
 
         {/* Card de Conta */}
         <div className="bg-white dark:bg-[#1C1E22] rounded-3xl p-6 md:p-8 border border-gray-200/80 dark:border-[#343941] shadow-xs space-y-6">

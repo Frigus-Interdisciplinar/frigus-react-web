@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, Search, ChevronDown, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import CommercialLayout from "@/components/CommercialLayout";
@@ -6,6 +6,9 @@ import {
   CommercialAddBatchModal,
   CommercialFilterStockModal,
 } from "@/components/CommercialModals";
+import { createProduct, createStockProduct, getInventoryContext, listStockProducts, type StockProduct } from "@/services/inventory.service";
+import type { CommercialBatchInput } from "@/components/CommercialModals";
+import { api } from "@/utils/api.util";
 
 interface BatchItem {
   id: string;
@@ -19,98 +22,11 @@ interface BatchItem {
   status: "Em dia" | "Vence em 2 dias" | "Vencido" | "Estoque baixo";
 }
 
-const mockBatches: BatchItem[] = [
-  {
-    id: "FR-2048",
-    name: "Peito de frango",
-    batchCode: "FR-2048",
-    supplier: "Frigorífico Aurora",
-    category: "Proteínas",
-    location: "Câmara fria",
-    quantity: "32 kg",
-    expiration: "18 set 2026",
-    status: "Em dia",
-  },
-  {
-    id: "TM-318",
-    name: "Tomate italiano para molho",
-    batchCode: "TM-318",
-    supplier: "Hortifruti Central",
-    category: "Hortifruti",
-    location: "Câmara fria",
-    quantity: "24 kg",
-    expiration: "08 set 2026",
-    status: "Vence em 2 dias",
-  },
-  {
-    id: "YG-082",
-    name: "Iogurte natural food service",
-    batchCode: "YG-082",
-    supplier: "Vigor Profissional",
-    category: "Mercearia",
-    location: "Câmara fria",
-    quantity: "12 cx",
-    expiration: "05 set 2026",
-    status: "Vencido",
-  },
-  {
-    id: "AR-904",
-    name: "Arroz parboilizado 5 kg",
-    batchCode: "AR-904",
-    supplier: "Camil Food Service",
-    category: "Mercearia",
-    location: "Depósito",
-    quantity: "6 pct",
-    expiration: "03 nov 2026",
-    status: "Estoque baixo",
-  },
-  {
-    id: "LT-2048",
-    name: "Leite integral",
-    batchCode: "LT-2048",
-    supplier: "Fazenda Bela",
-    category: "Mercearia",
-    location: "Câmara fria",
-    quantity: "48 un",
-    expiration: "18 set 2026",
-    status: "Em dia",
-  },
-  {
-    id: "VG-082",
-    name: "Iogurte natural",
-    batchCode: "VG-082",
-    supplier: "Vigor",
-    category: "Mercearia",
-    location: "Câmara fria",
-    quantity: "12 cx",
-    expiration: "05 set 2026",
-    status: "Vencido",
-  },
-  {
-    id: "HT-318",
-    name: "Tomate italiano",
-    batchCode: "HT-318",
-    supplier: "Hortifruti Central",
-    category: "Hortifruti",
-    location: "Câmara fria",
-    quantity: "24 kg",
-    expiration: "08 set 2026",
-    status: "Vence em 2 dias",
-  },
-  {
-    id: "GD-904",
-    name: "Arroz integral",
-    batchCode: "GD-904",
-    supplier: "Camil",
-    category: "Mercearia",
-    location: "Depósito",
-    quantity: "6 pct",
-    expiration: "03 nov 2026",
-    status: "Estoque baixo",
-  },
-];
-
 export default function CommercialStockPage() {
+  const [batches, setBatches] = useState<BatchItem[]>([]);
+  const [inventory, setInventory] = useState<{ groupId: string; stocks: Array<{ id: number; name: string }> }>();
+  const [loadError, setLoadError] = useState("");
+  const [loading, setLoading] = useState(true);
   const [activeLocation, setActiveLocation] = useState<string>("Todos os locais");
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todas as categorias");
@@ -118,15 +34,60 @@ export default function CommercialStockPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
+  const loadStock = async () => {
+    setLoading(true);
+    setLoadError("");
+    try {
+      const context = await getInventoryContext();
+      setInventory(context);
+      const activeStock = context.stocks[0];
+      if (!activeStock) { setBatches([]); return; }
+      const products = await listStockProducts(activeStock.id);
+      setBatches(products.map((item: StockProduct) => {
+        const name = item.product?.name ?? `Produto #${item.productId}`;
+        const days = Math.ceil((new Date(`${item.expireDate}T00:00:00`).getTime() - new Date().setHours(0,0,0,0)) / 86400000);
+        const status: BatchItem["status"] = item.quantity <= (item.minimalQuantity ?? 0) ? "Estoque baixo" : days < 0 ? "Vencido" : days <= 2 ? "Vence em 2 dias" : "Em dia";
+        const places: Record<string, BatchItem["location"]> = { FRIDGE: "Câmara fria", FREEZER: "Freezers", PANTRY: "Depósito", CABINET: "Depósito", SHELF: "Área de venda" };
+        return {
+          id: String(item.id), name, batchCode: `#${item.id}`, supplier: item.product?.brand ?? "—",
+          category: item.product?.category ?? item.category ?? "Outros",
+          location: places[item.product?.storagePlace ?? ""] ?? "Depósito",
+          quantity: `${item.quantity} ${item.product?.unitOfMeasure ?? "un"}`,
+          expiration: new Date(`${item.expireDate}T00:00:00`).toLocaleDateString("pt-BR"), status,
+        };
+      }));
+    } catch {
+      setLoadError("Não foi possível carregar o estoque. Tente atualizar a página.");
+    } finally { setLoading(false); }
+  };
+
+  useEffect(() => { void loadStock(); }, []);
+
+  const addBatch = async (input: CommercialBatchInput) => {
+    if (!inventory) throw new Error("Grupo indisponível");
+    let targetStock = inventory.stocks[0];
+    if (!targetStock) {
+      const created = await api.post<{ id: number; name: string }>("/web/core/inventory/stocks", { groupId: inventory.groupId, name: "Estoque comercial" });
+      targetStock = created;
+      setInventory({ ...inventory, stocks: [created] });
+    }
+    const categories: Record<string, string> = { "Proteínas": "MEAT", "Hortifruti": "VEGETABLE", "Mercearia": "GRAIN", "Laticínios": "DAIRY" };
+    const places: Record<string, string> = { "Câmara fria": "FRIDGE", "Freezers": "FREEZER", "Depósito": "PANTRY", "Área de venda": "SHELF" };
+    const units: Record<string, string> = { "Quilograma (kg)": "KILOGRAM", kg: "KILOGRAM", g: "GRAM", L: "LITER", ml: "MILLILITER", un: "UNIT", cx: "PACKAGE", pct: "PACKAGE" };
+    const product = await createProduct(inventory.groupId, { name: input.product.trim(), category: categories[input.category] ?? "GRAIN", storagePlace: places[input.location] ?? "PANTRY", unitPrice: input.unitCost, unitOfMeasure: units[input.unit] ?? "UNIT" });
+    await createStockProduct({ productId: product.id, stockId: targetStock.id, quantity: input.quantity, expireDate: input.expiry });
+    await loadStock();
+  };
+
   const locationTabs = [
-    { label: "Todos os locais", count: 486 },
-    { label: "Depósito", count: 184 },
-    { label: "Câmara fria", count: 126 },
-    { label: "Área de venda", count: 98 },
-    { label: "Freezers", count: 78 },
+    { label: "Todos os locais", count: batches.length },
+    { label: "Depósito", count: batches.filter((item) => item.location === "Depósito").length },
+    { label: "Câmara fria", count: batches.filter((item) => item.location === "Câmara fria").length },
+    { label: "Área de venda", count: batches.filter((item) => item.location === "Área de venda").length },
+    { label: "Freezers", count: batches.filter((item) => item.location === "Freezers").length },
   ];
 
-  const filteredBatches = mockBatches.filter((item) => {
+  const filteredBatches = batches.filter((item) => {
     const matchesLocation =
       activeLocation === "Todos os locais" || item.location === activeLocation;
     const matchesCategory =
@@ -179,22 +140,22 @@ export default function CommercialStockPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs">
           <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">Produtos em estoque</span>
-          <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white mt-1">486</p>
+          <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white mt-1">{batches.reduce((sum, item) => sum + Number.parseFloat(item.quantity), 0)}</p>
           <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">Distribuídos em 4 locais</span>
         </div>
         <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs">
           <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">Lotes ativos</span>
-          <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white mt-1">128</p>
+          <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white mt-1">{batches.length}</p>
           <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">Rastreabilidade por entrada</span>
         </div>
         <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs">
           <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">Valor em estoque</span>
-          <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white mt-1">R$ 18.420</p>
+          <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white mt-1">{batches.length ? "—" : "R$ 0,00"}</p>
           <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">Custo total dos produtos</span>
         </div>
         <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs">
           <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">Precisam de reposição</span>
-          <p className="text-2xl font-bold font-montserrat text-orange-600 dark:text-orange-400 mt-1">12</p>
+          <p className="text-2xl font-bold font-montserrat text-orange-600 dark:text-orange-400 mt-1">{batches.filter((item) => item.status === "Estoque baixo").length}</p>
           <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">Abaixo do estoque mínimo</span>
         </div>
       </div>
@@ -266,6 +227,8 @@ export default function CommercialStockPage() {
           </div>
         </div>
 
+        {loadError && <div role="alert" className="px-6 py-3 text-sm text-red-700 dark:text-red-300">{loadError} <button onClick={() => void loadStock()} className="underline">Tentar novamente</button></div>}
+        {loading && <div className="px-6 py-8 text-sm text-gray-500">Carregando estoque…</div>}
         {/* Table */}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
@@ -280,7 +243,7 @@ export default function CommercialStockPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 dark:divide-[#343941]">
-              {filteredBatches.length === 0 ? (
+                {!loading && filteredBatches.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-8 text-center text-gray-400 dark:text-neutral-400">
                     Nenhum produto ou lote encontrado para os filtros atuais.
@@ -323,7 +286,7 @@ export default function CommercialStockPage() {
 
         {/* Footer / Pagination */}
         <div className="p-4 px-6 border-t border-gray-100 dark:border-[#343941] flex items-center justify-between text-xs text-[#64748B] dark:text-neutral-400">
-          <span>Mostrando {filteredBatches.length} de 486 produtos</span>
+          <span>Mostrando {filteredBatches.length} de {batches.length} produtos</span>
           <div className="flex items-center gap-1.5">
             <button
               type="button"
@@ -356,7 +319,7 @@ export default function CommercialStockPage() {
       </div>
 
       {/* Modais */}
-      <CommercialAddBatchModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
+      <CommercialAddBatchModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onAdd={addBatch} />
       <CommercialFilterStockModal
         isOpen={isFilterModalOpen}
         onClose={() => setIsFilterModalOpen(false)}

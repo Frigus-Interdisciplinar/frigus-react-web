@@ -1,287 +1,33 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { ArrowRight, Eye, Megaphone, MousePointerClick, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
-import { Plus, Megaphone, Eye, MousePointerClick, ShoppingBag, ArrowRight } from "lucide-react";
 import EnterpriseLayout from "@/components/EnterpriseLayout";
-import { EnterpriseCreateAdModal } from "@/components/EnterpriseModals";
+import { listMyAdvertisements, type Advertisement } from "@/services/advertisement.service";
 
 export default function EnterpriseOverviewPage() {
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [ads, setAds] = useState<Advertisement[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    let active = true;
+    listMyAdvertisements().then((page) => { if (active) setAds(page.content ?? []); })
+      .catch((reason: unknown) => { if (active) setError(reason instanceof Error ? reason.message : "Não foi possível carregar os anúncios."); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+  const activeCount = ads.filter((ad) => ad.status === "ACTIVE").length;
+  const impressions = ads.reduce((total, ad) => total + ad.impressions, 0);
+  const clicks = ads.reduce((total, ad) => total + ad.clicks, 0);
+  const clickRate = impressions ? ((clicks / impressions) * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 }) : "0";
 
-  const featuredAds = [
-    {
-      name: "Kit brunch artesanal",
-      category: "Congelados",
-      views: "31,6 mil",
-      status: "Ativo",
-      statusColor: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60",
-    },
-    {
-      name: "Leite de amêndoas 1 L",
-      category: "Bebidas",
-      views: "24,8 mil",
-      status: "Ativo",
-      statusColor: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60",
-    },
-    {
-      name: "Omelete de espinafre",
-      category: "Prontos",
-      views: "19,7 mil",
-      status: "Pausado",
-      statusColor: "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/60",
-    },
-    {
-      name: "Tomate-cereja premium",
-      category: "Hortifruti",
-      views: "15,4 mil",
-      status: "Ativo",
-      statusColor: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60",
-    },
-  ];
-
-  const operationalAlerts = [
-    {
-      count: "03",
-      title: "Aguardam revisão",
-      desc: "Confira fotos e informações",
-      badgeColor: "bg-blue-50 dark:bg-blue-950/50 text-[#2552C8] dark:text-blue-400 border border-blue-100 dark:border-blue-900/50",
-    },
-    {
-      count: "02",
-      title: "Rascunhos",
-      desc: "Continue a publicação",
-      badgeColor: "bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-900/50",
-    },
-    {
-      count: "05",
-      title: "Vencem neste mês",
-      desc: "Revise o período de exibição",
-      badgeColor: "bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/50",
-    },
-  ];
-
-  return (
-    <EnterpriseLayout
-      activeSection="overview"
-      breadcrumb="Área empresarial    /    Visão geral"
-      onOpenCreateAd={() => setIsCreateModalOpen(true)}
-    >
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">
-            Visão geral
-          </h1>
-          <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-1">
-            Acompanhe o que está chamando atenção para a Rede Aurora.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setIsCreateModalOpen(true)}
-          className="inline-flex items-center gap-2 bg-[#2552C8] hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-        >
-          <Plus size={16} />
-          <span>Criar anúncio</span>
-        </button>
-      </div>
-
-      {/* 4 Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Anúncios ativos */}
-        <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#E1E7F0] dark:border-[#343941] shadow-xs space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-              Anúncios ativos
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-950/50 text-[#2552C8] dark:text-blue-400 flex items-center justify-center">
-              <Megaphone size={16} />
-            </div>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">
-              18
-            </span>
-          </div>
-          <p className="text-[11px] text-[#64748B] dark:text-neutral-400">
-            3 aguardam revisão
-          </p>
-        </div>
-
-        {/* Visualizações */}
-        <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#E1E7F0] dark:border-[#343941] shadow-xs space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-              Visualizações
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-              <Eye size={16} />
-            </div>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">
-              128,4 mil
-            </span>
-          </div>
-          <p className="text-[11px] text-[#64748B] dark:text-neutral-400">
-            últimos 30 dias
-          </p>
-        </div>
-
-        {/* Taxa de clique */}
-        <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#E1E7F0] dark:border-[#343941] shadow-xs space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-              Taxa de cliques
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-cyan-50 dark:bg-cyan-950/50 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
-              <MousePointerClick size={16} />
-            </div>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">
-              5,7%
-            </span>
-          </div>
-          <p className="text-[11px] text-[#64748B] dark:text-neutral-400">
-            taxa de conversão saudável
-          </p>
-        </div>
-
-        {/* Pedidos atribuídos */}
-        <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#E1E7F0] dark:border-[#343941] shadow-xs space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
-              Pedidos atribuídos
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center">
-              <ShoppingBag size={16} />
-            </div>
-          </div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">
-              312
-            </span>
-          </div>
-          <p className="text-[11px] text-[#64748B] dark:text-neutral-400">
-            no período corrente
-          </p>
-        </div>
-      </div>
-
-      {/* Main Grid: Destaques (7 cols) + Operação (5 cols) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Anúncios em destaque (7 cols) */}
-        <div className="lg:col-span-7 bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#E1E7F0] dark:border-[#343941] shadow-xs p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">
-                Anúncios em destaque
-              </h2>
-              <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-0.5">
-                Produtos mais vistos neste mês
-              </p>
-            </div>
-            <Link
-              to="/enterprise/ads"
-              className="text-xs font-semibold text-[#2552C8] dark:text-blue-400 hover:underline"
-            >
-              Ver todos
-            </Link>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-gray-100 dark:border-[#343941] text-[10px] font-bold text-[#64748B] dark:text-neutral-400 uppercase tracking-wider">
-                  <th className="py-2.5 px-3">Produto</th>
-                  <th className="py-2.5 px-3">Visitas</th>
-                  <th className="py-2.5 px-3 text-right">Situação</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-[#343941]">
-                {featuredAds.map((ad, idx) => (
-                  <tr
-                    key={idx}
-                    className="hover:bg-gray-50/70 dark:hover:bg-[#252A32]/50 transition-colors"
-                  >
-                    <td className="py-3 px-3">
-                      <div>
-                        <p className="font-bold text-[#141C55] dark:text-white">
-                          {ad.name}
-                        </p>
-                        <p className="text-[11px] text-[#64748B] dark:text-neutral-400">
-                          {ad.category}
-                        </p>
-                      </div>
-                    </td>
-                    <td className="py-3 px-3 font-semibold text-[#141C55] dark:text-white">
-                      {ad.views}
-                    </td>
-                    <td className="py-3 px-3 text-right">
-                      <span
-                        className={`inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${ad.statusColor}`}
-                      >
-                        {ad.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Operação dos anúncios (5 cols) */}
-        <div className="lg:col-span-5 bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#E1E7F0] dark:border-[#343941] shadow-xs p-6 space-y-4">
-          <div>
-            <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">
-              Operação dos anúncios
-            </h2>
-            <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-0.5">
-              O que precisa da sua atenção
-            </p>
-          </div>
-
-          <div className="space-y-3 pt-2">
-            {operationalAlerts.map((item, idx) => (
-              <div
-                key={idx}
-                className="flex items-center gap-4 p-3.5 rounded-2xl bg-[#F5F8FC]/80 dark:bg-[#252A32]/50 border border-gray-100 dark:border-[#343941]/60"
-              >
-                <div
-                  className={`w-11 h-11 rounded-xl flex items-center justify-center font-bold text-sm shrink-0 ${item.badgeColor}`}
-                >
-                  {item.count}
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-[#141C55] dark:text-white">
-                    {item.title}
-                  </h4>
-                  <p className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-0.5">
-                    {item.desc}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="pt-2">
-            <Link
-              to="/enterprise/ads"
-              className="inline-flex items-center gap-2 text-xs font-bold text-[#2552C8] dark:text-blue-400 hover:gap-3 transition-all"
-            >
-              <span>Gerenciar anúncios</span>
-              <ArrowRight size={14} />
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Modal */}
-      <EnterpriseCreateAdModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-      />
-    </EnterpriseLayout>
-  );
+  return <EnterpriseLayout activeSection="overview" breadcrumb="Área empresarial    /    Visão geral">
+    <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"><div><h1 className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">Visão geral</h1><p className="mt-1 text-xs text-[#64748B] dark:text-neutral-400">Acompanhe os anúncios publicados pela sua empresa.</p></div><Link to="/enterprise/ads" className="inline-flex items-center gap-2 rounded-xl bg-[#2552C8] px-4 py-2.5 text-xs font-semibold text-white"><Plus size={16} />Criar anúncio</Link></div>
+    {error && <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
+    <div className="grid gap-4 sm:grid-cols-3">
+      {[{ label: "Anúncios ativos", value: activeCount.toLocaleString("pt-BR"), icon: Megaphone }, { label: "Impressões", value: impressions.toLocaleString("pt-BR"), icon: Eye }, { label: "Cliques", value: `${clicks.toLocaleString("pt-BR")} · ${clickRate}%`, icon: MousePointerClick }].map(({ label, value, icon: Icon }) => <div key={label} className="rounded-2xl border border-[#E1E7F0] bg-white p-5 shadow-xs dark:border-[#343941] dark:bg-[#1C1E22]"><div className="flex items-center justify-between text-xs font-semibold text-slate-500"><span>{label}</span><Icon size={17} className="text-[#2552C8]" /></div><p className="mt-3 text-2xl font-bold text-[#141C55] dark:text-white">{loading ? "—" : value}</p></div>)}
+    </div>
+    <section className="rounded-3xl border border-[#E1E7F0] bg-white p-5 shadow-xs dark:border-[#343941] dark:bg-[#1C1E22]"><div className="mb-4 flex items-center justify-between"><div><h2 className="font-bold text-[#141C55] dark:text-white">Anúncios recentes</h2><p className="mt-1 text-xs text-slate-500">Resultados contabilizados pela API.</p></div><Link to="/enterprise/ads" className="inline-flex items-center gap-1 text-xs font-semibold text-[#2552C8]">Ver anúncios <ArrowRight size={14} /></Link></div>
+      {loading ? <p className="py-6 text-sm text-slate-500">Carregando anúncios…</p> : !ads.length ? <div className="py-8 text-center"><p className="text-sm font-semibold text-[#141C55] dark:text-white">Sua empresa ainda não tem anúncios</p><p className="mt-1 text-xs text-slate-500">Crie um anúncio e publique para exibi-lo no app.</p></div> : <div className="divide-y divide-slate-100 dark:divide-[#343941]">{ads.slice(0, 5).map((ad) => <div key={ad.id} className="flex items-center gap-3 py-3"><img src={ad.imageUrl} alt="" className="h-12 w-14 rounded-lg bg-slate-100 object-cover" /><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-[#141C55] dark:text-white">{ad.name}</p><p className="text-xs text-slate-500">{ad.productName} · {ad.status === "ACTIVE" ? "Ativo" : ad.status === "PAUSED" ? "Pausado" : ad.status === "DRAFT" ? "Rascunho" : "Arquivado"}</p></div><div className="text-right text-[11px] text-slate-500">{ad.impressions.toLocaleString("pt-BR")} impressões<br />{ad.clicks.toLocaleString("pt-BR")} cliques</div></div>)}</div>}
+    </section>
+  </EnterpriseLayout>;
 }

@@ -1,10 +1,9 @@
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { useSearchParams, Link, useNavigate } from "react-router-dom";
 import {
   CreditCard,
   QrCode,
   FileText,
-  ShieldCheck,
   Check,
   ArrowLeft,
   Lock,
@@ -14,6 +13,7 @@ import Button from "@/components/Button";
 import Input from "@/components/Input";
 import Checkbox from "@/components/Checkbox";
 import FrigusLogo from "@/assets/frigus-logo-text.svg";
+import { api } from "@/utils/api.util";
 
 interface PlanDetails {
   id: string;
@@ -21,6 +21,7 @@ interface PlanDetails {
   category: string;
   price: string;
   priceNumber: number;
+  planCode?: string;
   period: string;
   description: string;
   benefits: string[];
@@ -30,9 +31,10 @@ const PLANS: Record<string, PlanDetails> = {
   family: {
     id: "family",
     name: "Familiar",
+    planCode: "FAMILY",
     category: "Doméstico",
-    price: "R$ 14,90",
-    priceNumber: 14.9,
+    price: "R$ 49,99",
+    priceNumber: 49.99,
     period: "por mês",
     description: "Até 3 estoques, 150 alimentos cadastrados e até 5 membros da família.",
     benefits: [
@@ -45,9 +47,10 @@ const PLANS: Record<string, PlanDetails> = {
   "family-plus": {
     id: "family-plus",
     name: "Familiar Plus",
+    planCode: "PLUS",
     category: "Doméstico",
-    price: "R$ 19,90",
-    priceNumber: 19.9,
+    price: "R$ 29,99",
+    priceNumber: 29.99,
     period: "por mês",
     description: "Produtos ilimitados, receitas avançadas e membros adicionais sem limite.",
     benefits: [
@@ -60,9 +63,10 @@ const PLANS: Record<string, PlanDetails> = {
   commercial: {
     id: "commercial",
     name: "Plano Comercial",
+    planCode: "COMMERCIAL",
     category: "Comercial",
-    price: "R$ 99,90",
-    priceNumber: 99.9,
+    price: "R$ 119,99",
+    priceNumber: 119.99,
     period: "por mês",
     description: "Estoque, compras, controle de lotes e equipe sem limites.",
     benefits: [
@@ -110,54 +114,32 @@ export default function CheckoutPage() {
   const plan = PLANS[planKey] || PLANS["family-plus"];
 
   const [paymentMethod, setPaymentMethod] = useState<"card" | "pix" | "boleto">("card");
-  const [cardName, setCardName] = useState("");
   const [cardNumber, setCardNumber] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvv, setCardCvv] = useState("");
-  const [installments, setInstallments] = useState("1");
   const [acceptTerms, setAcceptTerms] = useState(false);
-  const [coupon, setCoupon] = useState("");
-  const [couponApplied, setCouponApplied] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState("");
   const navigate = useNavigate();
 
-  // Formatar número do cartão
-  const handleCardNumberChange = (value: string) => {
-    const raw = value.replace(/\D/g, "").slice(0, 16);
-    const formatted = raw.match(/.{1,4}/g)?.join(" ") || raw;
-    setCardNumber(formatted);
-  };
-
-  // Formatar validade MM/AA
-  const handleExpiryChange = (value: string) => {
-    const raw = value.replace(/\D/g, "").slice(0, 4);
-    if (raw.length >= 2) {
-      setCardExpiry(`${raw.slice(0, 2)}/${raw.slice(2)}`);
-    } else {
-      setCardExpiry(raw);
-    }
-  };
-
-  const handleApplyCoupon = (e: FormEvent) => {
-    e.preventDefault();
-    if (coupon.trim().toUpperCase() === "FRIGUS10") {
-      setCouponApplied(true);
-    }
-  };
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    if (!acceptTerms) return;
-
+  const handleCheckout = async () => {
+    setCheckoutError("");
+    if (!acceptTerms) { setCheckoutError("Aceite os termos para continuar."); return; }
+    if (!plan.planCode) { setCheckoutError("Este pacote empresarial ainda não está disponível para compra no sistema."); return; }
+    if (paymentMethod === "card" && cardNumber.replace(/\D/g, "").length !== 4) { setCheckoutError("Informe os quatro dígitos de demonstração."); return; }
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      navigate("/checkout/webview/success", { state: { plan } });
-    }, 600);
+    try {
+      const transaction = await api.post<{ id: string; status: string }>("/web/core/transactions/checkout", {
+        planCode: plan.planCode,
+        paymentMethod: paymentMethod === "card" ? "CREDIT_CARD" : paymentMethod === "pix" ? "PIX" : "BOLETO",
+        ...(paymentMethod === "card" ? { fakeCardLast4: cardNumber.replace(/\D/g, "").slice(-4) } : {}),
+        ...(paymentMethod === "pix" ? { fakePixKey: `frigus-${crypto.randomUUID()}` } : {}),
+      });
+      navigate(`/checkout/webview/success?transactionId=${encodeURIComponent(transaction.id)}&plan=${encodeURIComponent(plan.id)}&name=${encodeURIComponent(plan.name)}&price=${encodeURIComponent(finalPrice)}`);
+    } catch (err) {
+      setCheckoutError(err instanceof Error ? err.message : "Não foi possível iniciar a transação. Tente novamente.");
+    } finally { setLoading(false); }
   };
 
-  const discountAmount = couponApplied ? plan.priceNumber * 0.1 : 0;
-  const finalPrice = (plan.priceNumber - discountAmount).toLocaleString("pt-BR", {
+  const finalPrice = plan.priceNumber.toLocaleString("pt-BR", {
     style: "currency",
     currency: "BRL",
   });
@@ -187,6 +169,9 @@ export default function CheckoutPage() {
 
       {/* Main Container */}
       <main className="max-w-6xl w-full mx-auto my-auto py-8">
+        <p className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+          Ambiente de demonstração: a API registra e simula a transação, sem cobrar cartão, emitir PIX ou boleto real.
+        </p>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left Form: Payment Details (7 cols) */}
           <div className="lg:col-span-7 bg-white dark:bg-[#1C1E22] rounded-2xl border border-[#C9DEF9] dark:border-[#343941] p-6 sm:p-8 shadow-sm">
@@ -239,83 +224,31 @@ export default function CheckoutPage() {
               </button>
             </div>
 
+            <div className="mb-5">
+              <Checkbox
+                id="terms-checkout"
+                checked={acceptTerms}
+                onChange={(e) => setAcceptTerms(e.target.checked)}
+                label={<span className="text-xs text-gray-500 dark:text-gray-400">Li e concordo com os Termos de Serviço e com a renovação automática.</span>}
+              />
+            </div>
+
             {/* Credit Card Form */}
             {paymentMethod === "card" && (
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={(e) => { e.preventDefault(); void handleCheckout(); }} className="space-y-4">
                 <Input
-                  id="card-name"
-                  label="Nome impresso no cartão"
-                  placeholder="Como aparece no cartão"
-                  value={cardName}
-                  onChange={(e) => setCardName(e.target.value)}
-                  required
-                />
-
-                <Input
-                  id="card-number"
-                  label="Número do cartão"
-                  placeholder="0000 0000 0000 0000"
+                  id="card-last-four"
+                  label="Quatro dígitos de demonstração"
+                  placeholder="4242"
                   value={cardNumber}
-                  onChange={(e) => handleCardNumberChange(e.target.value)}
-                  maxLength={19}
+                  onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                  maxLength={4}
                   required
                 />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    id="card-expiry"
-                    label="Validade"
-                    placeholder="MM/AA"
-                    value={cardExpiry}
-                    onChange={(e) => handleExpiryChange(e.target.value)}
-                    maxLength={5}
-                    required
-                  />
-
-                  <Input
-                    id="card-cvv"
-                    label="CVV / Código de segurança"
-                    placeholder="000"
-                    type="password"
-                    maxLength={4}
-                    value={cardCvv}
-                    onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, ""))}
-                    required
-                  />
-                </div>
-
-                <div className="flex flex-col gap-1.5 text-left">
-                  <label htmlFor="installments" className="text-sm font-semibold text-frigus-navy dark:text-gray-200">
-                    Parcelamento
-                  </label>
-                  <select
-                    id="installments"
-                    value={installments}
-                    onChange={(e) => setInstallments(e.target.value)}
-                    className="w-full h-11 bg-white dark:bg-[#1C1E22] rounded-lg border border-[#D5DEED] dark:border-[#343941] px-3.5 text-sm text-[#1B2C62] dark:text-white focus:outline-none focus:ring-2 focus:ring-frigus-primary/30"
-                  >
-                    <option value="1">1x de {finalPrice} sem juros</option>
-                    <option value="2">2x de {(plan.priceNumber / 2).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} sem juros</option>
-                    <option value="3">3x de {(plan.priceNumber / 3).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} sem juros</option>
-                  </select>
-                </div>
-
-                <div className="pt-2">
-                  <Checkbox
-                    id="terms-checkout"
-                    checked={acceptTerms}
-                    onChange={(e) => setAcceptTerms(e.target.checked)}
-                    label={
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        Li e concordo com os Termos de Serviço e com a renovação automática.
-                      </span>
-                    }
-                  />
-                </div>
 
                 <Button
                   type="submit"
-                  disabled={loading || !acceptTerms || !cardNumber || !cardName}
+                  disabled={loading || !acceptTerms || cardNumber.length !== 4}
                   className="w-full h-12 text-base font-bold shadow-md shadow-frigus-primary/20 mt-4"
                 >
                   {loading ? "Processando pagamento..." : `Pagar ${finalPrice}`}
@@ -330,17 +263,18 @@ export default function CheckoutPage() {
                   <QrCode className="size-8" />
                 </div>
                 <h4 className="font-bold text-base text-frigus-navy dark:text-white">
-                  Pagamento instantâneo via Pix
+                  Simulação de pagamento via Pix
                 </h4>
                 <p className="text-xs text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-                  Após confirmar, você receberá um QR Code para escanear com o app do seu banco. A liberação do plano é imediata!
+                  O sistema vai registrar uma transação de demonstração. Nenhum QR Code será emitido.
                 </p>
                 <Button
                   type="button"
-                  onClick={() => navigate("/checkout/webview/success", { state: { plan } })}
+                  disabled={loading || !acceptTerms}
+                  onClick={() => void handleCheckout()}
                   className="w-full h-12 text-base font-bold shadow-md"
                 >
-                  Gerar QR Code Pix de {finalPrice}
+                  Simular transação Pix · {finalPrice}
                 </Button>
               </div>
             )}
@@ -352,20 +286,22 @@ export default function CheckoutPage() {
                   <FileText className="size-8" />
                 </div>
                 <h4 className="font-bold text-base text-frigus-navy dark:text-white">
-                  Boleto Bancário
+                  Simulação de boleto
                 </h4>
                 <p className="text-xs text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-                  O boleto pode ser pago em qualquer banco ou aplicativo até o vencimento. O prazo de compensação é de até 2 dias úteis.
+                  O sistema vai registrar uma transação de demonstração. Nenhum boleto será emitido.
                 </p>
                 <Button
                   type="button"
-                  onClick={() => navigate("/checkout/webview/success", { state: { plan } })}
+                  disabled={loading || !acceptTerms}
+                  onClick={() => void handleCheckout()}
                   className="w-full h-12 text-base font-bold shadow-md"
                 >
-                  Emitir Boleto de {finalPrice}
+                  Simular boleto · {finalPrice}
                 </Button>
               </div>
             )}
+            {checkoutError && <p role="alert" className="mt-4 text-sm text-red-700 dark:text-red-300">{checkoutError}</p>}
           </div>
 
           {/* Right Summary: Plan & Benefits (5 cols) */}
@@ -406,39 +342,12 @@ export default function CheckoutPage() {
                 ))}
               </ul>
 
-              {/* Coupon Form */}
-              <div className="mt-6 pt-5 border-t border-[#E1E7F0] dark:border-[#343941]">
-                <form onSubmit={handleApplyCoupon} className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Cupom (ex: FRIGUS10)"
-                    value={coupon}
-                    onChange={(e) => setCoupon(e.target.value)}
-                    className="flex-1 h-9 rounded-lg border border-gray-200 dark:border-gray-700 px-3 text-xs bg-gray-50 dark:bg-gray-800 text-frigus-navy dark:text-white uppercase"
-                  />
-                  <Button type="submit" variant="secondary" className="h-9 px-3 text-xs">
-                    Aplicar
-                  </Button>
-                </form>
-                {couponApplied && (
-                  <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1.5 font-medium">
-                    Cupom de 10% de desconto aplicado com sucesso!
-                  </p>
-                )}
-              </div>
-
               {/* Totals */}
               <div className="mt-6 pt-5 border-t border-[#E1E7F0] dark:border-[#343941] space-y-2 text-sm">
                 <div className="flex justify-between text-gray-500 dark:text-gray-400">
                   <span>Subtotal</span>
                   <span>{plan.price}</span>
                 </div>
-                {couponApplied && (
-                  <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-medium">
-                    <span>Desconto (10%)</span>
-                    <span>- {discountAmount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</span>
-                  </div>
-                )}
                 <div className="flex justify-between text-base font-bold text-frigus-navy dark:text-white pt-2 border-t border-gray-100 dark:border-gray-800">
                   <span>Total a pagar</span>
                   <span className="text-frigus-primary dark:text-[#A7BCFF]">{finalPrice}</span>
@@ -446,14 +355,8 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 flex items-start gap-3.5">
-              <ShieldCheck className="size-6 text-frigus-primary dark:text-[#A7BCFF] shrink-0" />
-              <div className="text-xs">
-                <p className="font-bold text-frigus-navy dark:text-gray-200">Garantia incondicional de 7 dias</p>
-                <p className="text-gray-500 dark:text-gray-400 mt-0.5">
-                  Se você não amar a experiência no Frigus, basta nos enviar uma mensagem e devolveremos 100% do valor.
-                </p>
-              </div>
+            <div className="p-5 rounded-2xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 text-xs text-gray-600 dark:text-gray-300">
+              Esta tela usa o processador de demonstração da API. Não insira dados reais de pagamento.
             </div>
           </div>
         </div>
@@ -461,7 +364,7 @@ export default function CheckoutPage() {
 
       {/* Footer */}
       <footer className="text-center text-xs text-gray-400 dark:text-gray-500 pt-6">
-        © 2026 Frigus. Pagamentos processados com criptografia de ponta a ponta.
+        © 2026 Frigus · Ambiente de demonstração
       </footer>
     </div>
   );

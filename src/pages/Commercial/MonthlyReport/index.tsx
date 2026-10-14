@@ -1,174 +1,65 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Download } from "lucide-react";
 import CommercialLayout from "@/components/CommercialLayout";
-import { StockFlowChart } from "@/components/CommercialCharts";
-import { CommercialExportReportModal } from "@/components/CommercialModals";
+import { api } from "@/utils/api.util";
+
+type MonthlyReport = { month: string; totalExpenses: number; purchaseTotal: number; completedPurchases: number; expensesByCategory: Record<string, number> };
+const thisMonth = new Date().toISOString().slice(0, 7);
+const money = (value: number) => Number(value || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
 export default function CommercialMonthlyReportPage() {
-  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [month, setMonth] = useState(thisMonth);
+  const [report, setReport] = useState<MonthlyReport>();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const purchaseCategories = [
-    { name: "Mercearia", value: "R$ 8.289", percentage: 45 },
-    { name: "Hortifruti", value: "R$ 4.605", percentage: 25 },
-    { name: "Proteínas", value: "R$ 3.684", percentage: 20 },
-    { name: "Outros", value: "R$ 1.842", percentage: 10 },
-  ];
+  useEffect(() => {
+    let active = true;
+    setLoading(true); setError("");
+    void api.get<{ groupId: string }>("/web/core/inventory/active-context")
+      .then((context) => api.get<MonthlyReport>(`/web/core/commercial/groups/${context.groupId}/reports/monthly?month=${month}`))
+      .then((data) => { if (active) setReport(data); })
+      .catch(() => active && setError("Não foi possível carregar o relatório para este mês."))
+      .finally(() => active && setLoading(false));
+    return () => { active = false; };
+  }, [month]);
+
+  const exportCsv = () => {
+    if (!report) return;
+    const rows = [["Categoria", "Valor"], ...Object.entries(report.expensesByCategory).map(([category, amount]) => [category, String(amount)]), ["Total", String(report.totalExpenses)]];
+    const csv = rows.map((row) => row.map((cell) => `"${cell.replaceAll('"', '""')}"`).join(",")).join("\r\n");
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" }));
+    link.download = `frigus-relatorio-${month}.csv`;
+    link.click(); URL.revokeObjectURL(link.href);
+  };
+
+  const categories = Object.entries(report?.expensesByCategory ?? {});
+  const total = Number(report?.totalExpenses ?? 0);
 
   return (
-    <CommercialLayout
-      activeSection="monthly-report"
-      breadcrumb="Área comercial    /    Relatório mensal"
-    >
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">
-            Relatório mensal
-          </h1>
-          <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-1">
-            O resultado da operação, com os principais movimentos de agosto.
-          </p>
+    <CommercialLayout activeSection="monthly-report" breadcrumb="Área comercial    /    Relatório mensal">
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div><h1 className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">Relatório mensal</h1><p className="text-xs text-[#64748B] dark:text-neutral-400 mt-1">Resumo dos lançamentos comerciais salvos no sistema.</p></div>
+          <div className="flex items-center gap-3"><input type="month" value={month} onChange={(e) => setMonth(e.target.value)} className="rounded-xl border border-gray-200 px-3 py-2 text-sm dark:border-[#343941] dark:bg-[#1C1E22] dark:text-white" /><button type="button" disabled={!report || loading} onClick={exportCsv} className="inline-flex items-center gap-2 bg-[#2552C8] hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2.5 rounded-xl text-xs font-semibold"><Download size={16} /> Exportar CSV</button></div>
         </div>
-        <button
-          type="button"
-          onClick={() => setIsExportModalOpen(true)}
-          className="inline-flex items-center gap-2 bg-[#2552C8] hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-        >
-          <Download size={16} />
-          <span>Exportar relatório</span>
-        </button>
+
+        {error && <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
+        <section className="bg-linear-to-br from-[#131C55] via-[#1E2C7A] to-[#2552C8] rounded-3xl p-6 text-white shadow-md">
+          <span className="text-[10px] font-bold tracking-widest text-blue-200 uppercase">FECHAMENTO / {month}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4">
+            <div><p className="text-3xl font-bold">{money(total)}</p><p className="text-xs text-blue-100 mt-1">Despesas registradas</p></div>
+            <div><p className="text-3xl font-bold">{money(Number(report?.purchaseTotal ?? 0))}</p><p className="text-xs text-blue-100 mt-1">Compras concluídas</p></div>
+            <div><p className="text-3xl font-bold">{report?.completedPurchases ?? 0}</p><p className="text-xs text-blue-100 mt-1">Listas de compras concluídas</p></div>
+          </div>
+        </section>
+
+        <section className="bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs p-6">
+          <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">Despesas por categoria</h2>
+          {loading ? <p className="py-6 text-sm text-gray-500">Carregando relatório…</p> : categories.length === 0 ? <p className="py-6 text-sm text-gray-500">Nenhuma despesa cadastrada neste mês.</p> : <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">{categories.map(([category, amount]) => <div key={category} className="p-4 rounded-2xl bg-gray-50 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941]"><span className="text-xs text-[#64748B] dark:text-neutral-400">{category}</span><p className="mt-1 text-xl font-bold text-[#141C55] dark:text-white">{money(Number(amount))}</p><div className="mt-3 h-2 rounded-full bg-gray-200 dark:bg-neutral-700"><div className="h-full rounded-full bg-[#2552C8]" style={{ width: `${total ? (Number(amount) / total) * 100 : 0}%` }} /></div></div>)}</div>}
+        </section>
       </div>
-
-      {/* Hero Banner: FECHAMENTO / AGOSTO 2026 */}
-      <div className="bg-linear-to-br from-[#131C55] via-[#1E2C7A] to-[#2552C8] dark:from-[#0d1527] dark:via-[#152347] dark:to-[#1e3a8a] rounded-3xl p-6 text-white shadow-md relative overflow-hidden border border-transparent dark:border-blue-900/30">
-        <div className="relative z-10 space-y-4">
-          <span className="text-[10px] font-bold tracking-widest text-[#70A2D7] dark:text-blue-300 uppercase">
-            FECHAMENTO  /  AGOSTO 2026
-          </span>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-2 divide-y sm:divide-y-0 sm:divide-x divide-white/10">
-            <div>
-              <p className="text-3xl font-bold font-montserrat text-white">R$ 3.420</p>
-              <p className="text-xs text-[#c9def9] mt-1">
-                Economizados com a redução de perdas
-              </p>
-            </div>
-            <div className="sm:pl-6 pt-4 sm:pt-0">
-              <p className="text-3xl font-bold font-montserrat text-emerald-300">−18%</p>
-              <p className="text-xs text-[#c9def9] mt-1">
-                Desperdício em relação a julho
-              </p>
-            </div>
-            <div className="sm:pl-6 pt-4 sm:pt-0">
-              <p className="text-3xl font-bold font-montserrat text-white">R$ 18.420</p>
-              <p className="text-xs text-[#c9def9] mt-1">
-                Investidos em compras
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Decorative soft circles */}
-        <div className="absolute -bottom-12 -right-12 w-64 h-64 rounded-full bg-white/5 blur-xl pointer-events-none" />
-      </div>
-
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Gráfico de Fluxo de Estoque (7 cols) */}
-        <div className="lg:col-span-7 bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs p-6 space-y-4">
-          <div>
-            <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">
-              Movimentações de estoque
-            </h2>
-            <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-0.5">
-              Entradas e saídas registradas por semana
-            </p>
-          </div>
-          <StockFlowChart />
-        </div>
-
-        {/* Leitura do Mês (5 cols) */}
-        <div className="lg:col-span-5 bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs p-6 space-y-4">
-          <div>
-            <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">
-              Leitura do mês
-            </h2>
-            <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-0.5">
-              Pontos de destaque na rotina do estabelecimento
-            </p>
-          </div>
-
-          <div className="space-y-4 pt-2">
-            <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-gray-50/70 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941]">
-              <span className="w-7 h-7 rounded-lg bg-[#2552C8]/10 dark:bg-blue-900/40 text-[#2552C8] dark:text-blue-400 font-bold text-xs flex items-center justify-center shrink-0">
-                01
-              </span>
-              <div>
-                <p className="text-xs font-bold text-[#141C55] dark:text-white">Menos perdas</p>
-                <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-0.5">
-                  86 kg descartados, ante 105 kg em julho.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-gray-50/70 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941]">
-              <span className="w-7 h-7 rounded-lg bg-[#2552C8]/10 dark:bg-blue-900/40 text-[#2552C8] dark:text-blue-400 font-bold text-xs flex items-center justify-center shrink-0">
-                02
-              </span>
-              <div>
-                <p className="text-xs font-bold text-[#141C55] dark:text-white">Orçamento sob controle</p>
-                <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-0.5">
-                  74% do orçamento de compras utilizado.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3 p-3.5 rounded-2xl bg-gray-50/70 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941]">
-              <span className="w-7 h-7 rounded-lg bg-[#2552C8]/10 dark:bg-blue-900/40 text-[#2552C8] dark:text-blue-400 font-bold text-xs flex items-center justify-center shrink-0">
-                03
-              </span>
-              <div>
-                <p className="text-xs font-bold text-[#141C55] dark:text-white">Atenção à câmara fria</p>
-                <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-0.5">
-                  O setor concentrou 51% do desperdício.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Para onde foram as compras (Full 12 cols) */}
-        <div className="lg:col-span-12 bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs p-6 space-y-4">
-          <div>
-            <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">
-              Para onde foram as compras
-            </h2>
-            <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-0.5">
-              Distribuição dos investimentos por categoria de produtos
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
-            {purchaseCategories.map((cat, idx) => (
-              <div key={idx} className="p-4 rounded-2xl bg-gray-50/70 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941] space-y-2">
-                <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">{cat.name}</span>
-                <p className="text-xl font-bold font-montserrat text-[#141C55] dark:text-white">{cat.value}</p>
-                <div className="w-full h-2 rounded-full bg-gray-200 dark:bg-neutral-700 overflow-hidden">
-                  <div
-                    style={{ width: `${cat.percentage}%` }}
-                    className="h-full bg-[#2552C8] dark:bg-blue-500 rounded-full"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Modal */}
-      <CommercialExportReportModal
-        isOpen={isExportModalOpen}
-        onClose={() => setIsExportModalOpen(false)}
-      />
     </CommercialLayout>
   );
 }

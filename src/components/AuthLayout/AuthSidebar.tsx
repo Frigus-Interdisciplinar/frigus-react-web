@@ -18,7 +18,7 @@ export default function AuthSidebar({
   cardDescription,
 }: AuthSidebarProps) {
   return (
-    <section className="hidden lg:flex flex-col justify-between w-[610px] shrink-0 bg-frigus-navy relative overflow-hidden pl-[64px] pb-[60px] min-h-screen">
+    <section className="hidden lg:flex flex-col justify-between w-[48vw] max-w-[610px] shrink-0 bg-frigus-navy relative overflow-hidden pl-[clamp(32px,5vw,64px)] pb-[60px] min-h-screen">
       <div>
         <a href="/login" className="inline-block mt-[54px]">
           <img
