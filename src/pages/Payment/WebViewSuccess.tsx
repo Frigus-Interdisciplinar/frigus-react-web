@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Check } from "lucide-react";
+import { Check, Clock3, X } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import Button from "@/components/Button";
+import { api } from "@/utils/api.util";
 
 export default function WebViewSuccess() {
   const [searchParams] = useSearchParams();
@@ -10,14 +12,36 @@ export default function WebViewSuccess() {
   const plan = searchParams.get("plan") || "";
   const planName = searchParams.get("name") || "Familiar Plus";
   const planPrice = searchParams.get("price") || "R$ 19,90";
+  const transactionId = searchParams.get("transactionId");
+  const [status, setStatus] = useState<string>("PENDING");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!transactionId) { setError("Não encontramos uma transação para acompanhar."); return; }
+    let active = true;
+    let timer: ReturnType<typeof setTimeout>;
+    const refresh = async () => {
+      try {
+        const transaction = await api.get<{ status: string }>(`/web/core/transactions/${transactionId}`);
+        if (!active) return;
+        setStatus(transaction.status);
+        if (["PENDING", "PROCESSING"].includes(transaction.status)) timer = setTimeout(refresh, 1800);
+      } catch {
+        if (active) setError("Não foi possível consultar o estado da transação.");
+      }
+    };
+    void refresh();
+    return () => { active = false; clearTimeout(timer); };
+  }, [transactionId]);
+
+  const approved = status === "APPROVED";
+  const rejected = ["REJECTED", "ERROR", "CANCELED"].includes(status);
 
   const handleReturnToApp = () => {
     // If running in a mobile webview with postMessage bridge
     const rnwv = (window as unknown as { ReactNativeWebView?: { postMessage: (msg: string) => void } }).ReactNativeWebView;
     if (rnwv) {
-      rnwv.postMessage(
-        JSON.stringify({ type: "PAYMENT_SUCCESS", status: "ok" })
-      );
+      rnwv.postMessage(JSON.stringify({ type: "PAYMENT_RESULT", status }));
     } else if (plan?.startsWith("enterprise")) {
       navigate("/enterprise");
     } else if (plan?.startsWith("commercial")) {
@@ -42,16 +66,17 @@ export default function WebViewSuccess() {
 
           <main className="p-6 flex flex-col items-center text-center">
             {/* Success Icon */}
-            <div className="w-16 h-16 rounded-full bg-[#E8F5EE] dark:bg-[#122C23] text-[#22795C] dark:text-[#48C78E] flex items-center justify-center mt-6 shadow-sm">
-              <Check className="w-9 h-9 stroke-[3]" />
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center mt-6 shadow-sm ${approved ? "bg-[#E8F5EE] dark:bg-[#122C23] text-[#22795C] dark:text-[#48C78E]" : rejected ? "bg-red-100 dark:bg-red-950/40 text-red-700 dark:text-red-300" : "bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300"}`}>
+              {approved ? <Check className="w-9 h-9 stroke-[3]" /> : rejected ? <X className="w-9 h-9" /> : <Clock3 className="w-9 h-9" />}
             </div>
 
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-6">
-              Pagamento confirmado!
+              {approved ? "Transação aprovada" : rejected ? "Transação não aprovada" : "Aguardando confirmação"}
             </h2>
             <p className="text-sm text-slate-600 dark:text-neutral-400 mt-2.5 max-w-[320px] leading-relaxed">
-              Seu plano já está ativo. Você pode voltar ao aplicativo e continuar de onde parou.
+              {approved ? "A simulação aprovou a transação e ativou o plano. Nenhuma cobrança real foi feita." : rejected ? "A transação de demonstração não foi aprovada. Você pode voltar e tentar novamente." : "Estamos consultando o processamento de demonstração. Nenhuma cobrança real será feita."}
             </p>
+            {error && <p role="alert" className="mt-3 text-xs text-red-700 dark:text-red-300">{error}</p>}
 
             {/* Receipt Card */}
             <div className="w-full mt-8 p-5 rounded-2xl bg-slate-50 dark:bg-[#1C1E24] border border-slate-200/80 dark:border-[#2C303B] text-left">
@@ -66,7 +91,7 @@ export default function WebViewSuccess() {
 
               <div className="flex items-center justify-between">
                 <span className="text-[11px] font-bold text-slate-400 dark:text-neutral-400 uppercase tracking-wider">
-                  VALOR PAGO
+                  VALOR DA TRANSAÇÃO
                 </span>
                 <span className="text-lg font-bold text-slate-900 dark:text-white">
                   {planPrice}
@@ -83,7 +108,7 @@ export default function WebViewSuccess() {
             onClick={handleReturnToApp}
             className="w-full h-12 text-base font-semibold"
           >
-            Voltar ao aplicativo
+            {approved ? "Voltar ao aplicativo" : "Voltar"}
           </Button>
         </div>
       </div>

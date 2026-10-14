@@ -3,16 +3,18 @@ import { X } from "lucide-react";
 
 export type NewFoodData = {
   name: string;
-  category: string;
+  category: "FRUIT" | "VEGETABLE" | "DAIRY" | "GRAIN" | "MEAT" | "BEVERAGE";
   location: "Despensa" | "Geladeira" | "Freezer";
-  quantity: string;
+  quantity: number;
+  unitOfMeasure: "KILOGRAM" | "GRAM" | "LITER" | "MILLILITER" | "UNIT" | "DOZEN" | "PACKAGE";
+  unitPrice: number;
   expiration: string;
 };
 
 export type AddFoodModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (data: NewFoodData) => void;
+  onAdd: (data: NewFoodData) => Promise<void>;
 };
 
 export default function AddFoodModal({
@@ -21,32 +23,42 @@ export default function AddFoodModal({
   onAdd,
 }: AddFoodModalProps) {
   const [name, setName] = useState("");
-  const [category, setCategory] = useState("");
+  const [category, setCategory] = useState<NewFoodData["category"]>("GRAIN");
   const [location, setLocation] = useState<"Despensa" | "Geladeira" | "Freezer">("Despensa");
-  const [quantity, setQuantity] = useState("");
+  const [quantity, setQuantity] = useState("1");
+  const [unitOfMeasure, setUnitOfMeasure] = useState<NewFoodData["unitOfMeasure"]>("UNIT");
+  const [unitPrice, setUnitPrice] = useState("");
   const [expiration, setExpiration] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
 
-    onAdd({
-      name,
-      category: category || "Mercearia",
-      location,
-      quantity: quantity || "1 un",
-      expiration: expiration || "Em 7 dias",
-    });
+    if (!expiration) { setError("Informe a validade do produto."); return; }
+    if (Number(unitPrice) <= 0) { setError("Informe um preço unitário maior que zero."); return; }
+    setSaving(true);
+    setError("");
+    try {
+      await onAdd({ name: name.trim(), category, location, quantity: Number(quantity), unitOfMeasure, unitPrice: Number(unitPrice), expiration });
 
     // Reset and close
     setName("");
-    setCategory("");
+    setCategory("GRAIN");
     setLocation("Despensa");
-    setQuantity("");
+    setQuantity("1");
+    setUnitOfMeasure("UNIT");
+    setUnitPrice("");
     setExpiration("");
     onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível salvar o produto.");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -96,17 +108,15 @@ export default function AddFoodModal({
               </label>
               <select
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                onChange={(e) => setCategory(e.target.value as NewFoodData["category"])}
                 className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] dark:bg-[#252A32] border border-[#DFE7F2] dark:border-[#343941] text-sm text-[#131C55] dark:text-white focus:outline-hidden focus:border-frigus-primary transition-colors"
               >
-                <option value="">Selecione a categoria</option>
-                <option value="Laticínios">Laticínios</option>
-                <option value="Vegetais">Vegetais</option>
-                <option value="Carnes">Carnes</option>
-                <option value="Frutas">Frutas</option>
-                <option value="Grãos">Grãos</option>
-                <option value="Mercearia">Mercearia</option>
-                <option value="Congelados">Congelados</option>
+                <option value="DAIRY">Laticínios</option>
+                <option value="VEGETABLE">Vegetais</option>
+                <option value="MEAT">Carnes</option>
+                <option value="FRUIT">Frutas</option>
+                <option value="GRAIN">Grãos e mercearia</option>
+                <option value="BEVERAGE">Bebidas</option>
               </select>
             </div>
 
@@ -132,14 +142,15 @@ export default function AddFoodModal({
               <label className="text-xs font-semibold text-[#131C55] dark:text-neutral-200 uppercase tracking-wider block mb-2">
                 QUANTIDADE
               </label>
+              <div className="flex gap-2">
               <input
-                type="text"
-                required
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                placeholder="Informe a quantidade (ex: 2 un, 1 kg)"
+                type="number" min="1" step="1" required
+                value={quantity} onChange={(e) => setQuantity(e.target.value)}
                 className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] dark:bg-[#252A32] border border-[#DFE7F2] dark:border-[#343941] text-sm text-[#131C55] dark:text-white placeholder:text-[#758198] dark:placeholder:text-neutral-500 focus:outline-hidden focus:border-frigus-primary transition-colors"
               />
+              <select value={unitOfMeasure} onChange={(e) => setUnitOfMeasure(e.target.value as NewFoodData["unitOfMeasure"])} className="h-12 rounded-xl border border-[#DFE7F2] bg-[#F5F8FC] px-2 text-xs dark:border-[#343941] dark:bg-[#252A32] dark:text-white">
+                <option value="UNIT">un.</option><option value="KILOGRAM">kg</option><option value="GRAM">g</option><option value="LITER">L</option><option value="MILLILITER">ml</option><option value="DOZEN">dúzia</option><option value="PACKAGE">pct.</option>
+              </select></div>
             </div>
 
             <div>
@@ -147,15 +158,19 @@ export default function AddFoodModal({
                 VALIDADE
               </label>
               <input
-                type="text"
+                type="date"
                 required
                 value={expiration}
                 onChange={(e) => setExpiration(e.target.value)}
-                placeholder="Informe a validade (ex: 20 out)"
                 className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] dark:bg-[#252A32] border border-[#DFE7F2] dark:border-[#343941] text-sm text-[#131C55] dark:text-white placeholder:text-[#758198] dark:placeholder:text-neutral-500 focus:outline-hidden focus:border-frigus-primary transition-colors"
               />
             </div>
           </div>
+          <div>
+            <label className="text-xs font-semibold text-[#131C55] dark:text-neutral-200 uppercase tracking-wider block mb-2">PREÇO UNITÁRIO (R$)</label>
+            <input type="number" min="0.01" step="0.01" required value={unitPrice} onChange={(e) => setUnitPrice(e.target.value)} className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] dark:bg-[#252A32] border border-[#DFE7F2] dark:border-[#343941] text-sm text-[#131C55] dark:text-white" />
+          </div>
+          {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
 
           {/* Ações */}
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#DFE7F2] dark:border-[#343941] mt-2">
@@ -168,9 +183,10 @@ export default function AddFoodModal({
             </button>
             <button
               type="submit"
-              className="h-10 px-6 rounded-xl bg-[#2552C8] hover:bg-blue-700 text-sm font-semibold text-white shadow-xs transition-colors cursor-pointer"
+              disabled={saving}
+              className="h-10 px-6 rounded-xl bg-[#2552C8] hover:bg-blue-700 text-sm font-semibold text-white shadow-xs transition-colors cursor-pointer disabled:opacity-60"
             >
-              Adicionar
+              {saving ? "Salvando…" : "Adicionar"}
             </button>
           </div>
         </form>

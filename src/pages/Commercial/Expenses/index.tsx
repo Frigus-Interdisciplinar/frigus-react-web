@@ -1,50 +1,45 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import CommercialLayout from "@/components/CommercialLayout";
-import { WeeklySpendingChart } from "@/components/CommercialCharts";
 import { CommercialRegisterPurchaseModal } from "@/components/CommercialModals";
+import { api } from "@/utils/api.util";
+
+type Expense = { id: string; description: string; category: string; amount: number; expenseDate: string; supplier?: string };
 
 export default function CommercialExpensesPage() {
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
+  const [groupId, setGroupId] = useState<string>();
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [loadError, setLoadError] = useState("");
 
-  const recentOrders = [
-    {
-      id: "#PC-0826-012",
-      supplier: "Distribuidora Alfa",
-      value: "R$ 1.490,00",
-      status: "Recebido",
-      statusColor: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60",
-    },
-    {
-      id: "#PC-0826-011",
-      supplier: "Hortifruti Central",
-      value: "R$ 840,00",
-      status: "Em trânsito",
-      statusColor: "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/60",
-    },
-    {
-      id: "#PC-0826-010",
-      supplier: "Atacadista Bom Preço",
-      value: "R$ 620,00",
-      status: "A aprovar",
-      statusColor: "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/60",
-    },
-  ];
+  const loadExpenses = async (id: string) => {
+    const page = await api.get<{ content: Expense[] }>(`/web/core/commercial/groups/${id}/expenses?size=100`);
+    setExpenses(page.content);
+  };
 
-  const upcomingPayments = [
-    {
-      day: "07",
-      month: "SET",
-      supplier: "Distribuidora Alfa",
-      value: "R$ 1.490,00",
-    },
-    {
-      day: "10",
-      month: "SET",
-      supplier: "Hortifruti Central",
-      value: "R$ 840,00",
-    },
-  ];
+  useEffect(() => {
+    let active = true;
+    void api.get<{ groupId: string }>("/web/core/inventory/active-context")
+      .then(async (context) => { if (!active) return; setGroupId(context.groupId); await loadExpenses(context.groupId); })
+      .catch(() => active && setLoadError("Não foi possível carregar as despesas comerciais."));
+    return () => { active = false; };
+  }, []);
+
+  const createExpense = async (input: { description: string; category: string; amount: number; expenseDate: string; supplier: string }) => {
+    if (!groupId) throw new Error("Grupo comercial indisponível");
+    await api.post(`/web/core/commercial/groups/${groupId}/expenses`, input);
+    await loadExpenses(groupId);
+  };
+
+  const currentMonthExpenses = expenses.filter((expense) => expense.expenseDate.startsWith(new Date().toISOString().slice(0, 7)));
+  const monthTotal = currentMonthExpenses.reduce((total, expense) => total + Number(expense.amount), 0);
+  const recentOrders = expenses.slice(0, 8).map((expense) => ({
+    id: `#${expense.id.slice(0, 8)}`,
+    supplier: expense.supplier || expense.description,
+    value: Number(expense.amount).toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+    status: "Registrada",
+    statusColor: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60",
+  }));
 
   return (
     <CommercialLayout
@@ -76,25 +71,25 @@ export default function CommercialExpensesPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <span className="text-[10px] font-bold text-[#64748B] dark:text-neutral-400 tracking-wider uppercase">
-              ORÇAMENTO / AGOSTO 2026
+              TOTAL REGISTRADO / {new Date().toLocaleDateString("pt-BR", { month: "long", year: "numeric" }).toUpperCase()}
             </span>
             <div className="flex items-baseline gap-2 mt-1">
               <span className="text-3xl font-bold font-montserrat text-[#141C55] dark:text-white">
-                R$ 18.420
+                {monthTotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
               </span>
               <span className="text-xs text-[#64748B] dark:text-neutral-400">
-                de R$ 25.000 planejados
+                em {currentMonthExpenses.length} lançamentos
               </span>
             </div>
           </div>
           <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 px-3 py-1.5 rounded-xl self-start sm:self-auto">
-            R$ 6.580 disponíveis
+            {expenses.length} lançamentos no total
           </span>
         </div>
 
         {/* Budget Progress Bar */}
         <div className="w-full h-3 rounded-full bg-gray-100 dark:bg-[#252A32] overflow-hidden">
-          <div className="h-full bg-linear-to-r from-[#2552C8] to-[#467bf7] rounded-full w-[74%]" />
+          <div className="h-full bg-linear-to-r from-[#2552C8] to-[#467bf7] rounded-full w-full" />
         </div>
       </div>
 
@@ -112,7 +107,9 @@ export default function CommercialExpensesPage() {
               </p>
             </div>
           </div>
-          <WeeklySpendingChart />
+          <div className="rounded-2xl bg-gray-50 dark:bg-[#252A32] p-6 text-sm text-gray-600 dark:text-gray-300">
+            {currentMonthExpenses.length ? `${currentMonthExpenses.length} despesas registradas neste mês. Consulte a lista para ver cada lançamento.` : "Ainda não há despesas registradas neste mês."}
+          </div>
         </div>
 
         {/* Right: Próximos pagamentos (5 cols) */}
@@ -127,29 +124,12 @@ export default function CommercialExpensesPage() {
           </div>
 
           <div className="space-y-3 pt-2">
-            {upcomingPayments.map((pay, idx) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between p-3.5 rounded-2xl bg-gray-50/70 dark:bg-[#252A32]/60 border border-gray-100 dark:border-[#343941]/60"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 flex flex-col items-center justify-center text-[#2552C8] dark:text-blue-400">
-                    <span className="text-xs font-bold leading-none">{pay.day}</span>
-                    <span className="text-[9px] font-bold tracking-wider leading-none mt-0.5">{pay.month}</span>
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-[#141C55] dark:text-white">{pay.supplier}</p>
-                    <p className="text-[11px] text-[#64748B] dark:text-neutral-400">Boleto bancário</p>
-                  </div>
-                </div>
-                <span className="text-xs font-bold text-[#141C55] dark:text-white">{pay.value}</span>
-              </div>
-            ))}
+            <p className="text-sm text-gray-500 dark:text-gray-400">A API de despesas não controla vencimentos ou pagamentos futuros.</p>
           </div>
 
           <div className="pt-4 border-t border-gray-100 dark:border-[#343941] flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">Total previsto</span>
-            <span className="text-sm font-bold text-[#141C55] dark:text-white">R$ 2.330,00</span>
+            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">Despesas do mês</span>
+            <span className="text-sm font-bold text-[#141C55] dark:text-white">{monthTotal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</span>
           </div>
         </div>
 
@@ -163,7 +143,7 @@ export default function CommercialExpensesPage() {
               <p className="text-xs text-[#64748B] dark:text-neutral-400">Últimas compras registradas para a operação</p>
             </div>
             <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-50 dark:bg-blue-950/40 text-[#2552C8] dark:text-blue-300">
-              12 pedidos no mês
+              {expenses.length} lançamentos
             </span>
           </div>
 
@@ -177,6 +157,8 @@ export default function CommercialExpensesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-[#343941]">
+                {loadError && <tr><td colSpan={3} className="py-5 text-sm text-red-700">{loadError}</td></tr>}
+                {!loadError && recentOrders.length === 0 && <tr><td colSpan={3} className="py-5 text-sm text-gray-500">Nenhuma despesa cadastrada.</td></tr>}
                 {recentOrders.map((order, idx) => (
                   <tr key={idx} className="hover:bg-gray-50/70 dark:hover:bg-[#252A32]/50 transition-colors">
                     <td className="py-3.5 px-3">
@@ -201,6 +183,7 @@ export default function CommercialExpensesPage() {
       <CommercialRegisterPurchaseModal
         isOpen={isPurchaseModalOpen}
         onClose={() => setIsPurchaseModalOpen(false)}
+        onCreate={createExpense}
       />
     </CommercialLayout>
   );

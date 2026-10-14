@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { UserPlus, Shield } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import Badge from "@/components/Badge";
 import { InviteMemberModal } from "@/components/Modal";
 import type { InviteMemberData } from "@/components/Modal/InviteMemberModal";
+import { api } from "@/utils/api.util";
 
 type Member = {
   id: string;
@@ -17,66 +18,50 @@ type Member = {
   avatarBg: string;
 };
 
-const initialMembers: Member[] = [
-  {
-    id: "1",
-    name: "Henrique Paulo",
-    email: "henrique@email.com",
-    role: "Administrador",
-    roleType: "admin",
-    lastAccess: "Agora",
-    isCurrentUser: true,
-    avatarLetter: "H",
-    avatarBg: "bg-frigus-ice text-frigus-navy",
-  },
-  {
-    id: "2",
-    name: "Marina Souza",
-    email: "marina@email.com",
-    role: "Pode editar",
-    roleType: "editor",
-    lastAccess: "Hoje, 08:32",
-    avatarLetter: "M",
-    avatarBg: "bg-blue-100 text-blue-700",
-  },
-  {
-    id: "3",
-    name: "Lucas Paulo",
-    email: "lucas@email.com",
-    role: "Pode editar",
-    roleType: "editor",
-    lastAccess: "Ontem, 20:16",
-    avatarLetter: "L",
-    avatarBg: "bg-amber-100 text-amber-700",
-  },
-  {
-    id: "4",
-    name: "Clara Paulo",
-    email: "clara@email.com",
-    role: "Visualizar",
-    roleType: "viewer",
-    lastAccess: "12 ago, 19:40",
-    avatarLetter: "C",
-    avatarBg: "bg-purple-100 text-purple-700",
-  },
-];
-
 export default function FamilyMembersPage() {
-  const [members, setMembers] = useState<Member[]>(initialMembers);
+  const [members, setMembers] = useState<Member[]>([]);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [groupId, setGroupId] = useState<string>();
+  const [error, setError] = useState("");
 
-  const handleInvite = (data: InviteMemberData) => {
-    const newMember: Member = {
-      id: String(Date.now()),
-      name: data.name,
-      email: data.email,
-      role: data.role,
-      roleType: data.role === "Pode editar" ? "editor" : "viewer",
-      lastAccess: "Pendente",
-      avatarLetter: data.name.charAt(0).toUpperCase() || "U",
-      avatarBg: "bg-emerald-100 text-emerald-700",
-    };
-    setMembers((prev) => [...prev, newMember]);
+  useEffect(() => {
+    let active = true;
+    api.get<Array<{ id: string; members?: Array<{ userId: string; name: string; email: string; role: string }> }>>("/web/core/groups")
+      .then((groups) => {
+        if (!active) return;
+        const group = groups[0];
+        if (!group) { setError("Ainda não há um grupo familiar para compartilhar."); return; }
+        setGroupId(group.id);
+        setMembers((group.members ?? []).map((member) => ({
+          id: member.userId,
+          name: member.name,
+          email: member.email,
+          role: member.role === "OWNER" ? "Administrador" : member.role === "EDITOR" ? "Pode editar" : "Visualizar",
+          roleType: member.role === "OWNER" ? "admin" : member.role === "EDITOR" ? "editor" : "viewer",
+          lastAccess: "Membro do grupo",
+          isCurrentUser: member.role === "OWNER",
+          avatarLetter: member.name?.charAt(0).toUpperCase() || "U",
+          avatarBg: "bg-frigus-ice text-frigus-navy",
+        })));
+      })
+      .catch(() => active && setError("Não foi possível carregar os membros. Tente novamente."));
+    return () => { active = false; };
+  }, []);
+
+  const handleInvite = async (data: InviteMemberData) => {
+    if (!groupId) return;
+    setError("");
+    try {
+      await api.post(`/web/core/groups/${groupId}/invitations`, {
+        email: data.email,
+        name: data.name,
+        memberRole: data.role === "Pode editar" ? "EDITOR" : "VIEWER",
+      });
+      setIsInviteOpen(false);
+      setError("Convite enviado. A pessoa aparecerá na lista depois de aceitar.");
+    } catch {
+      setError("Não foi possível enviar o convite. Confira o e-mail e tente novamente.");
+    }
   };
 
   return (
@@ -102,6 +87,7 @@ export default function FamilyMembersPage() {
             <span>Convidar membro</span>
           </button>
         </div>
+        {error && <p role="status" className="text-sm text-amber-700 dark:text-amber-300">{error}</p>}
 
         {/* Hero Banner */}
         <div className="bg-frigus-primary dark:bg-[#18233C] rounded-3xl p-6 md:p-8 text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm border border-transparent dark:border-blue-900/30">

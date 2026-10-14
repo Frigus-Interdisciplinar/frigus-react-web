@@ -1,9 +1,24 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { User, Mail, Phone, Home, Shield, Bell, Edit } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import Badge from "@/components/Badge";
+import { useStore } from "@/store/store";
+import { api } from "@/utils/api.util";
 
 export default function ProfilePage() {
+  const user = useStore((state) => state.user);
+  const [groupName, setGroupName] = useState("—");
+  const [memberCount, setMemberCount] = useState(1);
+  const [itemCount, setItemCount] = useState(0);
+  const accountLabel = user?.accountType === "COMMERCIAL" ? "Comercial" : user?.accountType === "BUSINESS" ? "Empresarial" : "Doméstica";
+  const initials = user?.name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() ?? "";
+  useEffect(() => {
+    void api.get<Array<{ name: string; membersCount: number }>>("/web/core/groups").then((groups) => {
+      if (groups[0]) { setGroupName(groups[0].name); setMemberCount(groups[0].membersCount); }
+    }).catch(() => undefined);
+    void api.get<{ itemCount: number }>("/web/core/inventory/summary").then((summary) => setItemCount(summary.itemCount)).catch(() => undefined);
+  }, []);
   return (
     <AppLayout activeSection="profile">
       <div className="space-y-6 max-w-4xl mx-auto">
@@ -22,25 +37,25 @@ export default function ProfilePage() {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-5">
               <div className="w-20 h-20 rounded-full bg-frigus-ice dark:bg-[#252A32] text-frigus-navy dark:text-blue-300 font-montserrat font-bold text-2xl flex items-center justify-center border-4 border-blue-50 dark:border-[#343941] shadow-sm shrink-0">
-                HP
+                {initials}
               </div>
               <div className="text-center sm:text-left space-y-1">
                 <div className="flex items-center justify-center sm:justify-start gap-2">
                   <h2 className="font-montserrat font-bold text-xl text-frigus-navy dark:text-white">
-                    Henrique Paulo
+                    {user?.name}
                   </h2>
                   <Badge variant="success">Conta ativa</Badge>
                 </div>
                 <p className="text-xs text-gray-400 dark:text-neutral-400 font-medium">
-                  henrique.paulo@exemplo.com
+                  {user?.email}
                 </p>
               </div>
             </div>
 
-            <button className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#343941] text-xs font-bold text-frigus-navy dark:text-white hover:bg-gray-50 dark:hover:bg-[#252A32] transition-colors shadow-xs cursor-pointer">
+            <Link to="/settings" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#343941] text-xs font-bold text-frigus-navy dark:text-white hover:bg-gray-50 dark:hover:bg-[#252A32] transition-colors shadow-xs cursor-pointer">
               <Edit size={15} />
               <span>Editar perfil</span>
-            </button>
+            </Link>
           </div>
 
           {/* Faixa de Estatísticas */}
@@ -50,7 +65,7 @@ export default function ProfilePage() {
                 Plano
               </span>
               <span className="font-montserrat font-bold text-base text-frigus-primary dark:text-blue-400">
-                Doméstico
+                {accountLabel}
               </span>
             </div>
             <div className="text-center sm:text-left p-3 rounded-2xl bg-gray-50 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941]">
@@ -58,7 +73,7 @@ export default function ProfilePage() {
                 Membros
               </span>
               <span className="font-montserrat font-bold text-base text-frigus-navy dark:text-white">
-                4 pessoas
+                {memberCount} {memberCount === 1 ? "pessoa" : "pessoas"}
               </span>
             </div>
             <div className="text-center sm:text-left p-3 rounded-2xl bg-gray-50 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941]">
@@ -66,7 +81,7 @@ export default function ProfilePage() {
                 Estoque
               </span>
               <span className="font-montserrat font-bold text-base text-frigus-navy dark:text-white">
-                46 itens
+                {itemCount} itens
               </span>
             </div>
           </div>
@@ -84,9 +99,9 @@ export default function ProfilePage() {
               </p>
             </div>
 
-            <button className="text-xs font-bold text-frigus-primary dark:text-blue-400 hover:underline cursor-pointer">
+            <Link to="/settings" className="text-xs font-bold text-frigus-primary dark:text-blue-400 hover:underline cursor-pointer">
               Editar dados pessoais
-            </button>
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -95,7 +110,7 @@ export default function ProfilePage() {
                 <User size={14} />
                 <span>Nome completo</span>
               </div>
-              <p className="font-bold text-frigus-navy dark:text-white text-sm">Henrique Paulo</p>
+              <p className="font-bold text-frigus-navy dark:text-white text-sm">{user?.name}</p>
             </div>
 
             <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941] space-y-1">
@@ -103,7 +118,7 @@ export default function ProfilePage() {
                 <Mail size={14} />
                 <span>E-mail cadastrado</span>
               </div>
-              <p className="font-bold text-frigus-navy dark:text-white text-sm">henrique.paulo@exemplo.com</p>
+              <p className="font-bold text-frigus-navy dark:text-white text-sm">{user?.email}</p>
             </div>
 
             <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941] space-y-1">
@@ -111,7 +126,7 @@ export default function ProfilePage() {
                 <Phone size={14} />
                 <span>Telefone</span>
               </div>
-              <p className="font-bold text-frigus-navy dark:text-white text-sm">(11) 99999-9999</p>
+              <p className="font-bold text-frigus-navy dark:text-white text-sm">Não informado</p>
             </div>
 
             <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941] space-y-1">
@@ -119,7 +134,7 @@ export default function ProfilePage() {
                 <Home size={14} />
                 <span>Nome da casa</span>
               </div>
-              <p className="font-bold text-frigus-navy dark:text-white text-sm">Casa Henrique</p>
+              <p className="font-bold text-frigus-navy dark:text-white text-sm">{groupName}</p>
             </div>
           </div>
         </div>

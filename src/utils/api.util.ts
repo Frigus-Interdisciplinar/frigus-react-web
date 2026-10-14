@@ -11,6 +11,7 @@ const axiosInstance = axios.create({
     "Content-Type": "application/json",
   },
 });
+let refreshInFlight: Promise<void> | null = null;
 
 // funcao para chamada de API
 export async function api<T>(
@@ -33,6 +34,31 @@ export async function api<T>(
     if (axios.isAxiosError(error)) {
       const axiosError = error as AxiosError<ErrorResponse>;
 
+      if (
+        axiosError.response?.status === 401 &&
+        endpoint !== "/web/auth/login" &&
+        endpoint !== "/web/auth/refresh" &&
+        endpoint !== "/web/auth/logout"
+      ) {
+        try {
+          refreshInFlight ??= axiosInstance
+            .post("/web/auth/refresh", {}, { withCredentials: true })
+            .then(() => undefined)
+            .finally(() => { refreshInFlight = null; });
+          await refreshInFlight;
+          const retry = await axiosInstance.request<T>({
+            url: endpoint,
+            method: httpMethod,
+            data: body,
+            withCredentials: true,
+          });
+          return retry.data;
+        } catch {
+          window.dispatchEvent(new Event("frigus:session-expired"));
+          // Use the original authorization error if the refresh cookie is missing or expired.
+        }
+      }
+
       const serverMessage = axiosError.response?.data?.message;
 
       throw new Error(serverMessage || "Erro na requisição.", { cause: error });
@@ -45,4 +71,5 @@ export async function api<T>(
 api.get = <T>(endpoint: string) => api<T>(endpoint, "GET");
 api.post = <T>(endpoint: string, body: unknown) => api<T>(endpoint, "POST", body);
 api.put = <T>(endpoint: string, body: unknown) => api<T>(endpoint, "PUT", body);
+api.patch = <T>(endpoint: string, body: unknown) => api<T>(endpoint, "PATCH", body);
 api.delete = <T>(endpoint: string) => api<T>(endpoint, "DELETE");

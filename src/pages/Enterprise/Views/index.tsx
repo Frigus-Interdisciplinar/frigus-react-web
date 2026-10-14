@@ -1,181 +1,26 @@
-import { useState } from "react";
-import { Download, Users, Eye, TrendingUp } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Eye, MousePointerClick } from "lucide-react";
 import EnterpriseLayout from "@/components/EnterpriseLayout";
-import { ViewsByPeriodChart } from "@/components/EnterpriseCharts";
-import { EnterpriseCreateAdModal } from "@/components/EnterpriseModals";
+import { listMyAdvertisements, type Advertisement } from "@/services/advertisement.service";
 
 export default function EnterpriseViewsPage() {
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-
-  const productRanking = [
-    {
-      rank: "01",
-      name: "Kit brunch artesanal",
-      category: "Congelados",
-      views: "31,6 mil",
-      share: 32,
-    },
-    {
-      rank: "02",
-      name: "Leite de amêndoas 1 L",
-      category: "Bebidas",
-      views: "24,8 mil",
-      share: 25,
-    },
-    {
-      rank: "03",
-      name: "Omelete de espinafre",
-      category: "Prontos",
-      views: "19,7 mil",
-      share: 20,
-    },
-    {
-      rank: "04",
-      name: "Tomate-cereja premium",
-      category: "Hortifruti",
-      views: "15,4 mil",
-      share: 15,
-    },
-    {
-      rank: "05",
-      name: "Wrap de falafel",
-      category: "Padaria",
-      views: "12,2 mil",
-      share: 8,
-    },
-  ];
-
-  return (
-    <EnterpriseLayout
-      activeSection="views"
-      breadcrumb="Área empresarial    /    Visualizações"
-      onOpenCreateAd={() => setIsCreateOpen(true)}
-    >
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">
-            Visualizações por produto
-          </h1>
-          <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-1">
-            Compare quais anúncios estão trazendo mais atenção.
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => {}}
-          className="inline-flex items-center gap-2 bg-white dark:bg-[#1C1E22] border border-[#E1E7F0] dark:border-[#343941] text-[#141C55] dark:text-white hover:bg-gray-50 dark:hover:bg-[#252A32] px-4 py-2.5 rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-        >
-          <Download size={16} />
-          <span>Exportar dados</span>
-        </button>
-      </div>
-
-      {/* 3 Metric Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#E1E7F0] dark:border-[#343941] shadow-xs flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-950/40 text-[#2552C8] dark:text-blue-400 flex items-center justify-center font-bold">
-            <Users size={22} />
-          </div>
-          <div>
-            <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">
-              48,2 mil
-            </p>
-            <span className="text-xs text-[#64748B] dark:text-neutral-400">
-              Visitantes únicos
-            </span>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#E1E7F0] dark:border-[#343941] shadow-xs flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
-            <Eye size={22} />
-          </div>
-          <div>
-            <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">
-              128,4 mil
-            </p>
-            <span className="text-xs text-[#64748B] dark:text-neutral-400">
-              Visualizações totais
-            </span>
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#E1E7F0] dark:border-[#343941] shadow-xs flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
-            <TrendingUp size={22} />
-          </div>
-          <div>
-            <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">
-              4,2 mil
-            </p>
-            <span className="text-xs text-[#64748B] dark:text-neutral-400">
-              Média diária
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Grid: Visitas por período (7 cols) + Ranking por produto (5 cols) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Visitas por período */}
-        <div className="lg:col-span-7 bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#E1E7F0] dark:border-[#343941] shadow-xs p-6 space-y-4">
-          <div>
-            <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">
-              Visitas por período
-            </h2>
-            <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-0.5">
-              Por semana · setembro 2026
-            </p>
-          </div>
-
-          <ViewsByPeriodChart />
-        </div>
-
-        {/* Ranking por produto */}
-        <div className="lg:col-span-5 bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#E1E7F0] dark:border-[#343941] shadow-xs p-6 space-y-4">
-          <div>
-            <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">
-              Ranking por produto
-            </h2>
-            <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-0.5">
-              Participação nas visualizações
-            </p>
-          </div>
-
-          <div className="space-y-4 pt-2">
-            {productRanking.map((prod) => (
-              <div key={prod.rank} className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2.5">
-                    <span className="font-bold text-[#2552C8] dark:text-blue-400">
-                      {prod.rank}
-                    </span>
-                    <span className="font-bold text-[#141C55] dark:text-white">
-                      {prod.name}
-                    </span>
-                  </div>
-                  <span className="text-[#64748B] dark:text-neutral-400 font-semibold">
-                    {prod.views} ({prod.share}%)
-                  </span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-[#F5F8FC] dark:bg-[#252A32] overflow-hidden">
-                  <div
-                    style={{ width: `${prod.share}%` }}
-                    className="h-full bg-linear-to-r from-[#2552C8] to-[#467bf7] rounded-full transition-all duration-300"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Modal */}
-      <EnterpriseCreateAdModal
-        isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
-      />
-    </EnterpriseLayout>
-  );
+  const [ads, setAds] = useState<Advertisement[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  useEffect(() => {
+    let active = true;
+    listMyAdvertisements().then((page) => { if (active) setAds(page.content ?? []); })
+      .catch((reason: unknown) => { if (active) setError(reason instanceof Error ? reason.message : "Não foi possível carregar as métricas."); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+  const impressions = ads.reduce((sum, ad) => sum + ad.impressions, 0);
+  const clicks = ads.reduce((sum, ad) => sum + ad.clicks, 0);
+  const rate = impressions ? ((clicks / impressions) * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 }) : "0";
+  return <EnterpriseLayout activeSection="views" breadcrumb="Área empresarial    /    Visualizações">
+    <div><h1 className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">Visualizações e cliques</h1><p className="mt-1 text-xs text-[#64748B] dark:text-neutral-400">Contagens acumuladas dos anúncios da sua empresa.</p></div>
+    {error && <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
+    <div className="grid gap-4 sm:grid-cols-3">{[{ label: "Impressões acumuladas", value: impressions, icon: Eye }, { label: "Cliques acumulados", value: clicks, icon: MousePointerClick }, { label: "Cliques por impressão", value: `${rate}%`, icon: MousePointerClick }].map(({ label, value, icon: Icon }) => <div key={label} className="rounded-2xl border border-[#E1E7F0] bg-white p-5 dark:border-[#343941] dark:bg-[#1C1E22]"><div className="flex items-center justify-between text-xs font-semibold text-slate-500"><span>{label}</span><Icon size={17} className="text-[#2552C8]" /></div><p className="mt-3 text-2xl font-bold text-[#141C55] dark:text-white">{loading ? "—" : typeof value === "number" ? value.toLocaleString("pt-BR") : value}</p></div>)}</div>
+    <section className="rounded-3xl border border-[#E1E7F0] bg-white p-5 dark:border-[#343941] dark:bg-[#1C1E22]"><h2 className="font-bold text-[#141C55] dark:text-white">Métricas por anúncio</h2><p className="mt-1 text-xs text-slate-500">A API contabiliza os eventos depois que o anúncio aparece no app.</p>{loading ? <p className="py-6 text-sm text-slate-500">Carregando…</p> : !ads.length ? <p className="py-6 text-sm text-slate-500">Ainda não há anúncios cadastrados.</p> : <div className="mt-4 divide-y divide-slate-100 dark:divide-[#343941]">{ads.map((ad) => <div key={ad.id} className="flex items-center gap-3 py-3"><img src={ad.imageUrl} alt="" className="h-12 w-14 rounded-lg bg-slate-100 object-cover" /><div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-[#141C55] dark:text-white">{ad.name}</p><p className="text-xs text-slate-500">{ad.productName}</p></div><div className="text-right text-xs text-slate-500">{ad.impressions.toLocaleString("pt-BR")} impressões · {ad.clicks.toLocaleString("pt-BR")} cliques</div></div>)}</div>}</section>
+  </EnterpriseLayout>;
 }

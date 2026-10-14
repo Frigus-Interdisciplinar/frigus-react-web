@@ -1,19 +1,23 @@
 import { useState, useRef, type FormEvent, type KeyboardEvent } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import Button from "@/components/Button";
 import ThemeToggle from "@/components/ThemeToggle";
+import { requestPasswordRecovery, verifyPasswordRecoveryCode } from "@/services/auth.service";
 
 export default function ForgotPasswordStep2() {
   const [digits, setDigits] = useState<string[]>(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
+  const [error, setError] = useState("");
   const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
-  const email = (location.state as { email?: string })?.email || "seu e-mail";
+  const email = (location.state as { email?: string } | null)?.email;
+
+  if (!email) return <Navigate to="/forgot-password" replace />;
 
   const handleChange = (index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;
@@ -46,23 +50,34 @@ export default function ForgotPasswordStep2() {
     inputsRef.current[nextIdx]?.focus();
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (digits.some((d) => !d)) return;
+    setError("");
     setLoading(true);
-    setTimeout(() => {
+    const code = digits.join("");
+    try {
+      await verifyPasswordRecoveryCode({ email: email!, code });
+      navigate("/recover-password/step-3", { state: { email, code } });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Código inválido ou expirado.");
+    } finally {
       setLoading(false);
-      navigate("/recover-password/step-3", { state: { email } });
-    }, 400);
+    }
   };
 
-  const handleResend = () => {
+  const handleResend = async () => {
     setResending(true);
-    setTimeout(() => {
-      setResending(false);
+    setError("");
+    try {
+      await requestPasswordRecovery({ email: email! });
       setResendSuccess(true);
       setTimeout(() => setResendSuccess(false), 3000);
-    }, 600);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível reenviar o código.");
+    } finally {
+      setResending(false);
+    }
   };
 
   const isComplete = digits.every((d) => d !== "");
@@ -106,6 +121,8 @@ export default function ForgotPasswordStep2() {
               />
             ))}
           </div>
+
+          {error && <p role="alert" className="text-xs text-red-500 text-center">{error}</p>}
 
           <div className="flex items-center justify-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
             <span>Não recebeu o código?</span>

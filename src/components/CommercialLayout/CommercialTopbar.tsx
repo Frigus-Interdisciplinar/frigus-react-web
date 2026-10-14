@@ -1,8 +1,11 @@
 import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Calendar, Bell, ArrowLeftRight } from "lucide-react";
+import { Calendar, Bell, ArrowLeftRight, LogOut } from "lucide-react";
 import { CommercialNotificationsModal } from "@/components/CommercialModals";
 import ThemeToggle from "@/components/ThemeToggle";
+import { useNavigate } from "react-router-dom";
+import { useStore } from "@/store/store";
+import { logout } from "@/services/auth.service";
 
 interface CommercialTopbarProps {
   breadcrumb?: string;
@@ -13,6 +16,10 @@ export default function CommercialTopbar({
   breadcrumb = "Área comercial    /    Estoque",
 }: CommercialTopbarProps) {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const navigate = useNavigate();
+  const clearSession = useStore((state) => state.logout);
+  const user = useStore((state) => state.user);
+  const initials = user?.name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() ?? "";
 
   return (
     <>
@@ -35,7 +42,7 @@ export default function CommercialTopbar({
 
           <div className="hidden md:flex items-center gap-2 text-xs text-[#64748b] dark:text-neutral-400 font-medium bg-gray-50/80 dark:bg-[#252A32] border border-gray-200/60 dark:border-[#343941] px-3 py-1.5 rounded-lg">
             <Calendar size={14} className="text-[#64748b] dark:text-neutral-400" />
-            <span>06 set 2026</span>
+            <span>{new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", year: "numeric" }).format(new Date())}</span>
           </div>
 
           <ThemeToggle />
@@ -52,10 +59,13 @@ export default function CommercialTopbar({
 
           <div
             className="w-9 h-9 rounded-lg bg-[#EAF1FF] dark:bg-[#252A32] border border-blue-100 dark:border-[#343941] flex items-center justify-center text-[#131C55] dark:text-blue-300 font-bold text-xs shadow-xs"
-            title="Ana Souza (Gerente)"
+            title={user?.name}
           >
-            AS
+            {initials}
           </div>
+          <button type="button" aria-label="Sair da conta" onClick={async () => { try { await logout(); } catch { /* Local logout still clears the browser session. */ } finally { clearSession(); navigate("/login", { replace: true }); } }} className="w-9 h-9 rounded-lg border border-gray-200 dark:border-[#343941] flex items-center justify-center text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30">
+            <LogOut size={16} />
+          </button>
         </div>
       </header>
 

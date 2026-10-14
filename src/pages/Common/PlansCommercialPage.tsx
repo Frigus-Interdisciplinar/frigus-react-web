@@ -106,7 +106,7 @@ export default function PlansCommercialPage() {
               <h3 className="text-2xl font-bold text-white">Plano Comercial</h3>
 
               <div className="mt-6 flex items-baseline gap-1.5">
-                <span className="text-5xl font-extrabold text-white">R$ 99,90</span>
+                <span className="text-5xl font-extrabold text-white">R$ 119,99</span>
                 <span className="text-sm text-[#C9DEF9]">/mês</span>
               </div>
 

@@ -5,16 +5,22 @@ import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Checkbox from "@/components/Checkbox";
 import ThemeToggle from "@/components/ThemeToggle";
+import { ensureStarterWorkspace, register, login } from "@/services/auth.service";
+import { useStore } from "@/store/store";
+import type { AccountType } from "@/types/auth.type";
 
 export default function RegisterPage() {
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [birthDate, setBirthDate] = useState<string>("");
+  const [accountType, setAccountType] = useState<AccountType>("DOMESTIC");
   const [acceptTerms, setAcceptTerms] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
+  const saveUser = useStore((state) => state.login);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -30,12 +36,23 @@ export default function RegisterPage() {
       return;
     }
 
+    if (!birthDate) {
+      setError("Informe sua data de nascimento.");
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const account = await register({ name: name.trim(), email: email.trim(), rawPassword: password, birthDate, accountType });
+      const session = await login({ email: account.email, rawPassword: password, rememberMe: true });
+      await ensureStarterWorkspace(session.user.accountType);
+      saveUser(session.user, session.accessToken, session.refreshToken);
+      navigate(accountType === "COMMERCIAL" ? "/commercial" : accountType === "BUSINESS" ? "/enterprise" : "/home", { replace: true });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível criar sua conta. Tente novamente.");
+    } finally {
       setLoading(false);
-      // Navigate to choose-profile (Step 1 of 2 in onboarding)
-      navigate("/choose-profile");
-    }, 400);
+    }
   };
 
   return (
@@ -43,7 +60,7 @@ export default function RegisterPage() {
       title={"Comece uma rotina\nmais organizada"}
       description="Crie sua conta e personalize o Frigus de acordo com a sua casa, o seu comércio ou a sua empresa."
       cardTitle="Feito para caber na sua vida"
-      cardDescription="Depois do cadastro, você escolhe o tipo de uso e vê apenas os planos certos para você."
+      cardDescription="Escolha o tipo de conta que combina com a sua casa, o seu comércio ou a sua empresa."
     >
       <div className="absolute top-6 right-6 z-20">
         <ThemeToggle />
@@ -79,6 +96,17 @@ export default function RegisterPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
           />
+
+          <Input id="register-input-birth-date" label="Data de nascimento" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required />
+
+          <label className="flex flex-col gap-1.5 text-sm font-medium text-frigus-navy dark:text-white">
+            Tipo de conta
+            <select value={accountType} onChange={(e) => setAccountType(e.target.value as AccountType)} className="h-11 rounded-lg border border-[#C9DEF9] bg-white px-3 text-sm dark:border-[#343941] dark:bg-[#15171A] dark:text-white">
+              <option value="DOMESTIC">Doméstico</option>
+              <option value="COMMERCIAL">Comercial</option>
+              <option value="BUSINESS">Empresarial</option>
+            </select>
+          </label>
 
           <Input
             id="register-input-password"

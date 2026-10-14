@@ -1,162 +1,86 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { AlertOctagon, TrendingDown, ArrowRight, ShieldAlert } from "lucide-react";
+import { useEffect, useState } from "react";
+import { AlertOctagon } from "lucide-react";
 import CommercialLayout from "@/components/CommercialLayout";
-import { WasteTrendChart, WasteDonutChart } from "@/components/CommercialCharts";
 import { CommercialRegisterWasteModal } from "@/components/CommercialModals";
+import { api } from "@/utils/api.util";
+import { getInventoryContext, listStockProducts, type StockProduct } from "@/services/inventory.service";
+
+type Discard = { id: number; stockProductId: number; quantity: number; reason?: string; date: string };
 
 export default function CommercialWastePage() {
   const [isWasteModalOpen, setIsWasteModalOpen] = useState(false);
+  const [products, setProducts] = useState<StockProduct[]>([]);
+  const [discards, setDiscards] = useState<Discard[]>([]);
+  const [error, setError] = useState("");
 
-  const sectorWaste = [
-    { sector: "Câmara fria", amount: "44 kg", percentage: 51 },
-    { sector: "Produção", amount: "24 kg", percentage: 28 },
-    { sector: "Depósito", amount: "18 kg", percentage: 21 },
-  ];
+  const load = async () => {
+    setError("");
+    try {
+      const context = await getInventoryContext();
+      const stockProducts = (await Promise.all(context.stocks.map((stock) => listStockProducts(stock.id)))).flat();
+      const page = await api.get<{ content: Discard[] }>("/web/core/discards?size=100");
+      setProducts(stockProducts);
+      setDiscards(page.content);
+    } catch {
+      setError("Não foi possível carregar os descartes registrados.");
+    }
+  };
+
+  useEffect(() => { void load(); }, []);
+
+  const recordDiscard = async (input: { stockProductId: number; quantity: number; reason: string }) => {
+    await api.post("/web/core/discards", input);
+    await load();
+  };
+
+  const productById = new Map(products.map((product) => [product.id, product]));
+  const currentMonth = new Date().toISOString().slice(0, 7);
+  const monthDiscards = discards.filter((item) => item.date.startsWith(currentMonth));
+  const total = monthDiscards.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <CommercialLayout
-      activeSection="waste"
-      breadcrumb="Área comercial    /    Desperdícios"
-    >
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">
-            Dashboard de desperdícios
-          </h1>
-          <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-1">
-            Entenda as perdas e encontre as próximas oportunidades de redução.
-          </p>
+    <CommercialLayout activeSection="waste" breadcrumb="Área comercial    /    Desperdícios">
+      <div className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">Desperdícios</h1>
+            <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-1">Registre descartes e consulte as perdas gravadas no estoque.</p>
+          </div>
+          <button type="button" disabled={products.length === 0} onClick={() => setIsWasteModalOpen(true)} className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-xs transition-colors">
+            <AlertOctagon size={16} /> Registrar perda
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={() => setIsWasteModalOpen(true)}
-          className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
-        >
-          <AlertOctagon size={16} />
-          <span>Registrar perda</span>
-        </button>
+
+        {error && <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error} <button onClick={() => void load()} className="underline">Tentar novamente</button></p>}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs">
+            <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">Unidades descartadas neste mês</span>
+            <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white mt-1">{total}</p>
+          </div>
+          <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs">
+            <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">Registros neste mês</span>
+            <p className="text-2xl font-bold font-montserrat text-red-600 dark:text-red-400 mt-1">{monthDiscards.length}</p>
+          </div>
+        </div>
+
+        <section className="bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs p-6">
+          <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">Descartes registrados</h2>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead><tr className="border-b text-[10px] uppercase text-[#64748B]"><th className="py-3 px-2">Produto</th><th className="py-3 px-2">Quantidade</th><th className="py-3 px-2">Motivo</th><th className="py-3 px-2">Data</th></tr></thead>
+              <tbody className="divide-y divide-gray-100 dark:divide-[#343941]">
+                {discards.map((item) => {
+                  const product = productById.get(item.stockProductId);
+                  return <tr key={item.id}><td className="py-3 px-2 font-semibold text-[#141C55] dark:text-white">{product?.product?.name ?? `Lote #${item.stockProductId}`}</td><td className="py-3 px-2">{item.quantity} {product?.product?.unitOfMeasure ?? "un"}</td><td className="py-3 px-2">{item.reason || "Não informado"}</td><td className="py-3 px-2">{new Date(item.date).toLocaleDateString("pt-BR")}</td></tr>;
+                })}
+                {discards.length === 0 && <tr><td colSpan={4} className="py-6 text-center text-gray-500">Nenhum descarte registrado.</td></tr>}
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
-
-      {/* 4 Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs">
-          <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">Perdas em agosto</span>
-          <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white mt-1">86 kg</p>
-          <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold mt-1 flex items-center gap-1">
-            <TrendingDown size={14} /> 18% menos que em julho
-          </span>
-        </div>
-
-        <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs">
-          <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">Custo das perdas</span>
-          <p className="text-2xl font-bold font-montserrat text-red-600 dark:text-red-400 mt-1">R$ 1.214</p>
-          <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">Custo dos produtos descartados</span>
-        </div>
-
-        <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs">
-          <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">Taxa de desperdício</span>
-          <p className="text-2xl font-bold font-montserrat text-amber-600 dark:text-amber-400 mt-1">4,2%</p>
-          <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">Meta da operação: até 3,5%</span>
-        </div>
-
-        <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs">
-          <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">Meta de setembro</span>
-          <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white mt-1">74 kg</p>
-          <span className="text-[11px] text-[#2552C8] dark:text-blue-400 font-semibold mt-1 block">12 kg a menos para descartar</span>
-        </div>
-      </div>
-
-      {/* Charts Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Gráfico 1: As perdas estão diminuindo (7 cols) */}
-        <div className="lg:col-span-7 bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs p-6 space-y-4">
-          <div>
-            <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">
-              As perdas estão diminuindo
-            </h2>
-            <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-0.5">
-              Volume descartado por período (kg)
-            </p>
-          </div>
-          <WasteTrendChart />
-        </div>
-
-        {/* Gráfico 2: Motivos do desperdício (5 cols) */}
-        <div className="lg:col-span-5 bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs p-6 space-y-4">
-          <div>
-            <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">
-              Motivos do desperdício
-            </h2>
-            <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-0.5">
-              Composição das perdas registradas no mês
-            </p>
-          </div>
-          <WasteDonutChart />
-        </div>
-
-        {/* Setores de Atenção (7 cols) */}
-        <div className="lg:col-span-7 bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs p-6 space-y-4">
-          <div>
-            <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">
-              Onde concentrar atenção
-            </h2>
-            <p className="text-xs text-[#64748B] dark:text-neutral-400 mt-0.5">
-              Setores que mais registraram perdas no período
-            </p>
-          </div>
-
-          <div className="space-y-4 pt-2">
-            {sectorWaste.map((item, idx) => (
-              <div key={idx} className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-[#141C55] dark:text-white">{item.sector}</span>
-                  <span className="font-semibold text-gray-700 dark:text-neutral-300">{item.amount} ({item.percentage}%)</span>
-                </div>
-                <div className="w-full h-2.5 rounded-full bg-gray-100 dark:bg-neutral-700 overflow-hidden">
-                  <div
-                    style={{ width: `${item.percentage}%` }}
-                    className="h-full bg-linear-to-r from-red-500 to-rose-400 rounded-full"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Próxima Ação Callout (5 cols) */}
-        <div className="lg:col-span-5 bg-amber-500/10 dark:bg-amber-950/20 border border-amber-300/60 dark:border-amber-800/50 rounded-3xl p-6 flex flex-col justify-between space-y-4">
-          <div>
-            <div className="flex items-center gap-2 text-amber-800 dark:text-amber-300">
-              <ShieldAlert size={20} />
-              <span className="text-[10px] font-bold tracking-widest uppercase">
-                PRÓXIMA AÇÃO
-              </span>
-            </div>
-            <h3 className="text-lg font-bold font-montserrat text-[#141C55] dark:text-white mt-2">
-              7 lotes vencem em até 3 dias
-            </h3>
-            <p className="text-xs text-[#64748B] dark:text-neutral-300 mt-1">
-              Priorize a saída desses produtos na rotina de preparo para evitar descartes adicionais.
-            </p>
-          </div>
-
-          <Link
-            to="/commercial/validity"
-            className="w-full py-3 rounded-xl bg-[#2552C8] hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <span>Revisar validades</span>
-            <ArrowRight size={15} />
-          </Link>
-        </div>
-      </div>
-
-      {/* Modal */}
-      <CommercialRegisterWasteModal
-        isOpen={isWasteModalOpen}
-        onClose={() => setIsWasteModalOpen(false)}
-      />
+      <CommercialRegisterWasteModal isOpen={isWasteModalOpen} onClose={() => setIsWasteModalOpen(false)} products={products.map((item) => ({ id: item.id, name: item.product?.name ?? `Produto #${item.productId}`, quantity: item.quantity, unit: item.product?.unitOfMeasure ?? "un" }))} onRecord={recordDiscard} />
     </CommercialLayout>
   );
 }

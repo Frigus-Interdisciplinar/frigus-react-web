@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { CheckCircle2, ShieldAlert } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import ThemeToggle from "@/components/ThemeToggle";
+import { resetPassword } from "@/services/auth.service";
 
 export default function ForgotPasswordStep3() {
   const [password, setPassword] = useState("");
@@ -13,13 +14,17 @@ export default function ForgotPasswordStep3() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+  const recovery = location.state as { email?: string; code?: string } | null;
 
-  const handleSubmit = (e: FormEvent) => {
+  if (!recovery?.email || !recovery.code) return <Navigate to="/forgot-password" replace />;
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (password.length < 6) {
-      setError("A senha deve ter pelo menos 6 caracteres.");
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]).{8,20}$/.test(password)) {
+      setError("A senha deve conter de 8 a 20 caracteres, com letra maiúscula, minúscula, número e caractere especial.");
       return;
     }
     if (password !== confirmPassword) {
@@ -28,10 +33,14 @@ export default function ForgotPasswordStep3() {
     }
 
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      await resetPassword({ email: recovery!.email!, code: recovery!.code!, newPassword: password });
       setSuccess(true);
-    }, 500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Não foi possível redefinir a senha.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -48,7 +57,7 @@ export default function ForgotPasswordStep3() {
       <div className="w-full max-w-[480px] bg-white dark:bg-[#1C1E22] rounded-2xl shadow-[0_16px_34px_0_rgba(19,28,85,0.08)] dark:shadow-[0_16px_34px_0_rgba(0,0,0,0.4)] border border-[#C9DEF9] dark:border-[#343941] p-8 sm:p-10 flex flex-col gap-6">
         {success ? (
           <div className="flex flex-col items-center text-center py-4 gap-4">
-            <CheckCircle2 className="size-16 text-emerald-500 animate-bounce" />
+            <CheckCircle2 className="size-16 text-emerald-500" />
             <h3 className="text-2xl font-bold text-frigus-navy dark:text-white">
               Senha redefinida com sucesso!
             </h3>
@@ -83,6 +92,7 @@ export default function ForgotPasswordStep3() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                helperText="Use de 8 a 20 caracteres, com maiúscula, minúscula, número e símbolo."
               />
 
               <Input

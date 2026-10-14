@@ -1,118 +1,57 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, Send, Paperclip, Smile, MoreVertical, Users } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
-
-type ChatItem = {
-  id: string;
-  name: string;
-  lastMessage: string;
-  time: string;
-  unreadCount?: number;
-  isGroup?: boolean;
-  avatarLetter: string;
-  avatarBg: string;
-};
-
-const chats: ChatItem[] = [
-  {
-    id: "group-1",
-    name: "Casa Henrique",
-    lastMessage: "Olha o que encontrei para os tomates.",
-    time: "09:43",
-    unreadCount: 2,
-    isGroup: true,
-    avatarLetter: "F",
-    avatarBg: "bg-frigus-primary text-white",
-  },
-  {
-    id: "user-1",
-    name: "Marina Souza",
-    lastMessage: "Tudo certo com a compra.",
-    time: "Ontem",
-    avatarLetter: "M",
-    avatarBg: "bg-blue-100 text-blue-700",
-  },
-  {
-    id: "user-2",
-    name: "Lucas Paulo",
-    lastMessage: "Vou passar no mercado.",
-    time: "Ontem",
-    avatarLetter: "L",
-    avatarBg: "bg-amber-100 text-amber-700",
-  },
-  {
-    id: "user-3",
-    name: "Ana Carvalho",
-    lastMessage: "Obrigada pelo convite.",
-    time: "Seg",
-    avatarLetter: "A",
-    avatarBg: "bg-purple-100 text-purple-700",
-  },
-];
-
-type Message = {
-  id: string;
-  sender: string;
-  isMe: boolean;
-  text: string;
-  time: string;
-  avatarLetter?: string;
-};
-
-const initialMessages: Message[] = [
-  {
-    id: "m1",
-    sender: "Marina",
-    isMe: false,
-    text: "Gente, os tomates estão perto da validade. Alguém tem ideia do que fazer?",
-    time: "09:38",
-    avatarLetter: "M",
-  },
-  {
-    id: "m2",
-    sender: "Marina",
-    isMe: false,
-    text: "Olha o que encontrei para os tomates: tem receita de omelete sugerida no app!",
-    time: "09:40",
-    avatarLetter: "M",
-  },
-  {
-    id: "m3",
-    sender: "Você",
-    isMe: true,
-    text: "Boa! Vou preparar hoje à noite no jantar.",
-    time: "09:43",
-  },
-  {
-    id: "m4",
-    sender: "Lucas",
-    isMe: false,
-    text: "Show! Vou passar no mercado mais tarde, falta salsinha na lista de compras.",
-    time: "09:50",
-    avatarLetter: "L",
-  },
-];
+import { listConversations, listMessages, sendMessage, type ChatMessage, type Conversation } from "@/services/chat.service";
+import { useStore } from "@/store/store";
 
 export default function ChatPage() {
-  const [activeChat, setActiveChat] = useState<string>("group-1");
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const currentUserId = useStore((state) => state.user?.id);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [activeChat, setActiveChat] = useState<string>("");
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
+  const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  useEffect(() => {
+    let active = true;
+    listConversations().then((items) => {
+      if (!active) return;
+      setConversations(items);
+      setActiveChat(items[0]?.id ?? "");
+    }).catch((reason: unknown) => {
+      if (active) setError(reason instanceof Error ? reason.message : "Não foi possível carregar as conversas.");
+    }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!activeChat) { setMessages([]); return; }
+    let active = true;
+    listMessages(activeChat).then((items) => { if (active) setMessages(items); })
+      .catch((reason: unknown) => { if (active) setError(reason instanceof Error ? reason.message : "Não foi possível carregar as mensagens."); });
+    return () => { active = false; };
+  }, [activeChat]);
+
+  const selectedConversation = conversations.find((conversation) => conversation.id === activeChat);
+  const filteredConversations = useMemo(() => conversations.filter((conversation) =>
+    (conversation.name ?? conversation.groupName ?? "Conversa").toLowerCase().includes(search.toLowerCase()),
+  ), [conversations, search]);
+
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputText.trim()) return;
-
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: String(Date.now()),
-        sender: "Você",
-        isMe: true,
-        text: inputText,
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      },
-    ]);
-    setInputText("");
+    const content = inputText.trim();
+    if (!content || !activeChat || sending) return;
+    setSending(true); setError("");
+    try {
+      const sent = await sendMessage(activeChat, content);
+      setMessages((previous) => [...previous, sent]);
+      setConversations((previous) => previous.map((conversation) => conversation.id === activeChat ? { ...conversation, latestMessage: sent } : conversation));
+      setInputText("");
+    } catch (reason) { setError(reason instanceof Error ? reason.message : "Não foi possível enviar a mensagem."); }
+    finally { setSending(false); }
   };
 
   return (
@@ -141,6 +80,8 @@ export default function ChatPage() {
                 <input
                   type="text"
                   placeholder="Buscar conversa"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
                   className="w-full pl-9 pr-3 py-2 rounded-xl bg-white dark:bg-[#252A32] border border-gray-200 dark:border-[#343941] text-xs text-slate-800 dark:text-white focus:outline-hidden focus:border-frigus-primary dark:focus:border-blue-500"
                 />
               </div>
@@ -152,8 +93,8 @@ export default function ChatPage() {
                   Grupos
                 </span>
               </div>
-              {chats
-                .filter((c) => c.isGroup)
+              {filteredConversations
+                .filter((conversation) => conversation.conversationType === "GROUP")
                 .map((chat) => (
                   <div
                     key={chat.id}
@@ -166,27 +107,22 @@ export default function ChatPage() {
                   >
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${chat.avatarBg}`}
+                        className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs shrink-0 bg-frigus-primary text-white"
                       >
                         <Users size={16} />
                       </div>
                       <div className="overflow-hidden">
                         <p className="font-bold text-frigus-navy dark:text-white text-xs truncate">
-                          {chat.name}
+                          {chat.name ?? chat.groupName ?? "Grupo"}
                         </p>
                         <p className="text-[11px] text-gray-400 dark:text-neutral-400 truncate">
-                          {chat.lastMessage}
+                          {chat.latestMessage?.content ?? "Nenhuma mensagem ainda"}
                         </p>
                       </div>
                     </div>
 
                     <div className="flex flex-col items-end gap-1 shrink-0">
-                      <span className="text-[10px] text-gray-400 dark:text-neutral-400">{chat.time}</span>
-                      {chat.unreadCount && (
-                        <span className="w-4 h-4 rounded-full bg-frigus-primary dark:bg-blue-600 text-white text-[9px] font-bold flex items-center justify-center">
-                          {chat.unreadCount}
-                        </span>
-                      )}
+                      <span className="text-[10px] text-gray-400 dark:text-neutral-400">{chat.latestMessage ? new Date(chat.latestMessage.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}</span>
                     </div>
                   </div>
                 ))}
@@ -196,8 +132,8 @@ export default function ChatPage() {
                   Pessoas
                 </span>
               </div>
-              {chats
-                .filter((c) => !c.isGroup)
+              {filteredConversations
+                .filter((conversation) => conversation.conversationType !== "GROUP")
                 .map((chat) => (
                   <div
                     key={chat.id}
@@ -210,22 +146,22 @@ export default function ChatPage() {
                   >
                     <div className="flex items-center gap-3">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${chat.avatarBg}`}
+                        className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-xs shrink-0 bg-blue-100 text-blue-700"
                       >
-                        {chat.avatarLetter}
+                        {(chat.name ?? "C").slice(0, 1).toUpperCase()}
                       </div>
                       <div className="overflow-hidden">
                         <p className="font-bold text-frigus-navy dark:text-white text-xs truncate">
-                          {chat.name}
+                          {chat.name ?? "Conversa privada"}
                         </p>
                         <p className="text-[11px] text-gray-400 dark:text-neutral-400 truncate">
-                          {chat.lastMessage}
+                          {chat.latestMessage?.content ?? "Nenhuma mensagem ainda"}
                         </p>
                       </div>
                     </div>
 
                     <span className="text-[10px] text-gray-400 dark:text-neutral-400 shrink-0">
-                      {chat.time}
+                      {chat.latestMessage ? new Date(chat.latestMessage.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}
                     </span>
                   </div>
                 ))}
@@ -242,10 +178,10 @@ export default function ChatPage() {
                 </div>
                 <div>
                   <h3 className="font-montserrat font-bold text-frigus-navy dark:text-white text-sm">
-                    Casa Henrique
+                    {selectedConversation?.name ?? selectedConversation?.groupName ?? "Selecione uma conversa"}
                   </h3>
                   <p className="text-[11px] text-gray-400 dark:text-neutral-400 font-sans">
-                    4 membros • grupo da família
+                    {selectedConversation?.conversationType === "GROUP" ? "Grupo da família" : "Conversa privada"}
                   </p>
                 </div>
               </div>
@@ -257,48 +193,53 @@ export default function ChatPage() {
 
             {/* Feed de Mensagens */}
             <div className="flex-1 p-6 overflow-y-auto space-y-4 bg-gray-50/40 dark:bg-[#121418]">
+              {loading && <p className="text-center text-sm text-gray-500">Carregando conversas…</p>}
+              {!loading && !filteredConversations.length && <p className="text-center text-sm text-gray-500">Nenhuma conversa disponível.</p>}
+              {error && <p role="alert" className="rounded-xl bg-red-50 px-4 py-2 text-xs text-red-700">{error}</p>}
               <div className="text-center my-2">
                 <span className="text-[10px] font-bold text-gray-400 dark:text-neutral-300 uppercase tracking-wider bg-white dark:bg-[#252A32] px-3 py-1 rounded-full border border-gray-100 dark:border-[#343941] shadow-2xs">
                   Hoje
                 </span>
               </div>
 
-              {messages.map((msg) => (
+              {messages.map((msg) => {
+                const isMe = msg.senderId === currentUserId;
+                return (
                 <div
                   key={msg.id}
                   className={`flex items-end gap-2.5 ${
-                    msg.isMe ? "justify-end" : "justify-start"
+                    isMe ? "justify-end" : "justify-start"
                   }`}
                 >
-                  {!msg.isMe && (
+                  {!isMe && (
                     <div className="w-7 h-7 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-bold text-[10px] flex items-center justify-center shrink-0">
-                      {msg.avatarLetter || msg.sender[0]}
+                      {msg.senderName?.[0] ?? "?"}
                     </div>
                   )}
 
                   <div
                     className={`max-w-md p-3.5 rounded-2xl text-xs space-y-1 ${
-                      msg.isMe
+                      isMe
                         ? "bg-frigus-primary dark:bg-blue-600 text-white rounded-br-xs shadow-xs"
                         : "bg-white dark:bg-[#252A32] text-frigus-navy dark:text-white border border-gray-200/80 dark:border-[#343941] rounded-bl-xs shadow-2xs"
                     }`}
                   >
-                    {!msg.isMe && (
+                    {!isMe && (
                       <p className="font-bold text-[10px] text-gray-400 dark:text-neutral-400">
-                        {msg.sender}
+                        {msg.senderName}
                       </p>
                     )}
-                    <p className="leading-relaxed">{msg.text}</p>
+                    <p className="leading-relaxed">{msg.content}</p>
                     <p
                       className={`text-[9px] text-right font-medium ${
-                        msg.isMe ? "text-frigus-ice dark:text-blue-200" : "text-gray-400 dark:text-neutral-400"
+                        isMe ? "text-frigus-ice dark:text-blue-200" : "text-gray-400 dark:text-neutral-400"
                       }`}
                     >
-                      {msg.time}
+                      {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                     </p>
                   </div>
                 </div>
-              ))}
+              ); })}
             </div>
 
             {/* Input de Mensagem */}
@@ -317,6 +258,7 @@ export default function ChatPage() {
                 type="text"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
+                disabled={!activeChat || sending}
                 placeholder="Digite sua mensagem para a casa..."
                 className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#343941] text-xs focus:outline-hidden focus:border-frigus-primary dark:focus:border-blue-500 bg-gray-50/50 dark:bg-[#252A32] text-slate-800 dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500"
               />
@@ -330,6 +272,7 @@ export default function ChatPage() {
 
               <button
                 type="submit"
+                disabled={!activeChat || sending || !inputText.trim()}
                 className="p-2.5 rounded-xl bg-frigus-primary hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white transition-all shadow-xs cursor-pointer"
               >
                 <Send size={16} />

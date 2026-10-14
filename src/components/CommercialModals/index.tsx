@@ -66,7 +66,11 @@ export function CommercialModalBase({
 }
 
 // 1. Comercial — Adicionar produto ou lote (1879:2261)
-export function CommercialAddBatchModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+export type CommercialBatchInput = { product: string; category: string; location: string; quantity: number; unit: string; expiry: string; unitCost: number };
+
+export function CommercialAddBatchModal({ isOpen, onClose, onAdd }: { isOpen: boolean; onClose: () => void; onAdd?: (input: CommercialBatchInput) => Promise<void> }) {
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     product: "",
     batchCode: "",
@@ -75,7 +79,7 @@ export function CommercialAddBatchModal({ isOpen, onClose }: { isOpen: boolean; 
     quantity: "0",
     unit: "Quilograma (kg)",
     expiry: "",
-    unitCost: "R$ 0,00",
+    unitCost: "0",
   });
 
   return (
@@ -95,15 +99,33 @@ export function CommercialAddBatchModal({ isOpen, onClose }: { isOpen: boolean; 
           </button>
           <button
             type="button"
-            onClick={onClose}
+            disabled={saving}
+            onClick={async () => {
+              const quantity = Number(formData.quantity.replace(",", "."));
+              const unitCost = Number(formData.unitCost.replace(/[^\d,.-]/g, "").replace(",", "."));
+              if (!formData.product.trim() || !formData.expiry || !(quantity > 0) || !(unitCost > 0)) {
+                setError("Informe produto, quantidade, validade e custo unitário válidos.");
+                return;
+              }
+              setSaving(true);
+              setError("");
+              try {
+                await onAdd?.({ ...formData, quantity, unitCost });
+                onClose();
+                setFormData({ product: "", batchCode: "", category: "Proteínas", location: "Câmara fria", quantity: "0", unit: "Quilograma (kg)", expiry: "", unitCost: "0" });
+              } catch {
+                setError("Não foi possível salvar o produto. Confira os dados e tente novamente.");
+              } finally { setSaving(false); }
+            }}
             className="px-6 py-2.5 rounded-xl bg-[#2552C8] hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
           >
-            Adicionar produto
+            {saving ? "Salvando…" : "Adicionar produto"}
           </button>
         </>
       }
     >
       <div className="grid grid-cols-2 gap-4">
+        {error && <p role="alert" className="col-span-2 text-xs text-red-600">{error}</p>}
         <div className="col-span-2">
           <label className="block text-xs font-semibold text-[#141C55] mb-1">Produto</label>
           <input
@@ -115,12 +137,11 @@ export function CommercialAddBatchModal({ isOpen, onClose }: { isOpen: boolean; 
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-[#141C55] mb-1">Código do lote</label>
+          <label className="block text-xs font-semibold text-[#141C55] mb-1">Identificador do lote</label>
           <input
             type="text"
-            placeholder="Ex.: LT-2053"
-            value={formData.batchCode}
-            onChange={(e) => setFormData({ ...formData, batchCode: e.target.value })}
+            value="Gerado ao salvar"
+            readOnly
             className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8]"
           />
         </div>
@@ -173,8 +194,7 @@ export function CommercialAddBatchModal({ isOpen, onClose }: { isOpen: boolean; 
         <div>
           <label className="block text-xs font-semibold text-[#141C55] mb-1">Validade</label>
           <input
-            type="text"
-            placeholder="dd/mm/aaaa"
+            type="date"
             value={formData.expiry}
             onChange={(e) => setFormData({ ...formData, expiry: e.target.value })}
             className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8]"
@@ -183,7 +203,9 @@ export function CommercialAddBatchModal({ isOpen, onClose }: { isOpen: boolean; 
         <div className="col-span-2">
           <label className="block text-xs font-semibold text-[#141C55] mb-1">Custo unitário</label>
           <input
-            type="text"
+            type="number"
+            min="0.01"
+            step="0.01"
             placeholder="R$ 0,00"
             value={formData.unitCost}
             onChange={(e) => setFormData({ ...formData, unitCost: e.target.value })}
@@ -383,7 +405,13 @@ export function CommercialAddShoppingItemModal({ isOpen, onClose }: { isOpen: bo
 }
 
 // 4. Comercial — Registrar perda (1879:2313)
-export function CommercialRegisterWasteModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+export function CommercialRegisterWasteModal({ isOpen, onClose, products, onRecord }: { isOpen: boolean; onClose: () => void; products: Array<{ id: number; name: string; quantity: number; unit: string }>; onRecord: (data: { stockProductId: number; quantity: number; reason: string }) => Promise<void> }) {
+  const [stockProductId, setStockProductId] = useState(0);
+  const [quantity, setQuantity] = useState("");
+  const [reason, setReason] = useState("Validade expirada");
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  useEffect(() => { if (!stockProductId && products[0]) setStockProductId(products[0].id); }, [products, stockProductId]);
   return (
     <CommercialModalBase
       isOpen={isOpen}
@@ -394,6 +422,7 @@ export function CommercialRegisterWasteModal({ isOpen, onClose }: { isOpen: bool
         <>
           <button
             type="button"
+            disabled={saving}
             onClick={onClose}
             className="px-5 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
           >
@@ -401,47 +430,49 @@ export function CommercialRegisterWasteModal({ isOpen, onClose }: { isOpen: bool
           </button>
           <button
             type="button"
-            onClick={onClose}
+            disabled={saving}
+            onClick={async () => {
+              const count = Number(quantity);
+              if (!stockProductId || !(count > 0)) { setError("Escolha um lote e informe uma quantidade maior que zero."); return; }
+              setSaving(true); setError("");
+              try { await onRecord({ stockProductId, quantity: count, reason }); onClose(); setQuantity(""); }
+              catch { setError("Não foi possível registrar a perda. Confira o saldo do lote."); }
+              finally { setSaving(false); }
+            }}
             className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
           >
-            Registrar perda
+            {saving ? "Registrando…" : "Registrar perda"}
           </button>
         </>
       }
     >
       <div className="space-y-4">
+        {error && <p role="alert" className="text-xs text-red-600">{error}</p>}
         <div>
           <label className="block text-xs font-semibold text-[#141C55] mb-1">Produto / lote</label>
-          <input
-            type="text"
-            defaultValue="Iogurte food service · YG-082"
-            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8]"
-          />
+          <select value={stockProductId} onChange={(e) => setStockProductId(Number(e.target.value))} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs bg-white">
+            {products.map((product) => <option key={product.id} value={product.id}>{product.name} · saldo {product.quantity} {product.unit}</option>)}
+          </select>
         </div>
         <div>
           <label className="block text-xs font-semibold text-[#141C55] mb-1">Quantidade</label>
           <input
-            type="text"
-            defaultValue="12 caixas"
+            type="number"
+            min="1"
+            step="1"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
             className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8]"
           />
         </div>
         <div>
           <label className="block text-xs font-semibold text-[#141C55] mb-1">Motivo</label>
-          <select defaultValue="Validade expirada" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8] bg-white">
+          <select value={reason} onChange={(e) => setReason(e.target.value)} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8] bg-white">
             <option>Validade expirada</option>
             <option>Manuseio / Avaria</option>
             <option>Transporte</option>
             <option>Excesso de preparo</option>
           </select>
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-[#141C55] mb-1">Data</label>
-          <input
-            type="text"
-            defaultValue="06/09/2026"
-            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8]"
-          />
         </div>
       </div>
     </CommercialModalBase>
@@ -513,7 +544,13 @@ export function CommercialRegisterMovementModal({ isOpen, onClose }: { isOpen: b
 }
 
 // 6. Comercial — Registrar compra (1879:2324)
-export function CommercialRegisterPurchaseModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+export function CommercialRegisterPurchaseModal({ isOpen, onClose, onCreate }: { isOpen: boolean; onClose: () => void; onCreate?: (input: { description: string; category: string; amount: number; expenseDate: string; supplier: string }) => Promise<void> }) {
+  const [description, setDescription] = useState("");
+  const [supplier, setSupplier] = useState("");
+  const [amount, setAmount] = useState("");
+  const [expenseDate, setExpenseDate] = useState(new Date().toISOString().slice(0, 10));
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
   return (
     <CommercialModalBase
       isOpen={isOpen}
@@ -524,6 +561,7 @@ export function CommercialRegisterPurchaseModal({ isOpen, onClose }: { isOpen: b
         <>
           <button
             type="button"
+            disabled={saving}
             onClick={onClose}
             className="px-5 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
           >
@@ -531,29 +569,61 @@ export function CommercialRegisterPurchaseModal({ isOpen, onClose }: { isOpen: b
           </button>
           <button
             type="button"
-            onClick={onClose}
+            disabled={saving}
+            onClick={async () => {
+              const numericAmount = Number(amount.replace(",", "."));
+              if (!description.trim() || !(numericAmount > 0) || !expenseDate) { setError("Informe descrição, valor e data válidos."); return; }
+              setSaving(true); setError("");
+              try { await onCreate?.({ description: description.trim(), category: "Compras", amount: numericAmount, expenseDate, supplier: supplier.trim() }); onClose(); setDescription(""); setSupplier(""); setAmount(""); }
+              catch { setError("Não foi possível registrar a compra."); }
+              finally { setSaving(false); }
+            }}
             className="px-6 py-2.5 rounded-xl bg-[#2552C8] hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
           >
-            Salvar compra
+            {saving ? "Salvando…" : "Salvar compra"}
           </button>
         </>
       }
     >
       <div className="space-y-4">
+        {error && <p role="alert" className="text-xs text-red-600">{error}</p>}
+        <div>
+          <label className="block text-xs font-semibold text-[#141C55] mb-1">Descrição</label>
+          <input
+            type="text"
+            placeholder="Ex.: compra de reposição"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8]"
+          />
+        </div>
         <div>
           <label className="block text-xs font-semibold text-[#141C55] mb-1">Fornecedor</label>
           <input
             type="text"
-            placeholder="Selecione o fornecedor"
-            defaultValue="Distribuidora Alfa"
+            placeholder="Nome do fornecedor (opcional)"
+            value={supplier}
+            onChange={(e) => setSupplier(e.target.value)}
             className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8]"
           />
         </div>
         <div>
           <label className="block text-xs font-semibold text-[#141C55] mb-1">Valor total</label>
           <input
-            type="text"
-            defaultValue="R$ 1.490,00"
+            type="number"
+            min="0.01"
+            step="0.01"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8]"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-[#141C55] mb-1">Data da compra</label>
+          <input
+            type="date"
+            value={expenseDate}
+            onChange={(e) => setExpenseDate(e.target.value)}
             className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8]"
           />
         </div>
@@ -645,7 +715,12 @@ export function CommercialExportReportModal({ isOpen, onClose }: { isOpen: boole
 }
 
 // 8. Comercial — Convidar funcionário (1879:2335)
-export function CommercialInviteEmployeeModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+export function CommercialInviteEmployeeModal({ isOpen, onClose, onInvite }: { isOpen: boolean; onClose: () => void; onInvite?: (input: { name: string; email: string; memberRole: "EDITOR" | "VIEWER" }) => Promise<void> }) {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"EDITOR" | "VIEWER">("EDITOR");
+  const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
   return (
     <CommercialModalBase
       isOpen={isOpen}
@@ -656,6 +731,7 @@ export function CommercialInviteEmployeeModal({ isOpen, onClose }: { isOpen: boo
         <>
           <button
             type="button"
+            disabled={saving}
             onClick={onClose}
             className="px-5 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
           >
@@ -663,20 +739,30 @@ export function CommercialInviteEmployeeModal({ isOpen, onClose }: { isOpen: boo
           </button>
           <button
             type="button"
-            onClick={onClose}
+            disabled={saving}
+            onClick={async () => {
+              if (!name.trim() || !email.trim()) { setError("Informe o nome e o e-mail do funcionário."); return; }
+              setSaving(true); setError("");
+              try { await onInvite?.({ name: name.trim(), email: email.trim(), memberRole: role }); onClose(); setName(""); setEmail(""); }
+              catch { setError("Não foi possível enviar o convite. Confira o e-mail e tente novamente."); }
+              finally { setSaving(false); }
+            }}
             className="px-6 py-2.5 rounded-xl bg-[#2552C8] hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
           >
-            Enviar convite
+            {saving ? "Enviando…" : "Enviar convite"}
           </button>
         </>
       }
     >
       <div className="space-y-4">
+        {error && <p role="alert" className="text-xs text-red-600">{error}</p>}
         <div>
           <label className="block text-xs font-semibold text-[#141C55] mb-1">Nome completo</label>
           <input
             type="text"
             placeholder="Nome do funcionário"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8]"
           />
         </div>
@@ -685,16 +771,16 @@ export function CommercialInviteEmployeeModal({ isOpen, onClose }: { isOpen: boo
           <input
             type="email"
             placeholder="nome@exemplo.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8]"
           />
         </div>
         <div>
           <label className="block text-xs font-semibold text-[#141C55] mb-1">Função</label>
-          <select defaultValue="Operador" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8] bg-white">
-            <option>Operador</option>
-            <option>Estoquista</option>
-            <option>Compras</option>
-            <option>Gerente</option>
+          <select value={role} onChange={(e) => setRole(e.target.value as "EDITOR" | "VIEWER")} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8] bg-white">
+            <option value="EDITOR">Equipe · pode editar</option>
+            <option value="VIEWER">Operador · somente leitura</option>
           </select>
         </div>
         <div>
@@ -717,12 +803,20 @@ export function CommercialManageAccessModal({
   onClose,
   employeeName = "Ana Souza",
   employeeEmail = "ana@saborecia.com",
+  memberRole = "EDITOR",
+  onSaveRole,
 }: {
   isOpen: boolean;
   onClose: () => void;
   employeeName?: string;
   employeeEmail?: string;
+  memberRole?: "EDITOR" | "VIEWER";
+  onSaveRole?: (role: "EDITOR" | "VIEWER") => Promise<void>;
 }) {
+  const [role, setRole] = useState<"EDITOR" | "VIEWER">(memberRole);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  useEffect(() => { setRole(memberRole); }, [memberRole, isOpen]);
   return (
     <CommercialModalBase
       isOpen={isOpen}
@@ -733,6 +827,7 @@ export function CommercialManageAccessModal({
         <>
           <button
             type="button"
+            disabled={saving}
             onClick={onClose}
             className="px-5 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
           >
@@ -740,45 +835,28 @@ export function CommercialManageAccessModal({
           </button>
           <button
             type="button"
-            onClick={onClose}
+            disabled={saving}
+            onClick={async () => {
+              setSaving(true); setError("");
+              try { await onSaveRole?.(role); onClose(); }
+              catch { setError("Não foi possível atualizar a permissão."); }
+              finally { setSaving(false); }
+            }}
             className="px-6 py-2.5 rounded-xl bg-[#2552C8] hover:bg-blue-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
           >
-            Salvar alterações
+            {saving ? "Salvando…" : "Salvar permissão"}
           </button>
         </>
       }
     >
       <div className="space-y-4">
-        <div>
-          <label className="block text-xs font-semibold text-[#141C55] mb-1">Nome</label>
-          <input
-            type="text"
-            defaultValue={employeeName}
-            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8]"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-[#141C55] mb-1">E-mail</label>
-          <input
-            type="email"
-            defaultValue={employeeEmail}
-            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8]"
-          />
-        </div>
+        {error && <p role="alert" className="text-xs text-red-600">{error}</p>}
+        <div className="rounded-xl bg-gray-50 p-3 text-xs"><p className="font-semibold text-[#141C55]">{employeeName}</p><p className="text-gray-500">{employeeEmail}</p></div>
         <div>
           <label className="block text-xs font-semibold text-[#141C55] mb-1">Função</label>
-          <select defaultValue="Gerente" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8] bg-white">
-            <option>Gerente</option>
-            <option>Estoquista</option>
-            <option>Compras</option>
-            <option>Operador</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-[#141C55] mb-1">Acesso</label>
-          <select defaultValue="Ativo" className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8] bg-white">
-            <option>Ativo</option>
-            <option>Inativo / Bloqueado</option>
+          <select value={role} onChange={(e) => setRole(e.target.value as "EDITOR" | "VIEWER")} className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8] bg-white">
+            <option value="EDITOR">Equipe · pode editar</option>
+            <option value="VIEWER">Operador · somente leitura</option>
           </select>
         </div>
       </div>

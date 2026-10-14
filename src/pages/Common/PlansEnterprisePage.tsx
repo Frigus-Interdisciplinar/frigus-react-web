@@ -1,11 +1,9 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Check, ArrowLeft, Megaphone, BarChart3 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import FrigusLogo from "@/assets/frigus-logo-text.svg";
 
 export default function PlansEnterprisePage() {
-  const navigate = useNavigate();
-
   return (
     <div className="min-h-screen bg-[#F5F8FC] dark:bg-[#0F172A] flex flex-col justify-between p-6 sm:p-10 transition-colors">
       {/* Top Header */}
@@ -38,6 +36,9 @@ export default function PlansEnterprisePage() {
             Divulgue produtos e transforme tendências em decisões melhores
           </p>
         </div>
+        <p className="max-w-3xl mx-auto mb-8 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+          As soluções de anúncios e tendências ainda não têm processamento no sistema. Estas opções não podem ser contratadas agora.
+        </p>
 
         {/* 2 Enterprise Solution Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch max-w-5xl mx-auto">
@@ -56,11 +57,10 @@ export default function PlansEnterprisePage() {
               </div>
 
               <div className="mt-6 flex items-baseline gap-1.5">
-                <span className="text-4xl font-extrabold text-frigus-navy dark:text-white">R$ 0,50</span>
-                <span className="text-sm text-gray-500 dark:text-gray-400">por anúncio</span>
+                <span className="text-lg font-bold text-frigus-navy dark:text-white">Indisponível</span>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Defina o período e revise o pagamento antes de publicar.
+                A publicação de anúncios ainda não está conectada à plataforma.
               </p>
 
               <div className="h-px bg-[#E1E7F0] dark:bg-[#343941] my-6" />
@@ -86,8 +86,8 @@ export default function PlansEnterprisePage() {
 
             <button
               type="button"
-              onClick={() => navigate("/checkout?plan=enterprise-ad")}
-              className="mt-8 w-full h-12 bg-frigus-primary hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all cursor-pointer shadow-sm"
+              disabled
+              className="mt-8 w-full h-12 bg-gray-200 text-gray-500 font-bold rounded-xl text-sm cursor-not-allowed dark:bg-[#343941] dark:text-gray-400"
             >
               Escolher anúncios
             </button>
@@ -108,8 +108,7 @@ export default function PlansEnterprisePage() {
               </div>
 
               <div className="mt-6 flex items-baseline gap-1.5">
-                <span className="text-4xl font-extrabold text-white">R$ 250,00</span>
-                <span className="text-sm text-[#C9DEF9]">/mês</span>
+                <span className="text-lg font-bold text-white">Indisponível</span>
               </div>
               <p className="text-xs text-[#C9DEF9]/80 mt-1">
                 Transforme dados anonimizados em decisões estratégicas.
@@ -138,8 +137,8 @@ export default function PlansEnterprisePage() {
 
             <button
               type="button"
-              onClick={() => navigate("/checkout?plan=enterprise-report")}
-              className="mt-8 w-full h-12 bg-white hover:bg-gray-100 text-frigus-navy font-bold rounded-xl text-sm transition-all cursor-pointer shadow-md"
+              disabled
+              className="mt-8 w-full h-12 bg-white/50 text-frigus-navy/60 font-bold rounded-xl text-sm cursor-not-allowed dark:bg-white/20 dark:text-gray-400"
             >
               Escolher relatório mensal
             </button>

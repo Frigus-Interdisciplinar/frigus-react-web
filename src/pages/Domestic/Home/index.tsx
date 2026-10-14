@@ -1,21 +1,34 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, ArrowRight, Check } from "lucide-react";
+import { ChevronRight, ArrowRight } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import Badge from "@/components/Badge";
+import { getInventorySummary, type StockSummary } from "@/services/inventory.service";
+import { useStore } from "@/store/store";
+import AdvertisementShelf from "@/components/AdvertisementShelf";
 
 export default function DashboardPage() {
+  const [summary, setSummary] = useState<StockSummary | null>(null);
+  const [summaryError, setSummaryError] = useState("");
+  const user = useStore((state) => state.user);
+  useEffect(() => { void getInventorySummary().then(setSummary).catch((error: unknown) => setSummaryError(error instanceof Error ? error.message : "Não foi possível carregar o resumo.")); }, []);
+  const nearExpiration = summary?.nearExpiration ?? [];
+  const readyPercentage = summary?.itemCount ? Math.round((summary.itemCount - nearExpiration.length) / summary.itemCount * 100) : 0;
+  const consumedCount = Object.values(summary?.consumedThisWeek ?? {}).reduce((total, count) => total + count, 0);
   return (
     <AppLayout activeSection="home">
       <div className="space-y-6">
         {/* Cabeçalho de Boas-Vindas */}
         <div>
           <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-frigus-navy dark:text-white">
-            Bom dia, Henrique
+            Olá, {user?.name ?? "bem-vindo(a)"}
           </h1>
           <p className="text-gray-500 dark:text-neutral-400 text-sm mt-1 font-sans">
             Uma visão clara para aproveitar melhor cada item
           </p>
         </div>
+
+        <AdvertisementShelf />
 
         {/* Linha Superior: Hero Card + Card Para Usar Primeiro */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -30,7 +43,7 @@ export default function DashboardPage() {
                 Sua casa hoje
               </span>
               <h2 className="font-montserrat font-bold text-2xl md:text-[26px] leading-tight">
-                3 itens pedem atenção
+                {nearExpiration.length} {nearExpiration.length === 1 ? "item pede" : "itens pedem"} atenção
               </h2>
               <p className="text-frigus-ice text-sm font-sans leading-relaxed">
                 Você ainda consegue usá-los antes da validade.
@@ -53,7 +66,7 @@ export default function DashboardPage() {
                   Estoque em dia
                 </span>
                 <div className="font-montserrat font-bold text-3xl text-white mt-1">
-                  72%
+                  {readyPercentage}%
                 </div>
                 <span className="text-xs text-frigus-ice/80">dos itens sem alerta</span>
               </div>
@@ -86,33 +99,19 @@ export default function DashboardPage() {
             <div className="h-px bg-gray-100 dark:bg-[#343941] my-4" />
 
             <div className="space-y-4">
-              {/* Item 1 */}
-              <div className="flex items-center justify-between group">
+              {nearExpiration.slice(0, 2).map((item) => <div key={item.id} className="flex items-center justify-between group">
                 <div className="flex items-center gap-3">
                   <div className="w-1.5 h-8 bg-red-400 rounded-full" />
                   <div>
                     <h4 className="text-sm font-bold text-frigus-navy dark:text-white group-hover:text-frigus-primary dark:group-hover:text-[#5B89F7] transition-colors">
-                      Iogurte natural
+                      {item.product?.name ?? `Produto ${item.productId}`}
                     </h4>
-                    <p className="text-xs text-gray-400 dark:text-neutral-400">Geladeira · 2 un.</p>
+                    <p className="text-xs text-gray-400 dark:text-neutral-400">{item.quantity} un. · validade {new Date(`${item.expireDate}T12:00:00`).toLocaleDateString("pt-BR")}</p>
                   </div>
                 </div>
-                <Badge variant="danger">Hoje</Badge>
-              </div>
-
-              {/* Item 2 */}
-              <div className="flex items-center justify-between group">
-                <div className="flex items-center gap-3">
-                  <div className="w-1.5 h-8 bg-frigus-accent rounded-full" />
-                  <div>
-                    <h4 className="text-sm font-bold text-frigus-navy dark:text-white group-hover:text-frigus-primary dark:group-hover:text-[#5B89F7] transition-colors">
-                      Pão integral
-                    </h4>
-                    <p className="text-xs text-gray-400 dark:text-neutral-400">Despensa · 1 un.</p>
-                  </div>
-                </div>
-                <Badge variant="warning">Amanhã</Badge>
-              </div>
+                <Badge variant={item.productStatus === "EXPIRED" ? "danger" : "warning"}>{item.productStatus === "EXPIRED" ? "Vencido" : "Em breve"}</Badge>
+              </div>)}
+              {nearExpiration.length === 0 && <p className="text-sm text-gray-500 dark:text-neutral-400">{summaryError || "Nenhum produto próximo da validade."}</p>}
             </div>
 
             <div className="mt-4 pt-3 border-t border-gray-100 dark:border-[#343941] flex items-center justify-between text-xs text-gray-400 dark:text-neutral-400">
@@ -136,7 +135,7 @@ export default function DashboardPage() {
                 </p>
               </div>
               <span className="px-3 py-1 rounded-xl text-xs font-bold bg-[#EAF3FF] dark:bg-blue-950/50 text-frigus-primary dark:text-[#A7BCFF]">
-                18 itens usados
+                {consumedCount} itens usados
               </span>
             </div>
 
@@ -190,7 +189,7 @@ export default function DashboardPage() {
               <div className="relative w-28 h-28 rounded-full border-8 border-frigus-ice dark:border-[#2C303B] flex items-center justify-center border-t-frigus-primary border-r-frigus-accent border-l-[#6D91EA]">
                 <div className="text-center">
                   <span className="font-montserrat font-bold text-2xl text-white block leading-none">
-                    128
+                    {summary?.itemCount ?? 0}
                   </span>
                   <span className="text-[10px] text-frigus-ice dark:text-neutral-400 uppercase tracking-wider font-semibold">
                     itens
@@ -206,28 +205,28 @@ export default function DashboardPage() {
                   <span className="w-2 h-2 rounded-full bg-frigus-ice dark:bg-neutral-400" />
                   Despensa
                 </span>
-                <span className="font-bold text-white">46</span>
+                <span className="font-bold text-white">{summary?.itemsByStoragePlace?.PANTRY ?? 0}</span>
               </div>
               <div className="flex items-center justify-between text-frigus-ice dark:text-neutral-300">
                 <span className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-frigus-primary" />
                   Geladeira
                 </span>
-                <span className="font-bold text-white">31</span>
+                <span className="font-bold text-white">{summary?.itemsByStoragePlace?.FRIDGE ?? 0}</span>
               </div>
               <div className="flex items-center justify-between text-frigus-ice dark:text-neutral-300">
                 <span className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-frigus-accent" />
                   Frescos
                 </span>
-                <span className="font-bold text-white">28</span>
+                <span className="font-bold text-white">{(summary?.itemsByStoragePlace?.PANTRY ?? 0) + (summary?.itemsByStoragePlace?.SHELF ?? 0)}</span>
               </div>
               <div className="flex items-center justify-between text-frigus-ice dark:text-neutral-300">
                 <span className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-[#6D91EA]" />
                   Congelados
                 </span>
-                <span className="font-bold text-white">23</span>
+                <span className="font-bold text-white">{summary?.itemsByStoragePlace?.FREEZER ?? 0}</span>
               </div>
             </div>
           </div>
@@ -239,47 +238,11 @@ export default function DashboardPage() {
                 Próxima compra
               </span>
               <h3 className="font-montserrat font-bold text-frigus-navy dark:text-white text-base mt-0.5">
-                Faltam 4 itens
+                Faltam {summary?.pendingShoppingItems ?? 0} itens
               </h3>
             </div>
 
-            {/* Lista com Checkboxes */}
-            <div className="space-y-3 my-4">
-              {[
-                { name: "Ovos", qty: "12 un.", checked: false },
-                { name: "Aveia", qty: "1 pct", checked: false },
-                { name: "Sabão neutro", qty: "2 un.", checked: true },
-              ].map((item, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between p-2 rounded-xl hover:bg-gray-50 dark:hover:bg-[#252A32] transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-4 h-4 rounded-md border flex items-center justify-center transition-colors ${
-                        item.checked
-                          ? "bg-frigus-primary border-frigus-primary text-white"
-                          : "border-gray-300 dark:border-neutral-600 bg-white dark:bg-[#1C1E22]"
-                      }`}
-                    >
-                      {item.checked && <Check size={12} strokeWidth={3} />}
-                    </div>
-                    <span
-                      className={`text-sm font-medium ${
-                        item.checked
-                          ? "line-through text-gray-400 dark:text-neutral-500"
-                          : "text-frigus-navy dark:text-white font-semibold"
-                      }`}
-                    >
-                      {item.name}
-                    </span>
-                  </div>
-                  <span className="text-xs text-gray-400 dark:text-neutral-400 font-medium">
-                    {item.qty}
-                  </span>
-                </div>
-              ))}
-            </div>
+            <p className="text-sm text-gray-500 dark:text-neutral-400 my-4">{summary?.pendingShoppingItems ? "Há itens pendentes na sua lista." : "Sua lista de compras está em dia."}</p>
 
             <Link
               to="/shopping-list"

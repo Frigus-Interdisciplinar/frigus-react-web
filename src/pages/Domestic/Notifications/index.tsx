@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { api } from "@/utils/api.util";
 import {
   Clock,
   ShoppingBasket,
@@ -17,50 +18,54 @@ type NotificationItem = {
   unread?: boolean;
 };
 
-const initialNotifications: NotificationItem[] = [
-  {
-    id: "1",
-    title: "Tomates vencem amanhã",
-    desc: "Use os tomates em uma receita ou adicione à lista de compras.",
-    time: "há 12 min",
-    type: "Estoque",
-    unread: true,
-  },
-  {
-    id: "2",
-    title: "Marina atualizou a lista de compras",
-    desc: "Foram adicionados leite integral e aveia.",
-    time: "há 1 h",
-    type: "Compras",
-    unread: true,
-  },
-  {
-    id: "3",
-    title: "Azeite de oliva está com pouco estoque",
-    desc: "Restam 120 ml na despensa.",
-    time: "ontem",
-    type: "Estoque",
-    unread: true,
-  },
-  {
-    id: "4",
-    title: "Seu resumo mensal está pronto",
-    desc: "Veja quanto sua casa evitou desperdiçar neste mês.",
-    time: "terça-feira",
-    type: "Sistema",
-    unread: true,
-  },
-];
+type ApiNotification = { id: string; type: string; title: string; body: string; readAt: string | null; createdAt: string };
+type Preferences = { expirationAlertsEnabled: boolean; lowStockAlertsEnabled: boolean; shoppingRemindersEnabled: boolean; weeklySummaryEnabled: boolean; theme: "LIGHT" | "DARK" | "SYSTEM" };
+
+function mapNotification(item: ApiNotification): NotificationItem {
+  const type = item.type.startsWith("SHOPPING_LIST") ? "Compras" : item.type === "WEEKLY_SUMMARY" || item.type === "AD_CLICK_MILESTONE" ? "Sistema" : "Estoque";
+  const age = Math.max(0, Date.now() - new Date(item.createdAt).getTime());
+  const mins = Math.floor(age / 60000);
+  const time = mins < 60 ? `há ${mins} min` : mins < 1440 ? `há ${Math.floor(mins / 60)} h` : new Date(item.createdAt).toLocaleDateString("pt-BR");
+  return { id: item.id, title: item.title, desc: item.body, time, type, unread: !item.readAt };
+}
 
 export default function NotificationsPage() {
   const [filter, setFilter] = useState<"Todas" | "Estoque" | "Compras" | "Sistema">("Todas");
-  const [notifications, setNotifications] = useState<NotificationItem[]>(initialNotifications);
-  const [emailNotify, setEmailNotify] = useState(true);
-  const [browserNotify, setBrowserNotify] = useState(false);
-  const [onlyImportant, setOnlyImportant] = useState(true);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [loadError, setLoadError] = useState("");
+  const [preferences, setPreferences] = useState<Preferences>({ expirationAlertsEnabled: true, lowStockAlertsEnabled: true, shoppingRemindersEnabled: true, weeklySummaryEnabled: false, theme: "SYSTEM" });
+  const [savingPreferences, setSavingPreferences] = useState(false);
+  useEffect(() => {
+    void api.get<{ content: ApiNotification[] }>("/web/core/notifications?page=0&size=50")
+      .then((page) => setNotifications(page.content.map(mapNotification)))
+      .catch((error: unknown) => setLoadError(error instanceof Error ? error.message : "Não foi possível carregar as notificações."));
+    void api.get<Preferences>("/web/core/preferences").then(setPreferences)
+      .catch((error: unknown) => setLoadError(error instanceof Error ? error.message : "Não foi possível carregar as preferências."));
+  }, []);
 
-  const markAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
+  const savePreferences = async () => {
+    setSavingPreferences(true);
+    try { await api.put("/web/core/preferences", preferences); }
+    catch (error) { setLoadError(error instanceof Error ? error.message : "Não foi possível salvar as preferências."); }
+    finally { setSavingPreferences(false); }
+  };
+
+  const markAllRead = async () => {
+    try {
+      await api.patch<void>("/web/core/notifications/read-all", {});
+      setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : "Não foi possível marcar as notificações como lidas.");
+    }
+  };
+
+  const markRead = async (id: string) => {
+    try {
+      await api.patch<void>(`/web/core/notifications/${id}/read`, {});
+      setNotifications((prev) => prev.map((item) => item.id === id ? { ...item, unread: false } : item));
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : "Não foi possível atualizar a notificação.");
+    }
   };
 
   const filteredNotifications = notifications.filter(
@@ -122,9 +127,13 @@ export default function NotificationsPage() {
               Recentes
             </h3>
 
+            {loadError && <p role="alert" className="text-sm text-red-600">{loadError}</p>}
             <div className="divide-y divide-gray-100 dark:divide-[#343941]">
+              {filteredNotifications.length === 0 && <p className="py-8 text-center text-sm text-gray-500">Nenhuma notificação para este filtro.</p>}
               {filteredNotifications.map((item) => (
-                <div
+                <button
+                  type="button"
+                  onClick={() => item.unread && void markRead(item.id)}
                   key={item.id}
                   className={`py-4 flex items-start gap-4 transition-colors rounded-xl px-2 ${
                     item.unread ? "bg-blue-50/30 dark:bg-blue-900/10" : ""
@@ -161,7 +170,7 @@ export default function NotificationsPage() {
                   {item.unread && (
                     <div className="w-2 h-2 rounded-full bg-frigus-primary dark:bg-blue-500 shrink-0 mt-2" />
                   )}
-                </div>
+                </button>
               ))}
             </div>
           </div>
@@ -179,51 +188,22 @@ export default function NotificationsPage() {
               </div>
 
               <div className="space-y-3 pt-2">
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941]">
-                  <span className="text-xs font-bold text-frigus-navy dark:text-white">
-                    Por e-mail
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={emailNotify}
-                    onChange={(e) => setEmailNotify(e.target.checked)}
-                    className="rounded text-frigus-primary focus:ring-frigus-primary"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941]">
-                  <span className="text-xs font-bold text-frigus-navy dark:text-white">
-                    No navegador
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={browserNotify}
-                    onChange={(e) => setBrowserNotify(e.target.checked)}
-                    className="rounded text-frigus-primary focus:ring-frigus-primary"
-                  />
-                </div>
-
-                <div className="p-3 rounded-2xl bg-gray-50 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941] space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-frigus-navy dark:text-white">
-                      Somente importantes
-                    </span>
-                    <input
-                      type="checkbox"
-                      checked={onlyImportant}
-                      onChange={(e) => setOnlyImportant(e.target.checked)}
-                      className="rounded text-frigus-primary focus:ring-frigus-primary"
-                    />
-                  </div>
-                  <p className="text-[10px] text-gray-400 dark:text-neutral-400 leading-tight">
-                    Validades, compras e atualizações de conta.
-                  </p>
-                </div>
+                {([
+                  ["expirationAlertsEnabled", "Alertas de validade"],
+                  ["lowStockAlertsEnabled", "Estoque baixo"],
+                  ["shoppingRemindersEnabled", "Lembretes de compras"],
+                  ["weeklySummaryEnabled", "Resumo semanal"],
+                ] as const).map(([key, label]) => (
+                  <label key={key} className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941]">
+                    <span className="text-xs font-bold text-frigus-navy dark:text-white">{label}</span>
+                    <input type="checkbox" checked={preferences[key]} onChange={(event) => setPreferences((current) => ({ ...current, [key]: event.target.checked }))} className="rounded text-frigus-primary focus:ring-frigus-primary" />
+                  </label>
+                ))}
               </div>
             </div>
 
-            <button className="w-full py-2.5 px-4 bg-gray-100 dark:bg-[#252A32] hover:bg-gray-200 dark:hover:bg-[#2e343e] text-frigus-navy dark:text-white rounded-xl text-xs font-bold transition-colors cursor-pointer">
-              Editar preferências
+            <button onClick={() => void savePreferences()} disabled={savingPreferences} className="w-full py-2.5 px-4 bg-gray-100 dark:bg-[#252A32] hover:bg-gray-200 dark:hover:bg-[#2e343e] text-frigus-navy dark:text-white rounded-xl text-xs font-bold transition-colors cursor-pointer disabled:opacity-60">
+              {savingPreferences ? "Salvando…" : "Salvar preferências"}
             </button>
           </div>
         </div>

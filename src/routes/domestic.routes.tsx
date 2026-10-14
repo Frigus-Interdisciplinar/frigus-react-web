@@ -12,21 +12,22 @@ import ProfilePage from "@/pages/Domestic/Profile";
 import SettingsPage from "@/pages/Domestic/Settings";
 import PlansPage from "@/pages/Domestic/Plans";
 import NotificationsPage from "@/pages/Domestic/Notifications";
+import AuthGuard from "@/components/AuthGuard";
 
 export const domesticRoutes = (
   <>
-    <Route path="/home" element={<HomePage />} />
-    <Route path="/stock" element={<StockPage />} />
-    <Route path="/stock/:id" element={<FoodDetailsPage />} />
-    <Route path="/alerts" element={<AlertsPage />} />
-    <Route path="/recipe" element={<RecipePage />} />
-    <Route path="/recipe/:id" element={<RecipeDetailsPage />} />
-    <Route path="/shopping-list" element={<ShoppingListPage />} />
-    <Route path="/family-members" element={<FamilyMembersPage />} />
-    <Route path="/chat" element={<ChatPage />} />
-    <Route path="/profile" element={<ProfilePage />} />
-    <Route path="/settings" element={<SettingsPage />} />
-    <Route path="/plans" element={<PlansPage />} />
-    <Route path="/notifications" element={<NotificationsPage />} />
+    <Route path="/home" element={<AuthGuard accountType="DOMESTIC"><HomePage /></AuthGuard>} />
+    <Route path="/stock" element={<AuthGuard accountType="DOMESTIC"><StockPage /></AuthGuard>} />
+    <Route path="/stock/:id" element={<AuthGuard accountType="DOMESTIC"><FoodDetailsPage /></AuthGuard>} />
+    <Route path="/alerts" element={<AuthGuard accountType="DOMESTIC"><AlertsPage /></AuthGuard>} />
+    <Route path="/recipe" element={<AuthGuard accountType="DOMESTIC"><RecipePage /></AuthGuard>} />
+    <Route path="/recipe/:id" element={<AuthGuard accountType="DOMESTIC"><RecipeDetailsPage /></AuthGuard>} />
+    <Route path="/shopping-list" element={<AuthGuard accountType="DOMESTIC"><ShoppingListPage /></AuthGuard>} />
+    <Route path="/family-members" element={<AuthGuard accountType="DOMESTIC"><FamilyMembersPage /></AuthGuard>} />
+    <Route path="/chat" element={<AuthGuard accountType="DOMESTIC"><ChatPage /></AuthGuard>} />
+    <Route path="/profile" element={<AuthGuard><ProfilePage /></AuthGuard>} />
+    <Route path="/settings" element={<AuthGuard><SettingsPage /></AuthGuard>} />
+    <Route path="/plans" element={<AuthGuard><PlansPage /></AuthGuard>} />
+    <Route path="/notifications" element={<AuthGuard><NotificationsPage /></AuthGuard>} />
   </>
 );

@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import { Bell, User, LayoutGrid } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Bell, User, LayoutGrid, LogOut } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import QuickNotificationsPopover from "./QuickNotificationsPopover";
 import ThemeToggle from "@/components/ThemeToggle";
+import { logout } from "@/services/auth.service";
+import { useStore } from "@/store/store";
 
 export type TopbarProps = {
   title?: string;
@@ -16,6 +18,12 @@ export default function Topbar({
   hasNotificationAlert = true,
 }: TopbarProps) {
   const [isQuickNotificationsOpen, setIsQuickNotificationsOpen] = useState(false);
+  const clearSession = useStore((state) => state.logout);
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try { await logout(); } catch { /* Local logout still clears the browser session. */ } finally { clearSession(); navigate("/login", { replace: true }); }
+  };
 
   // Fechar ao pressionar Escape
   useEffect(() => {
@@ -51,7 +59,7 @@ export default function Topbar({
           title="Alternar perfil"
         >
           <LayoutGrid size={14} className="text-frigus-primary dark:text-[#5B89F7]" />
-          <span>Doméstico</span>
+          <span>Perfis</span>
         </Link>
 
         {/* ThemeToggle */}
@@ -85,6 +93,9 @@ export default function Topbar({
         >
           <User size={18} className="text-frigus-primary dark:text-[#A7BCFF]" />
         </Link>
+        <button type="button" onClick={() => void handleLogout()} aria-label="Sair da conta" title="Sair" className="w-10 h-10 rounded-full border border-gray-200 dark:border-[#343941] flex items-center justify-center text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30">
+          <LogOut size={17} />
+        </button>
       </div>
     </header>
   );

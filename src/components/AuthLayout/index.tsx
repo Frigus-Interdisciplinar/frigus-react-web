@@ -17,7 +17,7 @@ export default function AuthLayout({
   children,
 }: AuthLayoutProps) {
   return (
-    <main className="flex min-h-screen w-screen bg-[#F4F7FC]">
+    <main className="flex min-h-screen w-full overflow-x-hidden bg-[#F4F7FC]">
       {/* Painel Institucional Lateral */}
       <AuthSidebar
         title={title}
@@ -27,7 +27,7 @@ export default function AuthLayout({
       />
 
       {/* Conteúdo Principal / Card de Autenticação */}
-      <section className="flex-1 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+      <section className="min-w-0 flex-1 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
         {children}
       </section>
     </main>
