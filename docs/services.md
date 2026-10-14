@@ -61,9 +61,6 @@ Remove-Item Env:FRIGUS_INTEGRATION_URL
 Ele cria usuários e dados sintéticos no banco local e percorre cadastro, login,
 perfil, refresh, planos, checkout simulado, grupo, estoque, mensagem, descartes,
 assinatura e logout. Não executar apontando o BFF para um banco compartilhado.
-O teste de integração não foi executado nesta sessão porque o Docker Desktop não
-estava disponível. O resolver de limites da core-api agora busca assinatura e
-plano explicitamente, evitando depender do proxy destacado no usuário autenticado.
 
 ## Ambiente local usado
 
