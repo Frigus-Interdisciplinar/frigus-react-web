@@ -71,7 +71,7 @@ export default function Sidebar({ activeSection }: SidebarProps) {
       {/* Perfil do Usuário na Base */}
       <div className="pt-4 border-t border-white/10 flex items-center gap-3 px-2">
         <div className="w-9 h-9 rounded-full bg-frigus-ice flex items-center justify-center text-frigus-navy font-bold text-xs shrink-0">
-          {initials}
+          {user?.profilePictureUrl ? <img src={user.profilePictureUrl} alt="Foto do perfil" className="w-full h-full rounded-full object-cover" /> : initials}
         </div>
         <div className="flex flex-col overflow-hidden">
           <span className="text-white text-xs font-bold truncate">{user?.name || "Visitante"}</span>

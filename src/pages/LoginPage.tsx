@@ -69,6 +69,7 @@ export default function LoginPage() {
         {store.user ? (
           <div className="flex flex-col gap-4 w-full mt-8" role="status">
             <p className="text-frigus-navy">Você está conectado como {store.user.name}.</p>
+            <a href="/settings" className="text-frigus-primary text-sm font-semibold underline">Editar perfil e foto</a>
             {error && <p className="text-sm text-red-500">{error}</p>}
             <Button type="button" disabled={loading} onClick={handleLogout}>Sair</Button>
           </div>
