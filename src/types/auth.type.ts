@@ -6,6 +6,7 @@ export interface LoginResponseDto {
   user: {
     id: string;
     name: string;
+    profilePictureUrl?: string | null;
     email: string;
     birthDate: string;
     accountType: AccountType;

@@ -6,6 +6,7 @@ type AccountType = "DOMESTIC" | "COMMERCIAL" | "BUSINESS";
 interface AuthUser {
     id: string;
     name: string;
+    profilePictureUrl?: string | null;
     email: string;
     birthDate: string;
     accountType: AccountType;
