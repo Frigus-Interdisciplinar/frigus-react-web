@@ -8,3 +8,7 @@ export * from "./transaction.service";
 export * from "./discard.service";
 export * from "./user.service";
 export * from "./password-recovery.service";
+export * from "./shopping.service";
+export * from "./recipe.service";
+export * from "./notification.service";
+export * from "./commercial.service";

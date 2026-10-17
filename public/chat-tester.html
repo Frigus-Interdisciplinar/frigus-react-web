@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Teste rápido do chat · Frigus</title>
+  <style>
+    :root { color-scheme: light; font: 15px/1.5 system-ui, sans-serif; color: #17233f; background: #f4f7fc; }
+    * { box-sizing: border-box; }
+    body { max-width: 1120px; margin: 0 auto; padding: 24px; }
+    h1 { margin: 0; font-size: 1.6rem; } h2 { margin: 0 0 12px; font-size: 1.05rem; }
+    p { margin: 6px 0 0; color: #667085; }
+    .card { margin-top: 18px; padding: 18px; border: 1px solid #e1e7f0; border-radius: 14px; background: white; box-shadow: 0 4px 18px #17233f0a; }
+    .grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+    label { display: grid; gap: 5px; color: #475467; font-size: .85rem; font-weight: 650; }
+    input, select, textarea, button { font: inherit; }
+    input, select, textarea { width: 100%; padding: 10px 11px; border: 1px solid #d0d8e5; border-radius: 8px; background: white; color: #17233f; }
+    button { padding: 9px 13px; border: 0; border-radius: 8px; background: #2456c7; color: white; font-weight: 700; cursor: pointer; }
+    button.secondary { background: #eaf0fb; color: #244477; } button:disabled { opacity: .55; cursor: wait; }
+    .row { display: flex; align-items: center; gap: 9px; flex-wrap: wrap; }
+    .row > input, .row > select { flex: 1; min-width: 180px; }
+    .layout { display: grid; grid-template-columns: 300px minmax(0,1fr); gap: 16px; }
+    #conversation-list { display: grid; gap: 7px; max-height: 580px; overflow: auto; }
+    .conversation { width: 100%; text-align: left; background: #f4f7fc; color: #17233f; }
+    .conversation.active { background: #e7efff; outline: 1px solid #9db8f4; }
+    .message-list { display: grid; gap: 10px; max-height: 470px; overflow: auto; padding: 10px 2px; }
+    .message { padding: 11px 13px; border: 1px solid #e8edf5; border-radius: 12px; background: #fafbfe; }
+    .message.mine { background: #edf3ff; }
+    .meta { display: flex; justify-content: space-between; gap: 12px; color: #718096; font-size: .78rem; }
+    .body { margin-top: 7px; white-space: pre-wrap; overflow-wrap: anywhere; }
+    .body img { display: block; max-width: min(100%,420px); max-height: 300px; margin-top: 8px; border-radius: 8px; object-fit: contain; }
+    .attachment { display: block; margin-top: 7px; }
+    .reactions { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 9px; }
+    .reactions button { padding: 4px 8px; background: white; border: 1px solid #dce4f1; color: #344260; }
+    .status { min-height: 24px; margin-top: 10px; color: #2456c7; white-space: pre-wrap; }
+    .status.error { color: #b42318; }
+    .hint { font-size: .82rem; }
+    @media (max-width: 760px) { body { padding: 14px; } .grid, .layout { grid-template-columns: 1fr; } #conversation-list { max-height: 220px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Teste rápido do chat</h1>
+    <p>HTML independente para conferir conversas, busca, reações e upload de anexos pelo BFF.</p>
+  </header>
+
+  <section class="card">
+    <h2>Conexão</h2>
+    <div class="grid">
+      <label>URL do BFF<input id="bff" value="http://localhost:3000" placeholder="http://localhost:3000"></label>
+      <label>Token de acesso (JWT, opcional)<input id="token" type="password" autocomplete="off" placeholder="Ou use o cookie de uma sessão já iniciada no frontend"></label>
+      <label>URL do projeto Supabase<input id="supabase-url" placeholder="https://seu-projeto.supabase.co"></label>
+      <label>Chave pública Supabase<input id="supabase-key" type="password" autocomplete="off" placeholder="Publishable key ou anon key"></label>
+    </div>
+    <div class="row" style="margin-top:12px"><button id="load-conversations">Carregar conversas</button><span class="hint">Não cole a service role/secret key aqui. Use apenas a chave pública do projeto.</span></div>
+    <div id="status" class="status" role="status"></div>
+  </section>
+
+  <main class="layout">
+    <section class="card">
+      <h2>Conversas</h2>
+      <div id="conversation-list"><p>Carregue as conversas para começar.</p></div>
+      <label style="margin-top:14px">ID da conversa (opcional)<input id="conversation-id" placeholder="UUID da conversa"></label>
+      <button class="secondary" id="open-id" style="margin-top:8px">Abrir ID</button>
+    </section>
+
+    <section class="card">
+      <div class="row" style="justify-content:space-between">
+        <div><h2 style="margin:0">Mensagens</h2><p id="current-conversation">Selecione uma conversa.</p></div>
+        <button class="secondary" id="refresh">Atualizar</button>
+      </div>
+      <form id="search-form" class="row" style="margin-top:14px">
+        <input id="search" placeholder="Buscar no conteúdo das mensagens">
+        <button class="secondary">Buscar</button>
+        <button type="button" class="secondary" id="clear-search">Limpar</button>
+      </form>
+      <div id="messages" class="message-list"></div>
+      <form id="send-form" style="margin-top:12px">
+        <label>Mensagem<textarea id="content" rows="3" placeholder="Escreva uma mensagem (ou envie só um anexo)"></textarea></label>
+        <label style="margin-top:10px">Anexos (até 5, 10 MB cada)<input id="files" type="file" multiple accept="image/png,image/jpeg,image/webp,application/pdf"></label>
+        <button id="send" style="margin-top:10px">Enviar mensagem</button>
+      </form>
+    </section>
+  </main>
+
+  <script type="module">
+    const $ = (id) => document.getElementById(id);
+    const state = { conversations: [], activeId: "", messages: [], userId: "" };
+    const allowed = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
+    const emojis = ["👍", "❤️", "😂", "😮", "😢", "🙏"];
+
+    function apiRoot() { return `${$("bff").value.trim().replace(/\/$/, "")}/web/core/chat/conversations`; }
+    function setStatus(message, error = false) { $("status").textContent = message; $("status").classList.toggle("error", error); }
+    function authHeaders(json = false) {
+      const token = $("token").value.trim();
+      return { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(json ? { "Content-Type": "application/json" } : {}) };
+    }
+    async function request(url, options = {}) {
+      const response = await fetch(url, { credentials: "include", ...options });
+      const raw = await response.text();
+      let data; try { data = raw ? JSON.parse(raw) : null; } catch { data = raw; }
+      if (!response.ok) throw new Error(`${response.status} ${response.statusText}: ${typeof data === "string" ? data : JSON.stringify(data)}`);
+      return data;
+    }
+    const escapeHtml = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" })[char]);
+
+    async function loadConversations() {
+      setStatus("Carregando conversas…");
+      const profile = await request(`${$("bff").value.trim().replace(/\/$/, "")}/web/profile`, { headers: authHeaders() });
+      state.userId = profile.id;
+      state.conversations = await request(apiRoot(), { headers: authHeaders() });
+      $("conversation-list").replaceChildren();
+      if (!state.conversations.length) $("conversation-list").innerHTML = "<p>Nenhuma conversa encontrada para esse usuário.</p>";
+      for (const conversation of state.conversations) {
+        const button = document.createElement("button");
+        button.className = `conversation ${conversation.id === state.activeId ? "active" : ""}`;
+        button.innerHTML = `<strong>${escapeHtml(conversation.name || conversation.groupName || "Conversa")}</strong><br><small>${escapeHtml(conversation.latestMessage?.content || conversation.id)}</small>`;
+        button.onclick = () => openConversation(conversation.id);
+        $("conversation-list").append(button);
+      }
+      setStatus(`${state.conversations.length} conversa(s) carregada(s).`);
+      if (!state.activeId && state.conversations[0]) await openConversation(state.conversations[0].id);
+    }
+
+    async function openConversation(id) {
+      state.activeId = id.trim(); $("conversation-id").value = state.activeId;
+      const conversation = state.conversations.find((item) => item.id === state.activeId);
+      $("current-conversation").textContent = conversation?.name || conversation?.groupName || state.activeId;
+      await loadMessages();
+      document.querySelectorAll(".conversation").forEach((button, index) => button.classList.toggle("active", state.conversations[index]?.id === state.activeId));
+    }
+
+    async function loadMessages(search = $("search").value.trim()) {
+      if (!state.activeId) throw new Error("Selecione ou informe um ID de conversa.");
+      const params = new URLSearchParams({ page: "0", size: "50" }); if (search) params.set("q", search);
+      setStatus("Carregando mensagens…");
+      const page = await request(`${apiRoot()}/${encodeURIComponent(state.activeId)}/messages?${params}`, { headers: authHeaders() });
+      state.messages = page.content || [];
+      await renderMessages();
+      setStatus(`${state.messages.length} mensagem(ns) carregada(s).`);
+    }
+
+    async function renderMessages() {
+      const container = $("messages"); container.replaceChildren();
+      if (!state.messages.length) { container.innerHTML = "<p>Nenhuma mensagem encontrada.</p>"; return; }
+      for (const message of state.messages) {
+        const card = document.createElement("article"); card.className = "message";
+        const files = (message.attachments || []).map((file) => file.mimeType.startsWith("image/")
+          ? `<a class="attachment" href="${escapeHtml(file.fileUrl)}" target="_blank" rel="noreferrer"><img src="${escapeHtml(file.fileUrl)}" alt="${escapeHtml(file.fileName)}"></a>`
+          : `<a class="attachment" href="${escapeHtml(file.fileUrl)}" target="_blank" rel="noreferrer">📎 ${escapeHtml(file.fileName)}</a>`).join("");
+        card.innerHTML = `<div class="meta"><strong>${escapeHtml(message.senderName || `Usuário ${message.senderId}`)}</strong><time>${escapeHtml(new Date(message.createdAt).toLocaleString("pt-BR"))}</time></div><div class="body">${escapeHtml(message.content || "")}${files}</div><div class="reactions"></div>`;
+        const reactionBar = card.querySelector(".reactions");
+        for (const emoji of emojis) {
+          const button = document.createElement("button"); button.type = "button"; button.textContent = emoji; button.title = `Reagir com ${emoji}`;
+          button.onclick = () => toggleReaction(message.id, emoji); reactionBar.append(button);
+        }
+        const reactions = await request(`${apiRoot()}/${state.activeId}/messages/${message.id}/reactions`, { headers: authHeaders() });
+        const counts = reactions.reduce((all, reaction) => (all[reaction.emoji] = (all[reaction.emoji] || 0) + 1, all), {});
+        for (const [emoji, count] of Object.entries(counts)) {
+          const button = document.createElement("button"); button.type = "button"; button.className = "secondary"; button.textContent = `${emoji} ${count}`;
+          button.onclick = () => toggleReaction(message.id, emoji); reactionBar.append(button);
+        }
+        container.append(card);
+      }
+      container.scrollTop = container.scrollHeight;
+    }
+
+    async function toggleReaction(messageId, emoji) {
+      try {
+        const headers = authHeaders(true); const path = `${apiRoot()}/${state.activeId}/messages/${messageId}/reactions`;
+        const current = await request(path, { headers: authHeaders() });
+        const mine = current.some((reaction) => reaction.emoji === emoji && reaction.userId === currentUserId());
+        await request(mine ? `${path}?emoji=${encodeURIComponent(emoji)}` : path, { method: mine ? "DELETE" : "PUT", headers, ...(mine ? {} : { body: JSON.stringify({ emoji }) }) });
+        await loadMessages();
+      } catch (error) { setStatus(error.message, true); }
+    }
+
+    async function uploadFile(conversationId, file) {
+      if (!allowed.has(file.type)) throw new Error(`Tipo não permitido: ${file.name}`);
+      if (file.size > 10 * 1024 * 1024) throw new Error(`Arquivo maior que 10 MB: ${file.name}`);
+      const ticket = await request(`${apiRoot()}/${conversationId}/attachments/upload-ticket`, {
+        method: "POST", headers: authHeaders(true), body: JSON.stringify({ fileName: file.name, mimeType: file.type, fileSize: file.size }),
+      });
+      const supabaseUrl = $("supabase-url").value.trim().replace(/\/$/, "");
+      const publicKey = $("supabase-key").value.trim();
+      if (!supabaseUrl || !publicKey) throw new Error("Informe a URL e a chave pública do Supabase para enviar anexos.");
+      const objectPath = ticket.path.split("/").map(encodeURIComponent).join("/");
+      const uploadUrl = new URL(`${supabaseUrl}/storage/v1/object/upload/sign/${encodeURIComponent(ticket.bucket)}/${objectPath}`);
+      uploadUrl.searchParams.set("token", ticket.token);
+      await request(uploadUrl, { method: "PUT", headers: { apikey: publicKey, Authorization: `Bearer ${publicKey}`, "Content-Type": file.type, "Cache-Control": "max-age=3600", "x-upsert": "false" }, body: file });
+      return { fileUrl: ticket.path, fileName: ticket.fileName, mimeType: ticket.mimeType, fileSize: file.size };
+    }
+
+    $("load-conversations").onclick = () => loadConversations().catch((error) => setStatus(error.message, true));
+    $("open-id").onclick = () => openConversation($("conversation-id").value).catch((error) => setStatus(error.message, true));
+    $("refresh").onclick = () => loadMessages().catch((error) => setStatus(error.message, true));
+    $("search-form").onsubmit = (event) => { event.preventDefault(); loadMessages().catch((error) => setStatus(error.message, true)); };
+    $("clear-search").onclick = () => { $("search").value = ""; loadMessages("").catch((error) => setStatus(error.message, true)); };
+    $("send-form").onsubmit = async (event) => {
+      event.preventDefault(); const button = $("send"); button.disabled = true;
+      try {
+        if (!state.activeId) throw new Error("Selecione ou informe uma conversa.");
+        const files = [...$("files").files]; if (files.length > 5) throw new Error("Envie no máximo 5 arquivos por mensagem.");
+        const attachments = [];
+        for (const [index, file] of files.entries()) { setStatus(`Enviando anexo ${index + 1}/${files.length}: ${file.name}`); attachments.push(await uploadFile(state.activeId, file)); }
+        const content = $("content").value.trim(); if (!content && !attachments.length) throw new Error("Digite uma mensagem ou escolha um anexo.");
+        await request(`${apiRoot()}/${state.activeId}/messages`, { method: "POST", headers: authHeaders(true), body: JSON.stringify({ content: content || undefined, messageType: "TEXT", attachments }) });
+        $("content").value = ""; $("files").value = ""; await loadMessages(""); setStatus("Mensagem enviada com sucesso.");
+      } catch (error) { setStatus(error.message, true); }
+      finally { button.disabled = false; }
+    };
+  </script>
+</body>
+</html>

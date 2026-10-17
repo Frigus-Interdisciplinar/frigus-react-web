@@ -6,10 +6,15 @@ import {
   UsersRound,
   MessageCircle,
   Settings,
+  CreditCard,
+  Building2,
+  LogOut,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import NavigationItem from "./NavigationItem";
 import frigusLogo from "@/assets/frigus-logo.svg";
 import { useStore } from "@/store/store";
+import { logout } from "@/services/auth.service";
 
 export type SectionString =
   | "home"
@@ -19,6 +24,8 @@ export type SectionString =
   | "family-members"
   | "chat"
   | "settings"
+  | "plans"
+  | "commercial"
   | undefined;
 
 export type NavItem = {
@@ -35,6 +42,8 @@ const navigationItems: NavItem[] = [
   { label: "Compras", href: "/shopping-list", icon: <ShoppingBasket size={18} />, section: "shopping-list" },
   { label: "Família", href: "/family-members", icon: <UsersRound size={18} />, section: "family-members" },
   { label: "Chat", href: "/chat", icon: <MessageCircle size={18} />, section: "chat" },
+  { label: "Planos", href: "/plans", icon: <CreditCard size={18} />, section: "plans" },
+  { label: "Comercial", href: "/commercial", icon: <Building2 size={18} />, section: "commercial" },
   { label: "Configurações", href: "/settings", icon: <Settings size={18} />, section: "settings" },
 ];
 
@@ -44,6 +53,7 @@ type SidebarProps = {
 
 export default function Sidebar({ activeSection }: SidebarProps) {
   const user = useStore((state) => state.user);
+  const navigate = useNavigate();
   const initials = user?.name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("") || "?";
   return (
     <aside className="h-screen sticky top-0 bg-sidebar-bg w-60 p-4 flex flex-col justify-between shrink-0 select-none">
@@ -77,6 +87,7 @@ export default function Sidebar({ activeSection }: SidebarProps) {
           <span className="text-white text-xs font-bold truncate">{user?.name || "Visitante"}</span>
           <span className="text-sidebar-muted text-[11px] truncate">{user ? { DOMESTIC: "Conta doméstica", COMMERCIAL: "Conta comercial", BUSINESS: "Conta empresarial" }[user.accountType] : ""}</span>
         </div>
+        <button type="button" title="Sair" aria-label="Sair da conta" onClick={async()=>{try{await logout();}finally{useStore.getState().logout();navigate("/login",{replace:true});}}} className="ml-auto rounded-lg p-2 text-sidebar-muted hover:bg-white/10 hover:text-white"><LogOut size={17}/></button>
       </div>
     </aside>
   );

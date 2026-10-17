@@ -6,6 +6,7 @@ import Checkbox from "@/components/Checkbox";
 import { login, logout } from "@/services/auth.service";
 import { useStore } from "@/store/store";
 import { z } from "zod";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginPage() {
   const [email, setEmail] = useState<string>("");
@@ -14,6 +15,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
   const store = useStore();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -23,6 +25,7 @@ export default function LoginPage() {
       setLoading(true);
       const res = await login({ email, rawPassword, rememberMe });
       store.login(res.user, res.accessToken, res.refreshToken);
+      navigate("/home", { replace: true });
     } catch (err) {
       setError(err instanceof z.ZodError ? err.issues[0].message : err instanceof Error ? err.message : "Erro ao entrar.");
     } finally {

@@ -9,4 +9,7 @@ export const groupService = {
   update: (groupId: string, data: z.input<typeof groupUpdateSchema>) => request(groupSchema, path(groupId), "PUT", groupUpdateSchema.parse(data)),
   addMember: (groupId: string, userId: string) => request(groupSchema, `${path(groupId)}/members`, "POST", { userId: uuid.parse(userId) }),
   removeMember: (groupId: string, userId: string) => request(emptyResponse, `${path(groupId)}/members/${uuid.parse(userId)}`, "DELETE"),
+  invitations: (groupId: string) => request(z.array(z.record(z.string(), z.unknown())), `${path(groupId)}/invitations`),
+  invite: (groupId: string, email: string, memberRole: "OWNER" | "EDITOR" | "VIEWER", name?: string) => request(z.unknown(), `${path(groupId)}/invitations`, "POST", { email: z.email().parse(email), memberRole, name }),
+  setMemberRole: (groupId: string, userId: string, memberRole: "OWNER" | "EDITOR" | "VIEWER") => request(z.unknown(), `${path(groupId)}/members/${uuid.parse(userId)}/role`, "PATCH", { memberRole }),
 };
