@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/useAuth";
 import { useStore } from "@/store/store";
 import type { AccountType } from "@/types/auth.type";
 
@@ -10,7 +11,7 @@ const destination: Record<AccountType, string> = {
 };
 
 export default function AuthGuard({ children, accountType }: { children: ReactNode; accountType?: AccountType }) {
-  const user = useStore((state) => state.user);
+  const { user } = useAuth();
   const initialized = useStore((state) => state.initialized);
   const location = useLocation();
 

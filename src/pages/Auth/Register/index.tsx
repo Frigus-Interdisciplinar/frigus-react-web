@@ -46,7 +46,7 @@ export default function RegisterPage() {
       const account = await register({ name: name.trim(), email: email.trim(), rawPassword: password, birthDate, accountType });
       const session = await login({ email: account.email, rawPassword: password, rememberMe: true });
       await ensureStarterWorkspace(session.user.accountType);
-      saveUser(session.user, session.accessToken, session.refreshToken);
+      saveUser(session.user);
       navigate(accountType === "COMMERCIAL" ? "/commercial" : accountType === "BUSINESS" ? "/enterprise" : "/home", { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível criar sua conta. Tente novamente.");
@@ -66,7 +66,7 @@ export default function RegisterPage() {
         <ThemeToggle />
       </div>
 
-      <div className="rounded-2xl bg-white dark:bg-[#1C1E22] border border-[#C9DEF9] dark:border-[#343941] shadow-[0_16px_34px_0_rgba(19,28,85,0.08)] dark:shadow-[0_16px_34px_0_rgba(0,0,0,0.4)] w-full max-w-[540px] p-8 sm:p-10 flex flex-col transition-colors">
+      <div className="rounded-2xl bg-white dark:bg-[#1B1D20] border border-[#C9DEF9] dark:border-[#34383E] shadow-[0_16px_34px_0_rgba(19,28,85,0.08)] dark:shadow-[0_16px_34px_0_rgba(0,0,0,0.4)] w-full max-w-[576px] p-7 sm:p-12 flex flex-col transition-colors">
         <div className="text-left mb-6">
           <h2 className="font-bold text-frigus-navy dark:text-white text-2xl sm:text-3xl leading-tight font-display">
             Crie sua conta

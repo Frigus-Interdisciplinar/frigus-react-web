@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { BrowserRouter } from "react-router-dom";
 import AppRoutes from "@/routes";
-import { ThemeProvider } from "@/context";
+import { AuthProvider, ThemeProvider } from "@/contexts";
 import { refreshSession } from "@/services/auth.service";
 import { useStore } from "@/store/store";
 
@@ -13,7 +13,7 @@ export default function App() {
 
   useEffect(() => {
     sessionBootstrap ??= refreshSession()
-      .then((session) => saveUser(session.user, session.accessToken, session.refreshToken))
+      .then((session) => saveUser(session.user))
       .catch(() => useStore.getState().logout())
       .finally(() => setInitialized(true));
   }, [saveUser, setInitialized]);
@@ -27,7 +27,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <BrowserRouter>
-        <AppRoutes />
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>
   );

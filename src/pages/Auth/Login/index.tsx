@@ -31,7 +31,7 @@ export default function LoginPage() {
     try {
       const session = await login({ email: email.trim(), rawPassword, rememberMe });
       await ensureStarterWorkspace(session.user.accountType);
-      saveUser(session.user, session.accessToken, session.refreshToken);
+      saveUser(session.user);
       navigate(session.user.accountType === "COMMERCIAL" ? "/commercial" : session.user.accountType === "BUSINESS" ? "/enterprise" : "/home", { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível entrar. Confira seus dados e tente novamente.");
@@ -51,10 +51,10 @@ export default function LoginPage() {
         <ThemeToggle />
       </div>
 
-      <div className="rounded-2xl bg-white dark:bg-[#1C1E22] border border-[#C9DEF9] dark:border-[#343941] shadow-[0_16px_34px_0_rgba(19,28,85,0.08)] dark:shadow-[0_16px_34px_0_rgba(0,0,0,0.4)] w-full max-w-[480px] p-8 sm:p-10 flex flex-col items-center justify-center transition-colors">
+      <div className="rounded-2xl bg-white dark:bg-[#1B1D20] border border-[#C9DEF9] dark:border-[#34383E] shadow-[0_16px_34px_0_rgba(19,28,85,0.08)] dark:shadow-[0_16px_34px_0_rgba(0,0,0,0.4)] w-full max-w-[576px] p-7 sm:p-12 flex flex-col items-center justify-center transition-colors">
         <div className="w-full text-left">
           <h2 className="font-bold text-frigus-navy dark:text-white text-2xl sm:text-3xl leading-tight font-display">
-            Bem-vindo(a) de volta!
+            Bem-vindo de volta
           </h2>
 
           <p className="font-normal text-gray-500 dark:text-gray-400 text-sm mt-1.5">
@@ -72,6 +72,7 @@ export default function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             autoFocus
+            className="h-[58px] rounded-md"
           />
 
           <Input
@@ -83,6 +84,7 @@ export default function LoginPage() {
             onChange={(e) => setRawPassword(e.target.value)}
             showPasswordToggle
             required
+            className="h-[58px] rounded-md"
           />
 
           <div className="flex justify-between items-center w-full text-xs">
@@ -109,7 +111,7 @@ export default function LoginPage() {
               type="submit"
               variant="primary"
               disabled={loading}
-              className="w-full h-12 text-base font-bold shadow-md shadow-frigus-primary/20"
+              className="w-full h-[58px] rounded-md text-base font-bold shadow-md shadow-frigus-primary/20"
             >
               {loading ? "Entrando..." : "Entrar"}
             </Button>
