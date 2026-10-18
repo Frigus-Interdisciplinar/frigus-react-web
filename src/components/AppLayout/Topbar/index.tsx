@@ -1,28 +1,31 @@
 import { useState, useEffect } from "react";
-import { Bell, User, LayoutGrid, LogOut } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Bell, User } from "lucide-react";
+import { Link } from "react-router-dom";
 import QuickNotificationsPopover from "./QuickNotificationsPopover";
 import ThemeToggle from "@/components/ThemeToggle";
-import { logout } from "@/services/auth.service";
 import { useStore } from "@/store/store";
+import type { SectionString } from "../Sidebar";
 
 export type TopbarProps = {
   title?: string;
   subtitle?: string;
   hasNotificationAlert?: boolean;
+  activeSection?: SectionString;
 };
 
 export default function Topbar({
   title,
   subtitle,
   hasNotificationAlert = true,
+  activeSection,
 }: TopbarProps) {
   const [isQuickNotificationsOpen, setIsQuickNotificationsOpen] = useState(false);
-  const clearSession = useStore((state) => state.logout);
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    try { await logout(); } catch { /* Local logout still clears the browser session. */ } finally { clearSession(); navigate("/login", { replace: true }); }
+  const user = useStore((state) => state.user);
+  const initials = user?.name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() ?? "";
+  const sectionLabels: Partial<Record<NonNullable<SectionString>, string>> = {
+    home: "Visão geral", stock: "Meu estoque", recipe: "Receitas", "shopping-list": "Compras",
+    "family-members": "Família", chat: "Chat", settings: "Configurações", alerts: "Alertas",
+    profile: "Perfil", plans: "Planos", notifications: "Notificações",
   };
 
   // Fechar ao pressionar Escape
@@ -37,31 +40,15 @@ export default function Topbar({
   }, []);
 
   return (
-    <header className="h-20 bg-white dark:bg-[#15181E] border-b border-gray-200/80 dark:border-[#262A33] px-6 md:px-8 flex items-center justify-between sticky top-0 z-30 select-none transition-colors">
+    <header className="h-20 bg-white dark:bg-[#1B1D20] border-b border-gray-200/80 dark:border-[#2A2D31] px-6 md:px-9 flex items-center justify-between sticky top-0 z-30 select-none transition-colors">
       {/* Lado Esquerdo: Título ou Contexto */}
-      <div className="flex flex-col">
-        {title && (
-          <h2 className="font-montserrat font-bold text-frigus-navy dark:text-white text-lg leading-tight">
-            {title}
-          </h2>
-        )}
-        {subtitle && (
-          <p className="text-xs text-gray-500 dark:text-neutral-400 font-sans">{subtitle}</p>
-        )}
+      <div className="flex flex-col gap-0.5 text-[11px] text-[#64748B] dark:text-neutral-400">
+        <p><span>Área doméstica</span><span className="mx-2">/</span><span>{title ?? sectionLabels[activeSection as NonNullable<SectionString>] ?? "Frigus"}</span></p>
+        {subtitle && <p className="text-[10px]">{subtitle}</p>}
       </div>
 
       {/* Lado Direito: Ações rápidas */}
       <div className="flex items-center gap-3 relative">
-        {/* Seletor de Perfil / Canal */}
-        <Link
-          to="/choose-profile"
-          className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 dark:bg-[#252A32] text-xs font-semibold text-slate-700 dark:text-neutral-200 hover:bg-slate-200 dark:hover:bg-[#2F3540] transition-colors"
-          title="Alternar perfil"
-        >
-          <LayoutGrid size={14} className="text-frigus-primary dark:text-[#5B89F7]" />
-          <span>Perfis</span>
-        </Link>
-
         {/* ThemeToggle */}
         <ThemeToggle />
 
@@ -89,13 +76,10 @@ export default function Topbar({
         <Link
           to="/profile"
           aria-label="Meu perfil"
-          className="w-10 h-10 rounded-full bg-[#EAF3FF] dark:bg-[#252A32] border border-blue-100 dark:border-[#343941] flex items-center justify-center text-frigus-primary dark:text-[#A7BCFF] hover:ring-2 hover:ring-frigus-primary/20 transition-all font-bold text-xs"
+          className="w-9 h-9 rounded-full bg-[#EAF3FF] dark:bg-[#252A32] border border-blue-100 dark:border-[#343941] flex items-center justify-center text-frigus-primary dark:text-[#A7BCFF] hover:ring-2 hover:ring-frigus-primary/20 transition-all font-bold text-xs"
         >
-          <User size={18} className="text-frigus-primary dark:text-[#A7BCFF]" />
+          {initials || <User size={16} className="text-frigus-primary dark:text-[#A7BCFF]" />}
         </Link>
-        <button type="button" onClick={() => void handleLogout()} aria-label="Sair da conta" title="Sair" className="w-10 h-10 rounded-full border border-gray-200 dark:border-[#343941] flex items-center justify-center text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30">
-          <LogOut size={17} />
-        </button>
       </div>
     </header>
   );

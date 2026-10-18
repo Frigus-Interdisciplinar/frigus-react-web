@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useReducer, type FormEvent } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { CheckCircle2, ShieldAlert } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
@@ -7,12 +7,29 @@ import Button from "@/components/Button";
 import ThemeToggle from "@/components/ThemeToggle";
 import { resetPassword } from "@/services/auth.service";
 
+type State = { password: string; confirmPassword: string; loading: boolean; success: boolean; error: string };
+type Action =
+  | { type: "passwordChanged"; value: string }
+  | { type: "confirmationChanged"; value: string }
+  | { type: "loading" }
+  | { type: "failed"; message: string }
+  | { type: "succeeded" };
+
+const initialState: State = { password: "", confirmPassword: "", loading: false, success: false, error: "" };
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case "passwordChanged": return { ...state, password: action.value, error: "" };
+    case "confirmationChanged": return { ...state, confirmPassword: action.value, error: "" };
+    case "loading": return { ...state, loading: true, error: "" };
+    case "failed": return { ...state, loading: false, error: action.message };
+    case "succeeded": return { ...state, loading: false, success: true, error: "" };
+  }
+}
+
 export default function ForgotPasswordStep3() {
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const { password, confirmPassword, loading, success, error } = state;
   const navigate = useNavigate();
   const location = useLocation();
   const recovery = location.state as { email?: string; code?: string } | null;
@@ -21,25 +38,21 @@ export default function ForgotPasswordStep3() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError("");
-
     if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>/?]).{8,20}$/.test(password)) {
-      setError("A senha deve conter de 8 a 20 caracteres, com letra maiúscula, minúscula, número e caractere especial.");
+      dispatch({ type: "failed", message: "A senha deve conter de 8 a 20 caracteres, com letra maiúscula, minúscula, número e caractere especial." });
       return;
     }
     if (password !== confirmPassword) {
-      setError("As senhas informadas não coincidem.");
+      dispatch({ type: "failed", message: "As senhas informadas não coincidem." });
       return;
     }
 
-    setLoading(true);
+    dispatch({ type: "loading" });
     try {
       await resetPassword({ email: recovery!.email!, code: recovery!.code!, newPassword: password });
-      setSuccess(true);
+      dispatch({ type: "succeeded" });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível redefinir a senha.");
-    } finally {
-      setLoading(false);
+      dispatch({ type: "failed", message: err instanceof Error ? err.message : "Não foi possível redefinir a senha." });
     }
   };
 
@@ -54,7 +67,7 @@ export default function ForgotPasswordStep3() {
         <ThemeToggle />
       </div>
 
-      <div className="w-full max-w-[480px] bg-white dark:bg-[#1C1E22] rounded-2xl shadow-[0_16px_34px_0_rgba(19,28,85,0.08)] dark:shadow-[0_16px_34px_0_rgba(0,0,0,0.4)] border border-[#C9DEF9] dark:border-[#343941] p-8 sm:p-10 flex flex-col gap-6">
+      <div className="w-full max-w-[576px] bg-white dark:bg-[#1B1D20] rounded-2xl shadow-[0_16px_34px_0_rgba(19,28,85,0.08)] dark:shadow-[0_16px_34px_0_rgba(0,0,0,0.4)] border border-[#C9DEF9] dark:border-[#34383E] p-7 sm:p-12 flex flex-col gap-6">
         {success ? (
           <div className="flex flex-col items-center text-center py-4 gap-4">
             <CheckCircle2 className="size-16 text-emerald-500" />
@@ -90,7 +103,7 @@ export default function ForgotPasswordStep3() {
                 type="password"
                 placeholder="Digite sua nova senha"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => dispatch({ type: "passwordChanged", value: e.target.value })}
                 required
                 helperText="Use de 8 a 20 caracteres, com maiúscula, minúscula, número e símbolo."
               />
@@ -101,7 +114,7 @@ export default function ForgotPasswordStep3() {
                 type="password"
                 placeholder="Digite a senha novamente"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) => dispatch({ type: "confirmationChanged", value: e.target.value })}
                 required
               />
 

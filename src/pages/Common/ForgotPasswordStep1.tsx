@@ -39,7 +39,7 @@ export default function ForgotPasswordStep1() {
         <ThemeToggle />
       </div>
 
-      <div className="w-full max-w-[480px] bg-white dark:bg-[#1C1E22] rounded-2xl shadow-[0_16px_34px_0_rgba(19,28,85,0.08)] dark:shadow-[0_16px_34px_0_rgba(0,0,0,0.4)] border border-[#C9DEF9] dark:border-[#343941] p-8 sm:p-10 flex flex-col gap-6">
+      <div className="w-full max-w-[576px] bg-white dark:bg-[#1B1D20] rounded-2xl shadow-[0_16px_34px_0_rgba(19,28,85,0.08)] dark:shadow-[0_16px_34px_0_rgba(0,0,0,0.4)] border border-[#C9DEF9] dark:border-[#34383E] p-7 sm:p-12 flex flex-col gap-6">
         <div>
           <h2 className="text-2xl sm:text-3xl font-bold text-frigus-navy dark:text-white leading-tight font-display">
             Recuperar senha

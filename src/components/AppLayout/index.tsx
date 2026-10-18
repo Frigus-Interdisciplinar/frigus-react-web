@@ -22,8 +22,8 @@ export default function AppLayout({
 
       {/* Conteúdo principal */}
       <div className="flex-1 flex flex-col min-w-0">
-        <Topbar title={title} subtitle={subtitle} />
-        <main className="flex-1 p-6 md:p-8 max-w-[1400px] w-full mx-auto">
+        <Topbar title={title} subtitle={subtitle} activeSection={activeSection} />
+        <main className="flex-1 p-6 md:p-9 max-w-[1400px] w-full mx-auto">
           {children}
         </main>
       </div>

@@ -12,7 +12,7 @@ export default function NavigationItem({ item, active }: NavItemProps) {
     <Link
       to={item.href}
       className={cn(
-        "flex items-center gap-3 px-3.5 py-2.5 rounded-button w-full font-sans text-sm transition-colors duration-150 select-none",
+        "flex items-center gap-3 px-3 py-2.5 rounded-[6px] w-full font-sans text-xs transition-colors duration-150 select-none",
         active
           ? "bg-frigus-primary text-sidebar-text font-bold shadow-sm"
           : "bg-transparent text-sidebar-muted hover:bg-white/10 hover:text-white"

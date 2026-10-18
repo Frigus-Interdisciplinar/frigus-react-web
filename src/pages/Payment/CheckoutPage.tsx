@@ -4,15 +4,12 @@ import {
   CreditCard,
   QrCode,
   FileText,
-  Check,
-  ArrowLeft,
-  Lock,
 } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import Button from "@/components/Button";
 import Input from "@/components/Input";
 import Checkbox from "@/components/Checkbox";
-import FrigusLogo from "@/assets/frigus-logo-text.svg";
+import AuthLayout from "@/components/AuthLayout";
 import { api } from "@/utils/api.util";
 
 interface PlanDetails {
@@ -145,41 +142,23 @@ export default function CheckoutPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#F5F8FC] dark:bg-[#0F172A] flex flex-col justify-between p-6 sm:p-10 transition-colors">
-      {/* Header */}
-      <header className="max-w-6xl w-full mx-auto flex items-center justify-between pb-6 border-b border-[#E1E7F0] dark:border-[#343941]">
-        <div className="flex items-center gap-4">
-          <Link
-            to="/choose-profile"
-            className="p-2 rounded-xl text-gray-500 hover:text-frigus-primary hover:bg-white dark:hover:bg-[#1C1E22] transition-colors"
-            aria-label="Voltar aos planos"
-          >
-            <ArrowLeft className="size-5" />
-          </Link>
-          <img src={FrigusLogo} alt="Frigus Logo" className="h-9 w-auto" />
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800/40">
-            <Lock className="size-3.5" />
-            <span>Ambiente Seguro SSL</span>
-          </div>
-          <ThemeToggle />
-        </div>
-      </header>
-
-      {/* Main Container */}
-      <main className="max-w-6xl w-full mx-auto my-auto py-8">
-        <p className="mb-5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
-          Ambiente de demonstração: a API registra e simula a transação, sem cobrar cartão, emitir PIX ou boleto real.
-        </p>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Form: Payment Details (7 cols) */}
-          <div className="lg:col-span-7 bg-white dark:bg-[#1C1E22] rounded-2xl border border-[#C9DEF9] dark:border-[#343941] p-6 sm:p-8 shadow-sm">
+    <AuthLayout
+      title={<>Sua escolha,<br />do seu jeito</>}
+      description="Confira o plano e os dados antes de confirmar a assinatura."
+      cardTitle={`${plan.name} · ${plan.price}/${plan.period.replace("por ", "")}`}
+      cardDescription={plan.description}
+    >
+      <div className="absolute right-4 top-4 z-20 sm:right-6 sm:top-6"><ThemeToggle /></div>
+      <main className="w-full max-w-[576px] py-12">
+        <div className="rounded-xl border border-[#C9DEF9] bg-white p-6 shadow-sm dark:border-[#34383E] dark:bg-[#1B1D20] sm:p-9">
+          <p className="mb-5 rounded-md border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-xs leading-relaxed text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+            Ambiente de demonstração: nenhuma cobrança é feita e nenhum dado real de cartão é solicitado.
+          </p>
             <h1 className="text-2xl font-bold text-frigus-navy dark:text-white font-display">
-              Forma de pagamento
+              Finalizar pagamento
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Escolha como deseja realizar o pagamento da sua assinatura.
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1.5">
+              Selecione uma forma de pagamento para registrar sua assinatura.
             </p>
 
             {/* Payment Method Selector */}
@@ -224,12 +203,12 @@ export default function CheckoutPage() {
               </button>
             </div>
 
-            <div className="mb-5">
+            <div className="mb-5 mt-4">
               <Checkbox
                 id="terms-checkout"
                 checked={acceptTerms}
                 onChange={(e) => setAcceptTerms(e.target.checked)}
-                label={<span className="text-xs text-gray-500 dark:text-gray-400">Li e concordo com os Termos de Serviço e com a renovação automática.</span>}
+                label={<span className="text-xs text-gray-500 dark:text-gray-400">Li e aceito os <Link to="/terms" className="text-frigus-primary underline underline-offset-2 dark:text-[#A7BCFF]">Termos de uso e a Política de privacidade</Link>.</span>}
               />
             </div>
 
@@ -238,8 +217,8 @@ export default function CheckoutPage() {
               <form onSubmit={(e) => { e.preventDefault(); void handleCheckout(); }} className="space-y-4">
                 <Input
                   id="card-last-four"
-                  label="Quatro dígitos de demonstração"
-                  placeholder="4242"
+                  label="Número de demonstração"
+                  placeholder="Digite os 4 dígitos de teste"
                   value={cardNumber}
                   onChange={(e) => setCardNumber(e.target.value.replace(/\D/g, "").slice(0, 4))}
                   maxLength={4}
@@ -249,9 +228,9 @@ export default function CheckoutPage() {
                 <Button
                   type="submit"
                   disabled={loading || !acceptTerms || cardNumber.length !== 4}
-                  className="w-full h-12 text-base font-bold shadow-md shadow-frigus-primary/20 mt-4"
+                  className="w-full h-[58px] rounded-md text-sm font-bold shadow-md shadow-frigus-primary/20 mt-4"
                 >
-                  {loading ? "Processando pagamento..." : `Pagar ${finalPrice}`}
+                  {loading ? "Processando pagamento..." : "Confirmar pagamento"}
                 </Button>
               </form>
             )}
@@ -272,7 +251,7 @@ export default function CheckoutPage() {
                   type="button"
                   disabled={loading || !acceptTerms}
                   onClick={() => void handleCheckout()}
-                  className="w-full h-12 text-base font-bold shadow-md"
+                  className="w-full h-[58px] rounded-md text-sm font-bold shadow-md"
                 >
                   Simular transação Pix · {finalPrice}
                 </Button>
@@ -295,77 +274,19 @@ export default function CheckoutPage() {
                   type="button"
                   disabled={loading || !acceptTerms}
                   onClick={() => void handleCheckout()}
-                  className="w-full h-12 text-base font-bold shadow-md"
+                  className="w-full h-[58px] rounded-md text-sm font-bold shadow-md"
                 >
                   Simular boleto · {finalPrice}
                 </Button>
               </div>
             )}
             {checkoutError && <p role="alert" className="mt-4 text-sm text-red-700 dark:text-red-300">{checkoutError}</p>}
-          </div>
-
-          {/* Right Summary: Plan & Benefits (5 cols) */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="bg-white dark:bg-[#1C1E22] rounded-2xl border border-[#C9DEF9] dark:border-[#343941] p-6 sm:p-8 shadow-sm">
-              <span className="text-xs font-semibold text-frigus-primary dark:text-[#A7BCFF] uppercase tracking-wider">
-                Resumo do pedido
-              </span>
-
-              <div className="mt-4 flex items-start justify-between">
-                <div>
-                  <h3 className="text-xl font-bold text-frigus-navy dark:text-white">
-                    {plan.name}
-                  </h3>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    Módulo {plan.category}
-                  </span>
-                </div>
-                <div className="text-right">
-                  <span className="text-xl font-bold text-frigus-navy dark:text-white">
-                    {plan.price}
-                  </span>
-                  <p className="text-xs text-gray-400">{plan.period}</p>
-                </div>
-              </div>
-
-              <div className="h-px bg-[#E1E7F0] dark:bg-[#343941] my-5" />
-
-              <span className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                Benefícios ativos
-              </span>
-              <ul className="mt-3 space-y-2.5 text-xs text-[#1B2C62] dark:text-gray-300">
-                {plan.benefits.map((b, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <Check className="size-3.5 text-emerald-500 shrink-0 mt-0.5" />
-                    <span>{b}</span>
-                  </li>
-                ))}
-              </ul>
-
-              {/* Totals */}
-              <div className="mt-6 pt-5 border-t border-[#E1E7F0] dark:border-[#343941] space-y-2 text-sm">
-                <div className="flex justify-between text-gray-500 dark:text-gray-400">
-                  <span>Subtotal</span>
-                  <span>{plan.price}</span>
-                </div>
-                <div className="flex justify-between text-base font-bold text-frigus-navy dark:text-white pt-2 border-t border-gray-100 dark:border-gray-800">
-                  <span>Total a pagar</span>
-                  <span className="text-frigus-primary dark:text-[#A7BCFF]">{finalPrice}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-5 rounded-2xl bg-blue-50/60 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30 text-xs text-gray-600 dark:text-gray-300">
-              Esta tela usa o processador de demonstração da API. Não insira dados reais de pagamento.
-            </div>
+          <div className="mt-5 flex flex-col items-center justify-between gap-3 border-t border-[#E1E7F0] pt-4 text-xs text-[#64748B] dark:border-[#34383E] dark:text-neutral-400 sm:flex-row">
+            <span>Mudou de ideia?</span>
+            <Link to="/choose-profile" className="font-semibold text-frigus-primary underline underline-offset-2 dark:text-[#A7BCFF]">Voltar aos planos</Link>
           </div>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="text-center text-xs text-gray-400 dark:text-gray-500 pt-6">
-        © 2026 Frigus · Ambiente de demonstração
-      </footer>
-    </div>
+    </AuthLayout>
   );
 }

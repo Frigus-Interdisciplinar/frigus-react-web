@@ -1,8 +1,9 @@
 import { type ReactNode } from "react";
 import blueDecorative from "@/assets/blue-decorative.svg";
 import yellowDecorative from "@/assets/yellow-decorative.svg";
-import frigusLogoText from "@/assets/frigus-logo-text.svg";
+import frigusLogo from "@/assets/frigus-logo.svg";
 import AuthBenefitCard from "./AuthBenefitCard";
+import { Link } from "react-router-dom";
 
 export interface AuthSidebarProps {
   title: ReactNode;
@@ -20,13 +21,10 @@ export default function AuthSidebar({
   return (
     <section className="hidden lg:flex flex-col justify-between w-[48vw] max-w-[610px] shrink-0 bg-frigus-navy relative overflow-hidden pl-[clamp(32px,5vw,64px)] pb-[60px] min-h-screen">
       <div>
-        <a href="/login" className="inline-block mt-[54px]">
-          <img
-            src={frigusLogoText}
-            alt="Frigus Logo"
-            className="w-[150px] h-[45px]"
-          />
-        </a>
+        <Link to="/login" className="inline-block mt-[54px]">
+          <img src={frigusLogo} alt="" className="w-8 h-8" />
+          <span className="font-display text-frigus-white text-lg font-semibold">Frigus</span>
+        </Link>
 
         <div className="flex flex-col gap-[24px] mt-[90px] max-w-[480px]">
           <h1 className="text-[40px] font-bold leading-[46px] text-frigus-white whitespace-pre-line">

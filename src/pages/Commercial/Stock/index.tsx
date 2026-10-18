@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Search, ChevronDown, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Search, ChevronDown, Filter } from "lucide-react";
 import CommercialLayout from "@/components/CommercialLayout";
 import {
   CommercialAddBatchModal,
@@ -18,6 +18,8 @@ interface BatchItem {
   category: string;
   location: "Câmara fria" | "Depósito" | "Área de venda" | "Freezers";
   quantity: string;
+  unitPrice: number;
+  imageUrl?: string;
   expiration: string;
   status: "Em dia" | "Vence em 2 dias" | "Vencido" | "Estoque baixo";
 }
@@ -50,6 +52,7 @@ export default function CommercialStockPage() {
         const places: Record<string, BatchItem["location"]> = { FRIDGE: "Câmara fria", FREEZER: "Freezers", PANTRY: "Depósito", CABINET: "Depósito", SHELF: "Área de venda" };
         return {
           id: String(item.id), name, batchCode: `#${item.id}`, supplier: item.product?.brand ?? "—",
+          unitPrice: item.product?.unitPrice ?? 0, imageUrl: item.product?.imageUrl,
           category: item.product?.category ?? item.category ?? "Outros",
           location: places[item.product?.storagePlace ?? ""] ?? "Depósito",
           quantity: `${item.quantity} ${item.product?.unitOfMeasure ?? "un"}`,
@@ -140,22 +143,22 @@ export default function CommercialStockPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs">
           <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">Produtos em estoque</span>
-          <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white mt-1">{batches.reduce((sum, item) => sum + Number.parseFloat(item.quantity), 0)}</p>
-          <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">Distribuídos em 4 locais</span>
+          <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white mt-1">{loading ? "—" : batches.reduce((sum, item) => sum + Number.parseFloat(item.quantity), 0).toLocaleString("pt-BR")}</p>
+          <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">Unidades cadastradas</span>
         </div>
         <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs">
           <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">Lotes ativos</span>
-          <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white mt-1">{batches.length}</p>
+          <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white mt-1">{loading ? "—" : batches.length}</p>
           <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">Rastreabilidade por entrada</span>
         </div>
         <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs">
           <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">Valor em estoque</span>
-          <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white mt-1">{batches.length ? "—" : "R$ 0,00"}</p>
+          <p className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white mt-1">{loading ? "—" : batches.reduce((sum, item) => sum + Number.parseFloat(item.quantity) * item.unitPrice, 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</p>
           <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">Custo total dos produtos</span>
         </div>
         <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs">
           <span className="text-xs font-medium text-[#64748B] dark:text-neutral-400">Precisam de reposição</span>
-          <p className="text-2xl font-bold font-montserrat text-orange-600 dark:text-orange-400 mt-1">{batches.filter((item) => item.status === "Estoque baixo").length}</p>
+          <p className="text-2xl font-bold font-montserrat text-orange-600 dark:text-orange-400 mt-1">{loading ? "—" : batches.filter((item) => item.status === "Estoque baixo").length}</p>
           <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">Abaixo do estoque mínimo</span>
         </div>
       </div>
@@ -253,7 +256,9 @@ export default function CommercialStockPage() {
                 filteredBatches.map((batch) => (
                   <tr key={batch.id} className="hover:bg-gray-50/80 dark:hover:bg-[#252A32] transition-colors group">
                     <td className="py-4 px-6">
-                      <div className="flex flex-col">
+                      <div className="flex items-center gap-3">
+                        {batch.imageUrl ? <img src={batch.imageUrl} alt="" className="h-10 w-10 shrink-0 rounded-md bg-gray-100 object-cover dark:bg-[#252A32]" /> : <div aria-hidden="true" className="h-10 w-10 shrink-0 rounded-md bg-[#EAF3FF] dark:bg-blue-950/50" />}
+                        <div className="flex min-w-0 flex-col">
                         <Link
                           to={`/commercial/stock/${batch.id}`}
                           className="font-bold text-[#141C55] dark:text-white hover:text-[#2552C8] dark:hover:text-blue-400 transition-colors"
@@ -263,6 +268,7 @@ export default function CommercialStockPage() {
                         <span className="text-[11px] text-[#64748B] dark:text-neutral-400">
                           {batch.batchCode} · {batch.supplier}
                         </span>
+                        </div>
                       </div>
                     </td>
                     <td className="py-4 px-6 text-gray-600 dark:text-neutral-300 font-medium">{batch.location}</td>
@@ -287,34 +293,7 @@ export default function CommercialStockPage() {
         {/* Footer / Pagination */}
         <div className="p-4 px-6 border-t border-gray-100 dark:border-[#343941] flex items-center justify-between text-xs text-[#64748B] dark:text-neutral-400">
           <span>Mostrando {filteredBatches.length} de {batches.length} produtos</span>
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              className="p-1 rounded-lg border border-gray-200 dark:border-[#343941] text-gray-400 dark:text-neutral-500 hover:text-gray-700 dark:hover:text-white disabled:opacity-40"
-              disabled
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <button type="button" className="w-7 h-7 rounded-lg bg-[#2552C8] dark:bg-blue-600 text-white font-bold flex items-center justify-center">
-              1
-            </button>
-            <button type="button" className="w-7 h-7 rounded-lg text-gray-600 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-[#252A32] font-bold flex items-center justify-center">
-              2
-            </button>
-            <button type="button" className="w-7 h-7 rounded-lg text-gray-600 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-[#252A32] font-bold flex items-center justify-center">
-              3
-            </button>
-            <span className="px-1 text-gray-400 dark:text-neutral-500">…</span>
-            <button type="button" className="w-7 h-7 rounded-lg text-gray-600 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-[#252A32] font-bold flex items-center justify-center">
-              49
-            </button>
-            <button
-              type="button"
-              className="p-1 rounded-lg border border-gray-200 dark:border-[#343941] text-gray-600 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-[#252A32]"
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
+          <span>{filteredBatches.length} resultado{filteredBatches.length === 1 ? "" : "s"}</span>
         </div>
       </div>
 

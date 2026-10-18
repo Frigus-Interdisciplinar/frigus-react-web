@@ -3,7 +3,8 @@ import {
   LayoutGrid,
   Megaphone,
   Eye,
-  ArrowLeftRight,
+  FileBarChart2,
+  UsersRound,
 } from "lucide-react";
 import FrigusLogo from "@/assets/frigus-logo-text.svg";
 import { useStore } from "@/store/store";
@@ -32,10 +33,22 @@ export default function EnterpriseSidebar({
       icon: Megaphone,
     },
     {
+      id: "report",
+      label: "Relatório mensal",
+      path: "/enterprise/report",
+      icon: FileBarChart2,
+    },
+    {
       id: "views",
-      label: "Métricas",
+      label: "Visualizações",
       path: "/enterprise/views",
       icon: Eye,
+    },
+    {
+      id: "audience",
+      label: "Público atingido",
+      path: "/enterprise/audience",
+      icon: UsersRound,
     },
   ];
 
@@ -52,18 +65,15 @@ export default function EnterpriseSidebar({
       : "overview");
 
   return (
-    <aside className="w-64 bg-white dark:bg-[#0B1020] border-r border-[#E1E7F0] dark:border-white/5 flex flex-col justify-between shrink-0 min-h-screen transition-colors">
-      <div className="p-6">
+    <aside className="flex min-h-screen w-[232px] shrink-0 flex-col justify-between border-r border-[#E1E7F0] bg-white transition-colors dark:border-white/5 dark:bg-[#171819]">
+      <div className="px-3 pt-5">
         {/* Logo */}
-        <div className="flex items-center gap-2 mb-8">
-          <img src={FrigusLogo} alt="Frigus Logo" className="h-8 w-auto" />
-          <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 px-2 py-0.5 rounded-full uppercase tracking-wider">
-            Empresarial
-          </span>
+        <div className="mb-[54px] flex items-center gap-2 px-1">
+          <img src={FrigusLogo} alt="Frigus" className="h-7 w-auto" />
         </div>
 
         {/* Navigation */}
-        <nav className="space-y-1.5">
+        <nav aria-label="Navegação empresarial" className="flex flex-col gap-2">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentSection === item.id;
@@ -71,7 +81,7 @@ export default function EnterpriseSidebar({
               <Link
                 key={item.id}
                 to={item.path}
-                className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                className={`flex h-[42px] items-center gap-3 rounded-[6px] px-3 text-xs font-semibold transition-all ${
                   isActive
                     ? "bg-[#2552C8] text-white shadow-xs font-bold"
                     : "text-[#64748B] dark:text-neutral-400 hover:text-[#141C55] dark:hover:text-white hover:bg-[#F5F8FC] dark:hover:bg-[#1C1E22]"
@@ -86,8 +96,8 @@ export default function EnterpriseSidebar({
       </div>
 
       {/* Bottom: Organization Profile & Switch */}
-      <div className="p-4 border-t border-[#E1E7F0] dark:border-white/5 space-y-3">
-        <div className="p-3 rounded-2xl bg-[#F5F8FC] dark:bg-[#1C1E22] flex items-center gap-3">
+      <div className="border-t border-[#E1E7F0] px-3 py-3 dark:border-white/5">
+        <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-[#2552C8] text-white font-bold text-xs flex items-center justify-center shrink-0">
             RA
           </div>
@@ -101,13 +111,6 @@ export default function EnterpriseSidebar({
           </div>
         </div>
 
-        <Link
-          to="/choose-profile"
-          className="flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl border border-[#E1E7F0] dark:border-[#343941] text-[11px] font-semibold text-[#64748B] dark:text-neutral-300 hover:text-[#141C55] dark:hover:text-white hover:bg-white dark:hover:bg-[#252A32] transition-colors"
-        >
-          <ArrowLeftRight size={14} />
-          <span>Trocar de perfil</span>
-        </Link>
       </div>
     </aside>
   );

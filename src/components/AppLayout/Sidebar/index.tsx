@@ -12,6 +12,7 @@ import NavigationItem from "./NavigationItem";
 import frigusLogo from "@/assets/frigus-logo.svg";
 
 import { type ReactNode } from "react";
+import { useStore } from "@/store/store";
 
 export type SectionString =
   | "home"
@@ -84,13 +85,15 @@ export type SidebarProps = {
 };
 
 export default function Sidebar({ activeSection }: SidebarProps) {
+  const user = useStore((state) => state.user);
+  const initials = user?.name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() ?? "HP";
   return (
-    <aside className="h-screen sticky top-0 bg-sidebar-bg dark:bg-[#0B1020] border-r border-transparent dark:border-white/5 w-60 p-4 flex flex-col justify-between shrink-0 select-none z-20 transition-colors">
+    <aside className="h-screen sticky top-0 bg-sidebar-bg dark:bg-[#171819] border-r border-transparent dark:border-white/5 w-[232px] p-3 flex flex-col justify-between shrink-0 select-none z-20 transition-colors">
       {/* Header com Logo */}
       <div className="flex flex-col gap-6">
         <Link
           to="/home"
-          className="flex items-center gap-2.5 px-3 pt-2 hover:opacity-90 transition-opacity"
+          className="flex items-center gap-2.5 px-1 pt-2 hover:opacity-90 transition-opacity"
         >
           <img
             src={frigusLogo}
@@ -98,7 +101,7 @@ export default function Sidebar({ activeSection }: SidebarProps) {
             className="w-8 h-8 object-contain"
           />
           <span className="font-display text-white text-lg tracking-wider font-semibold">
-            FRIGUS
+            Frigus
           </span>
         </Link>
 
@@ -120,14 +123,14 @@ export default function Sidebar({ activeSection }: SidebarProps) {
         className="pt-4 border-t border-white/10 flex items-center gap-3 px-2 hover:bg-white/5 rounded-lg transition-colors py-2"
       >
         <div className="w-9 h-9 rounded-full bg-frigus-ice flex items-center justify-center text-frigus-navy font-bold text-xs shrink-0">
-          HP
+          {initials}
         </div>
         <div className="flex flex-col overflow-hidden">
           <span className="text-white text-xs font-bold truncate">
-            Henrique Paulo
+            {user?.name ?? "Henrique Paulo"}
           </span>
           <span className="text-sidebar-muted text-[11px] truncate">
-            Plano doméstico
+            {user?.accountType === "DOMESTIC" ? "Plano doméstico" : "Plano Frigus"}
           </span>
         </div>
       </Link>

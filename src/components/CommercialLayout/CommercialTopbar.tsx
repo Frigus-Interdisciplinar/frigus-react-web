@@ -1,79 +1,31 @@
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Calendar, Bell, ArrowLeftRight, LogOut } from "lucide-react";
+import { Bell } from "lucide-react";
 import { CommercialNotificationsModal } from "@/components/CommercialModals";
 import ThemeToggle from "@/components/ThemeToggle";
-import { useNavigate } from "react-router-dom";
 import { useStore } from "@/store/store";
-import { logout } from "@/services/auth.service";
 
-interface CommercialTopbarProps {
-  breadcrumb?: string;
-  action?: ReactNode;
-}
+interface CommercialTopbarProps { breadcrumb?: string }
 
-export default function CommercialTopbar({
-  breadcrumb = "Área comercial    /    Estoque",
-}: CommercialTopbarProps) {
+export default function CommercialTopbar({ breadcrumb = "Área comercial    /    Estoque" }: CommercialTopbarProps) {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const navigate = useNavigate();
-  const clearSession = useStore((state) => state.logout);
   const user = useStore((state) => state.user);
-  const initials = user?.name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() ?? "";
+  const initials = user?.name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() ?? "AS";
 
   return (
     <>
-      <header className="h-16 bg-white dark:bg-[#1C1E22] border-b border-[#e1e7f0] dark:border-[#343941] px-6 md:px-8 flex items-center justify-between sticky top-0 z-30 select-none">
-        {/* Breadcrumb */}
-        <div className="flex items-center text-xs text-[#64748b] dark:text-neutral-400 font-medium tracking-wide">
-          <span>{breadcrumb}</span>
-        </div>
-
-        {/* Right Actions: Date, Notification Bell, ThemeToggle, User Avatar, Profile Switcher */}
-        <div className="flex items-center gap-3 sm:gap-4">
-          <Link
-            to="/choose-profile"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-200 dark:border-blue-900/60 bg-blue-50/70 dark:bg-blue-950/40 text-[11px] font-bold text-frigus-primary dark:text-blue-400 hover:bg-blue-100 transition-colors"
-            title="Alternar entre perfis"
-          >
-            <ArrowLeftRight size={12} />
-            <span>Comercial</span>
-          </Link>
-
-          <div className="hidden md:flex items-center gap-2 text-xs text-[#64748b] dark:text-neutral-400 font-medium bg-gray-50/80 dark:bg-[#252A32] border border-gray-200/60 dark:border-[#343941] px-3 py-1.5 rounded-lg">
-            <Calendar size={14} className="text-[#64748b] dark:text-neutral-400" />
-            <span>{new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", year: "numeric" }).format(new Date())}</span>
-          </div>
-
+      <header className="sticky top-0 z-30 flex h-20 select-none items-center justify-between border-b border-[#E1E7F0] bg-white px-6 transition-colors dark:border-[#2A2D31] dark:bg-[#1B1D20] md:px-9">
+        <p className="text-[11px] font-medium text-[#64748B] dark:text-neutral-400">{breadcrumb}</p>
+        <div className="flex items-center gap-3">
           <ThemeToggle />
-
-          <button
-            type="button"
-            onClick={() => setIsNotificationsOpen(true)}
-            aria-label="Notificações da operação"
-            className="relative w-9 h-9 rounded-lg border border-gray-200/80 dark:border-[#343941] flex items-center justify-center text-[#141C55] dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-[#252A32] hover:border-[#2552C8]/50 transition-colors cursor-pointer"
-          >
-            <Bell size={16} className="text-[#141C55] dark:text-neutral-200" />
-            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-amber-500 ring-2 ring-white dark:ring-[#1C1E22]" />
+          <button type="button" onClick={() => setIsNotificationsOpen(true)} aria-label="Notificações da operação" className="relative flex h-9 w-9 items-center justify-center rounded-full border border-[#E1E7F0] text-[#141C55] hover:bg-[#F5F8FC] dark:border-[#343941] dark:text-neutral-200 dark:hover:bg-[#252A32]">
+            <Bell size={16} aria-hidden="true" />
+            <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-amber-500 ring-2 ring-white dark:ring-[#1B1D20]" />
           </button>
-
-          <div
-            className="w-9 h-9 rounded-lg bg-[#EAF1FF] dark:bg-[#252A32] border border-blue-100 dark:border-[#343941] flex items-center justify-center text-[#131C55] dark:text-blue-300 font-bold text-xs shadow-xs"
-            title={user?.name}
-          >
-            {initials}
-          </div>
-          <button type="button" aria-label="Sair da conta" onClick={async () => { try { await logout(); } catch { /* Local logout still clears the browser session. */ } finally { clearSession(); navigate("/login", { replace: true }); } }} className="w-9 h-9 rounded-lg border border-gray-200 dark:border-[#343941] flex items-center justify-center text-red-700 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30">
-            <LogOut size={16} />
-          </button>
+          <Link to="/profile" aria-label="Meu perfil" className="flex h-9 w-9 items-center justify-center rounded-full bg-[#EAF1FF] text-xs font-bold text-[#131C55] dark:bg-[#252A32] dark:text-blue-300">{initials}</Link>
         </div>
       </header>
-
-      {/* Modal de Notificações da Operação (Figma 1879:2402) */}
-      <CommercialNotificationsModal
-        isOpen={isNotificationsOpen}
-        onClose={() => setIsNotificationsOpen(false)}
-      />
+      <CommercialNotificationsModal isOpen={isNotificationsOpen} onClose={() => setIsNotificationsOpen(false)} />
     </>
   );
 }

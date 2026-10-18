@@ -16,7 +16,7 @@ export default function EnterpriseLayout({
   onOpenCreateAd,
 }: EnterpriseLayoutProps) {
   return (
-    <div className="min-h-screen bg-[#F5F8FC] dark:bg-[#0F1115] text-[#141C55] dark:text-neutral-100 flex font-plus-jakarta antialiased selection:bg-blue-100 selection:text-blue-900 transition-colors">
+    <div className="min-h-screen bg-[#F5F8FC] dark:bg-[#111214] text-[#141C55] dark:text-white flex font-plus-jakarta antialiased selection:bg-blue-900 selection:text-white transition-colors">
       {/* Sidebar */}
       <EnterpriseSidebar activeSection={activeSection} />
 
@@ -27,7 +27,7 @@ export default function EnterpriseLayout({
           onOpenCreateAd={onOpenCreateAd}
         />
 
-        <main className="p-8 max-w-7xl w-full mx-auto space-y-8 flex-1">
+        <main className="p-6 md:p-9 max-w-7xl w-full mx-auto space-y-6 flex-1">
           {children}
         </main>
       </div>

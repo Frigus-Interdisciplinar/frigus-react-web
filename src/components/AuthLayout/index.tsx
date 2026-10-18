@@ -17,7 +17,7 @@ export default function AuthLayout({
   children,
 }: AuthLayoutProps) {
   return (
-    <main className="flex min-h-screen w-full overflow-x-hidden bg-[#F4F7FC]">
+    <main className="flex min-h-screen w-full overflow-x-hidden bg-[#F4F7FC] dark:bg-[#111214]">
       {/* Painel Institucional Lateral */}
       <AuthSidebar
         title={title}

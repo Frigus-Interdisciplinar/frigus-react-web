@@ -16,14 +16,14 @@
 }
 
 .dark {
-  --bg-app: #0F172A;
-  --bg-surface: #1C1E22;
-  --border-subtle: #343941;
-  --border-card: #283245;
+  --bg-app: #111214;
+  --bg-surface: #1B1D20;
+  --border-subtle: #2A2D31;
+  --border-card: #34383E;
   --text-main: #FFFFFF;
   --text-heading: #F8F8F8;
   --text-muted: #ADB6C8;
-  --sidebar-bg: #0B1020;
+  --sidebar-bg: #171819;
   --sidebar-text: #FFFFFF;
   --sidebar-muted: #70A2D7;
   --card-bg: #1C1E22;
@@ -59,9 +59,9 @@
   --color-frigus-brand: #1B4C7A;
   --color-frigus-white: #FFFFFF;
   
-  --color-dark-bg: #0F172A;
-  --color-dark-card: #1C1E22;
-  --color-dark-border: #343941;
+  --color-dark-bg: #111214;
+  --color-dark-card: #1B1D20;
+  --color-dark-border: #2A2D31;
   --color-dark-muted: #ADB6C8;
   
   --radius-frigus: 20px;
