@@ -18,6 +18,7 @@ export async function api<T>(
   endpoint: string,
   httpMethod: HttpMethod,
   body?: unknown,
+  options?: Pick<AxiosRequestConfig, "signal">,
 ): Promise<T> {
   try {
     const config: AxiosRequestConfig = {
@@ -25,6 +26,7 @@ export async function api<T>(
       method: httpMethod,
       data: body,
       withCredentials: true,
+      ...options,
     };
 
     const response = await axiosInstance.request<T>(config);
@@ -51,6 +53,7 @@ export async function api<T>(
             method: httpMethod,
             data: body,
             withCredentials: true,
+            ...options,
           });
           return retry.data;
         } catch {
@@ -68,7 +71,7 @@ export async function api<T>(
   }
 }
 
-api.get = <T>(endpoint: string) => api<T>(endpoint, "GET");
+api.get = <T>(endpoint: string, options?: Pick<AxiosRequestConfig, "signal">) => api<T>(endpoint, "GET", undefined, options);
 api.post = <T>(endpoint: string, body: unknown) => api<T>(endpoint, "POST", body);
 api.put = <T>(endpoint: string, body: unknown) => api<T>(endpoint, "PUT", body);
 api.patch = <T>(endpoint: string, body: unknown) => api<T>(endpoint, "PATCH", body);

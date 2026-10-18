@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Search, ChevronDown } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import Badge, { type BadgeVariant } from "@/components/Badge";
 import { AddFoodModal } from "@/components/Modal";
@@ -16,6 +16,9 @@ type StockItem = {
   quantity: string;
   location: "Despensa" | "Geladeira" | "Freezer";
   expiration: string;
+  daysUntilExpiration: number;
+  amount: number;
+  lowStock: boolean;
   status: string;
   statusVariant: BadgeVariant;
   image?: string;
@@ -35,6 +38,9 @@ function mapStockItem(row: StockProduct): StockItem {
     quantity: `${row.quantity} ${unitLabels[row.product?.unitOfMeasure ?? "UNIT"] ?? "un"}`,
     location: storageLabels[row.product?.storagePlace ?? "PANTRY"] ?? "Despensa",
     expiration: new Date(`${row.expireDate}T12:00:00`).toLocaleDateString("pt-BR"),
+    daysUntilExpiration: Math.ceil((new Date(`${row.expireDate}T00:00:00`).getTime() - new Date().setHours(0, 0, 0, 0)) / 86400000),
+    amount: row.quantity,
+    lowStock: row.minimalQuantity !== undefined && row.quantity <= row.minimalQuantity,
     status: status === "EXPIRED" ? "Vencido" : status === "NEAR_EXPIRATION" ? "Vence em breve" : "Dentro do prazo",
     statusVariant: status === "EXPIRED" ? "danger" : status === "NEAR_EXPIRATION" ? "warning" : "success",
     image: row.product?.imageUrl,
@@ -50,6 +56,9 @@ export default function StockPage() {
   const [activeTab, setActiveTab] = useState<"Todos" | "Despensa" | "Geladeira" | "Freezer">("Todos");
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState("Todas as categorias");
+  const [expirationFilter, setExpirationFilter] = useState("Todas as validades");
+  const [quantityFilter, setQuantityFilter] = useState("Todas as quantidades");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   const loadStock = async (activeContext?: AccountInventoryContext) => {
@@ -92,7 +101,13 @@ export default function StockPage() {
       item.brand.toLowerCase().includes(search.toLowerCase()) ||
       item.category.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter ? item.status === statusFilter : true;
-    return matchesTab && matchesSearch && matchesStatus;
+    const matchesCategory = categoryFilter === "Todas as categorias" || item.category === categoryFilter;
+    const matchesExpiration = expirationFilter === "Todas as validades" ||
+      (expirationFilter === "Vencidos" && item.daysUntilExpiration < 0) ||
+      (expirationFilter === "Vence em breve" && item.daysUntilExpiration >= 0 && item.daysUntilExpiration <= 7) ||
+      (expirationFilter === "Dentro do prazo" && item.daysUntilExpiration > 7);
+    const matchesQuantity = quantityFilter === "Todas as quantidades" || (quantityFilter === "Estoque baixo" && item.lowStock) || (quantityFilter === "Com estoque" && !item.lowStock);
+    return matchesTab && matchesSearch && matchesStatus && matchesCategory && matchesExpiration && matchesQuantity;
   });
   const stockStats = (["Despensa", "Geladeira", "Freezer"] as const).map((name, index) => {
     const count = items.filter((item) => item.location === name).length;
@@ -127,7 +142,7 @@ export default function StockPage() {
 
         {/* Barra de Filtros e Controles */}
         <div className="bg-white dark:bg-[#1C1E22] rounded-3xl p-4 md:p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs space-y-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             {/* Abas de Localização */}
             <div className="flex items-center bg-gray-100/80 dark:bg-[#252A32] p-1 rounded-2xl w-full md:w-auto">
               {(["Todos", "Despensa", "Geladeira", "Freezer"] as const).map((tab) => (
@@ -146,8 +161,7 @@ export default function StockPage() {
               ))}
             </div>
 
-            {/* Campo de Busca */}
-            <div className="relative w-full md:w-80">
+            <div className="relative w-full md:w-[236px]">
               <Search
                 size={16}
                 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-400"
@@ -162,21 +176,17 @@ export default function StockPage() {
             </div>
           </div>
 
-          {/* Filtros rápidos */}
-          <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-[#343941] flex-wrap gap-2">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs text-gray-400 dark:text-neutral-400 font-medium mr-1">Filtrar por:</span>
-              {["Categoria", "Validade", "Quantidade"].map((filter) => (
-                <button
-                  key={filter}
-                  type="button"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-[#343941] text-xs font-semibold text-gray-600 dark:text-neutral-300 hover:border-gray-300 dark:hover:border-neutral-500 hover:bg-gray-50 dark:hover:bg-[#252A32] transition-colors cursor-pointer"
-                >
-                  <span>{filter}</span>
-                  <ChevronDown size={14} className="text-gray-400 dark:text-neutral-400" />
-                </button>
-              ))}
-            </div>
+          <div className="flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-[#343941] flex-wrap">
+            <select aria-label="Filtrar por categoria" value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)} className="h-9 rounded-md border border-gray-200 bg-white px-3 text-xs font-medium text-[#536782] dark:border-[#343941] dark:bg-[#252A32] dark:text-neutral-300">
+              <option>Todas as categorias</option>
+              {[...new Set(items.map((item) => item.category))].map((category) => <option key={category}>{category}</option>)}
+            </select>
+            <select aria-label="Filtrar por validade" value={expirationFilter} onChange={(event) => setExpirationFilter(event.target.value)} className="h-9 rounded-md border border-gray-200 bg-white px-3 text-xs font-medium text-[#536782] dark:border-[#343941] dark:bg-[#252A32] dark:text-neutral-300">
+              {["Todas as validades", "Vencidos", "Vence em breve", "Dentro do prazo"].map((option) => <option key={option}>{option}</option>)}
+            </select>
+            <select aria-label="Filtrar por quantidade" value={quantityFilter} onChange={(event) => setQuantityFilter(event.target.value)} className="h-9 rounded-md border border-gray-200 bg-white px-3 text-xs font-medium text-[#536782] dark:border-[#343941] dark:bg-[#252A32] dark:text-neutral-300">
+              {["Todas as quantidades", "Estoque baixo", "Com estoque"].map((option) => <option key={option}>{option}</option>)}
+            </select>
 
             {statusFilter && (
               <button

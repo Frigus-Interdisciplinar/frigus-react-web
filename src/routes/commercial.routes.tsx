@@ -1,13 +1,15 @@
 import { Route, Navigate } from "react-router-dom";
-import CommercialStockPage from "@/pages/Commercial/Stock";
-import CommercialValidityPage from "@/pages/Commercial/Validity";
-import CommercialBatchDetailsPage from "@/pages/Commercial/BatchDetails";
-import CommercialShoppingListPage from "@/pages/Commercial/ShoppingList";
-import CommercialExpensesPage from "@/pages/Commercial/Expenses";
-import CommercialWastePage from "@/pages/Commercial/Waste";
-import CommercialMonthlyReportPage from "@/pages/Commercial/MonthlyReport";
-import CommercialEmployeesPage from "@/pages/Commercial/Employees";
 import AuthGuard from "@/components/AuthGuard";
+import { lazyPage } from "@/routes/lazyPage";
+
+const CommercialStockPage = lazyPage(() => import("@/pages/Commercial/Stock"));
+const CommercialValidityPage = lazyPage(() => import("@/pages/Commercial/Validity"));
+const CommercialBatchDetailsPage = lazyPage(() => import("@/pages/Commercial/BatchDetails"));
+const CommercialShoppingListPage = lazyPage(() => import("@/pages/Commercial/ShoppingList"));
+const CommercialExpensesPage = lazyPage(() => import("@/pages/Commercial/Expenses"));
+const CommercialWastePage = lazyPage(() => import("@/pages/Commercial/Waste"));
+const CommercialMonthlyReportPage = lazyPage(() => import("@/pages/Commercial/MonthlyReport"));
+const CommercialEmployeesPage = lazyPage(() => import("@/pages/Commercial/Employees"));
 
 export const commercialRoutes = (
   <>

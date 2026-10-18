@@ -47,17 +47,22 @@ export async function getInventorySummary() {
 }
 
 export async function listStockProducts(stockId: number) {
-  const page = await api.get<{ content: StockProduct[] }>(`/web/core/inventory/stocks/${stockId}/products?size=100`);
+  const page = await api.get<{ content: StockProduct[] }>(
+    `/web/core/inventory/stocks/${stockId}/products?size=100`,
+  );
   return page.content;
 }
 
-export async function createProduct(groupId: string, body: {
-  name: string;
-  category: string;
-  storagePlace: string;
-  unitPrice: number;
-  unitOfMeasure: string;
-}) {
+export async function createProduct(
+  groupId: string,
+  body: {
+    name: string;
+    category: string;
+    storagePlace: string;
+    unitPrice: number;
+    unitOfMeasure: string;
+  },
+) {
   return api.post<Product>(`/web/core/groups/${groupId}/products`, body);
 }
 
@@ -74,10 +79,23 @@ export async function getStockProduct(id: number) {
   return api.get<StockProduct>(`/web/core/inventory/stock-products/${id}`);
 }
 
-export async function updateStockProduct(id: number, body: { minimalQuantity?: number; expireDate: string }) {
-  return api.put<StockProduct>(`/web/core/inventory/stock-products/${id}`, body);
+export async function updateStockProduct(
+  id: number,
+  body: { minimalQuantity?: number; expireDate: string },
+) {
+  return api.put<StockProduct>(
+    `/web/core/inventory/stock-products/${id}`,
+    body,
+  );
 }
 
-export async function recordMovement(id: number, movementType: "IN" | "OUT" | "ADJUSTMENT", quantity: number) {
-  return api.post(`/web/core/inventory/stock-products/${id}/movements`, { movementType, quantity });
+export async function recordMovement(
+  id: number,
+  movementType: "IN" | "OUT" | "ADJUSTMENT",
+  quantity: number,
+) {
+  return api.post(`/web/core/inventory/stock-products/${id}/movements`, {
+    movementType,
+    quantity,
+  });
 }

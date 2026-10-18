@@ -10,6 +10,7 @@ type Page<T> = { content?: T[] };
 
 export default function CommercialBatchDetailsPage() {
   const { id } = useParams();
+  const validId = id !== undefined && /^[1-9]\d*$/.test(id) && Number.isSafeInteger(Number(id));
   const [item, setItem] = useState<StockProduct>();
   const [movements, setMovements] = useState<Movement[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +23,7 @@ export default function CommercialBatchDetailsPage() {
   const [movementQuantity, setMovementQuantity] = useState("");
 
   const load = useCallback(async () => {
-    if (!id) return;
+    if (!validId) { setError("Identificador do lote inválido."); setLoading(false); return; }
     setLoading(true); setError("");
     try {
       const stockProductId = Number(id);
@@ -34,7 +35,7 @@ export default function CommercialBatchDetailsPage() {
       setMovements(history.content ?? []);
     } catch (reason) { setError(reason instanceof Error ? reason.message : "Não foi possível carregar o lote."); }
     finally { setLoading(false); }
-  }, [id]);
+  }, [id, validId]);
 
   useEffect(() => { void load(); }, [load]);
 

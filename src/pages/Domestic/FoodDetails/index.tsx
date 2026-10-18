@@ -14,10 +14,11 @@ import type { FoodItemData } from "@/components/Modal/EditFoodModal";
 
 export default function FoodDetailsPage() {
   const { id } = useParams<{ id: string }>();
+  const validId = id !== undefined && /^[1-9]\d*$/.test(id);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const [food, setFood] = useState<FoodItemData>({
-    id: id || "1",
+    id: validId ? id : "",
     name: "Leite integral",
     category: "Laticínios",
     location: "Geladeira",
@@ -28,6 +29,10 @@ export default function FoodDetailsPage() {
   const handleSave = (updated: FoodItemData) => {
     setFood(updated);
   };
+
+  if (!validId) {
+    return <AppLayout activeSection="stock"><div role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">Identificador do alimento inválido.</div><Link to="/stock" className="mt-4 inline-block text-sm font-semibold text-frigus-primary">Voltar ao estoque</Link></AppLayout>;
+  }
 
   return (
     <AppLayout activeSection="stock">

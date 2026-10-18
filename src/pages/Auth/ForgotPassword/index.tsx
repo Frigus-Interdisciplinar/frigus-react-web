@@ -3,6 +3,7 @@ import { Info, ArrowLeft, CheckCircle2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
+import { Link } from "react-router-dom";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState<string>("");
@@ -47,12 +48,12 @@ export default function ForgotPasswordPage() {
             <p className="text-[#70809F] text-[15px] max-w-[400px]">
               Se houver uma conta associada a <strong className="text-frigus-navy">{email}</strong>, você receberá um link com as instruções para redefinir sua senha.
             </p>
-            <a
-              href="/login"
+            <Link
+              to="/login"
               className="inline-flex items-center gap-2 text-frigus-primary font-bold text-[15px] underline hover:text-frigus-secondary mt-4"
             >
               <ArrowLeft className="size-4" /> Voltar para o login
-            </a>
+            </Link>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -86,12 +87,12 @@ export default function ForgotPasswordPage() {
             </div>
 
             <div className="text-center mt-3">
-              <a
-                href="/login"
+              <Link
+                to="/login"
                 className="inline-flex items-center gap-2 text-frigus-primary font-bold text-[15px] underline hover:text-frigus-secondary"
               >
                 <ArrowLeft className="size-4" /> Voltar para o login
-              </a>
+              </Link>
             </div>
           </form>
         )}

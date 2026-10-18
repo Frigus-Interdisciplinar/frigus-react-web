@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Search, ChevronDown, Clock, Star, ArrowRight, Sparkles } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import Badge from "@/components/Badge";
-import { api } from "@/utils/api.util";
+import { listRecipes, toggleRecipeFavorite } from "@/services/recipe.service";
 
 type RecipeCard = {
   id: string;
@@ -29,18 +29,14 @@ export default function RecipePage() {
   useEffect(() => {
     let active = true;
     setLoading(true); setError("");
-    const url = favoritesOnly ? "/web/core/recipes/favorites?page=0&size=100" : `/web/core/recipes?page=0&size=100${search ? `&name=${encodeURIComponent(search)}` : ""}`;
-    void Promise.all([
-      api.get<{ content: Array<{ id: number; name: string; favorite: boolean; ingredients?: Array<{ inStock?: boolean }> }> }>(url),
-      api.get<Array<{ recipe: { id: number; name: string; favorite: boolean; ingredients?: Array<{ inStock?: boolean }> } }>>("/web/core/recipes/suggestions?limit=20"),
-    ]).then(([page, suggestions]) => {
+    void listRecipes({ search, favoritesOnly }).then(({ recipes: data, suggestionCount: count }) => {
       if (!active) return;
-      setRecipes(page.content.map((recipe) => {
+      setRecipes(data.map((recipe) => {
         const available = recipe.ingredients?.filter((ingredient) => ingredient.inStock).length ?? 0;
         const total = recipe.ingredients?.length ?? 0;
         return { id: String(recipe.id), title: recipe.name, category: "Receita", time: "Tempo não informado", availableIngredients: `${available} de ${total} ingredientes disponíveis`, image: "", favorite: recipe.favorite, available, total };
       }));
-      setSuggestionCount(suggestions.length);
+      setSuggestionCount(count);
     }).catch(() => active && setError("Não foi possível carregar as receitas."))
       .finally(() => active && setLoading(false));
     return () => { active = false; };
@@ -48,8 +44,7 @@ export default function RecipePage() {
 
   const toggleFavorite = async (recipe: RecipeCard) => {
     try {
-      if (recipe.favorite) await api.delete(`/web/core/recipes/${recipe.id}/favorite`);
-      else await api.put(`/web/core/recipes/${recipe.id}/favorite`, undefined);
+      await toggleRecipeFavorite(Number(recipe.id), recipe.favorite);
       setRecipes((current) => current.map((item) => item.id === recipe.id ? { ...item, favorite: !item.favorite } : item));
     } catch { setError("Não foi possível atualizar a receita favorita."); }
   };

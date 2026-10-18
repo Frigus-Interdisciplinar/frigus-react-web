@@ -1,18 +1,20 @@
 import { Route } from "react-router-dom";
-import HomePage from "@/pages/Domestic/Home";
-import StockPage from "@/pages/Domestic/Stock";
-import FoodDetailsPage from "@/pages/Domestic/FoodDetails";
-import AlertsPage from "@/pages/Domestic/Alerts";
-import RecipePage from "@/pages/Domestic/Recipe";
-import RecipeDetailsPage from "@/pages/Domestic/RecipeDetails";
-import ShoppingListPage from "@/pages/Domestic/ShoppingList";
-import FamilyMembersPage from "@/pages/Domestic/FamilyMembers";
-import ChatPage from "@/pages/Domestic/Chat";
-import ProfilePage from "@/pages/Domestic/Profile";
-import SettingsPage from "@/pages/Domestic/Settings";
-import PlansPage from "@/pages/Domestic/Plans";
-import NotificationsPage from "@/pages/Domestic/Notifications";
 import AuthGuard from "@/components/AuthGuard";
+import { lazyPage } from "@/routes/lazyPage";
+
+const HomePage = lazyPage(() => import("@/pages/Domestic/Home"));
+const StockPage = lazyPage(() => import("@/pages/Domestic/Stock"));
+const FoodDetailsPage = lazyPage(() => import("@/pages/Domestic/FoodDetails"));
+const AlertsPage = lazyPage(() => import("@/pages/Domestic/Alerts"));
+const RecipePage = lazyPage(() => import("@/pages/Domestic/Recipe"));
+const RecipeDetailsPage = lazyPage(() => import("@/pages/Domestic/RecipeDetails"));
+const ShoppingListPage = lazyPage(() => import("@/pages/Domestic/ShoppingList"));
+const FamilyMembersPage = lazyPage(() => import("@/pages/Domestic/FamilyMembers"));
+const ChatPage = lazyPage(() => import("@/pages/Domestic/Chat"));
+const ProfilePage = lazyPage(() => import("@/pages/Domestic/Profile"));
+const SettingsPage = lazyPage(() => import("@/pages/Domestic/Settings"));
+const PlansPage = lazyPage(() => import("@/pages/Domestic/Plans"));
+const NotificationsPage = lazyPage(() => import("@/pages/Domestic/Notifications"));
 
 export const domesticRoutes = (
   <>

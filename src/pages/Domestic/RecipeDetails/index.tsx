@@ -1,35 +1,32 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ChevronRight, Bookmark, ChefHat, Check, AlertCircle } from "lucide-react";
 import AppLayout from "@/components/AppLayout";
 import Badge from "@/components/Badge";
-import { api } from "@/utils/api.util";
-
-type Ingredient = { id: number; productName?: string; quantity?: number; unit?: string; required?: boolean; inStock?: boolean };
-type Recipe = { id: number; name: string; description?: string; instructions?: string; favorite: boolean; ingredients?: Ingredient[] };
+import { useAbortableAsync } from "@/hooks/useAbortableAsync";
+import { getRecipe, toggleRecipeFavorite, type Recipe } from "@/services/recipe.service";
 
 export default function RecipeDetailsPage() {
   const { id } = useParams<{ id: string }>();
-  const [recipe, setRecipe] = useState<Recipe>();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    let active = true;
-    if (!id) { setError("Receita inválida."); setLoading(false); return; }
-    void api.get<Recipe>(`/web/core/recipes/${id}`).then((data) => { if (active) setRecipe(data); })
-      .catch(() => active && setError("Não foi possível carregar esta receita."))
-      .finally(() => active && setLoading(false));
-    return () => { active = false; };
-  }, [id]);
+  const [updatedRecipe, setUpdatedRecipe] = useState<Recipe>();
+  const validId = id !== undefined && /^[1-9]\d*$/.test(id);
+  const { data: loadedRecipe, loading, error: loadError } = useAbortableAsync(
+    (signal) => {
+      if (!validId || !id) return Promise.reject(new Error("Receita inválida."));
+      return getRecipe(Number(id), signal);
+    },
+    [id, validId],
+  );
+  const recipe = updatedRecipe ?? loadedRecipe;
+  const [actionError, setActionError] = useState("");
+  const error = actionError || loadError;
 
   const toggleFavorite = async () => {
     if (!recipe) return;
     try {
-      if (recipe.favorite) await api.delete(`/web/core/recipes/${recipe.id}/favorite`);
-      else await api.put(`/web/core/recipes/${recipe.id}/favorite`, undefined);
-      setRecipe({ ...recipe, favorite: !recipe.favorite });
-    } catch { setError("Não foi possível atualizar as favoritas."); }
+      await toggleRecipeFavorite(recipe.id, recipe.favorite);
+      setUpdatedRecipe({ ...recipe, favorite: !recipe.favorite });
+    } catch { setActionError("Não foi possível atualizar as favoritas."); }
   };
 
   const ingredients = recipe?.ingredients ?? [];

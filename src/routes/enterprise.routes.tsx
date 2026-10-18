@@ -1,8 +1,10 @@
 import { Navigate, Route } from "react-router-dom";
-import EnterpriseOverviewPage from "@/pages/Enterprise/Overview";
-import EnterpriseAdsPage from "@/pages/Enterprise/Ads";
-import EnterpriseViewsPage from "@/pages/Enterprise/Views";
 import AuthGuard from "@/components/AuthGuard";
+import { lazyPage } from "@/routes/lazyPage";
+
+const EnterpriseOverviewPage = lazyPage(() => import("@/pages/Enterprise/Overview"));
+const EnterpriseAdsPage = lazyPage(() => import("@/pages/Enterprise/Ads"));
+const EnterpriseViewsPage = lazyPage(() => import("@/pages/Enterprise/Views"));
 
 export const enterpriseRoutes = (
   <>

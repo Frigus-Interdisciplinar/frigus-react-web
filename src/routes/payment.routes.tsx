@@ -1,8 +1,10 @@
 import { Route } from "react-router-dom";
-import CheckoutPage from "@/pages/Payment/CheckoutPage";
-import WebViewSuccess from "@/pages/Payment/WebViewSuccess";
-import WebViewError from "@/pages/Payment/WebViewError";
 import AuthGuard from "@/components/AuthGuard";
+import { lazyPage } from "@/routes/lazyPage";
+
+const CheckoutPage = lazyPage(() => import("@/pages/Payment/CheckoutPage"));
+const WebViewSuccess = lazyPage(() => import("@/pages/Payment/WebViewSuccess"));
+const WebViewError = lazyPage(() => import("@/pages/Payment/WebViewError"));
 
 export const paymentRoutes = [
   <Route key="checkout" path="/checkout" element={<AuthGuard><CheckoutPage /></AuthGuard>} />,
