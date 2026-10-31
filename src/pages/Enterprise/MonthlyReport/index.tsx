@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Calendar, TrendingUp, Sparkles, Clock, ArrowRight } from "lucide-react";
-import EnterpriseLayout from "@/components/EnterpriseLayout";
 import { WeeklyViewsChart } from "@/components/EnterpriseCharts";
 import { EnterpriseCreateAdModal } from "@/components/EnterpriseModals";
 
@@ -8,12 +7,7 @@ export default function EnterpriseMonthlyReportPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   return (
-    <EnterpriseLayout
-      activeSection="report"
-      breadcrumb="Área empresarial    /    Relatório mensal"
-      onOpenCreateAd={() => setIsCreateOpen(true)}
-    >
-      {/* Header */}
+    <>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">
@@ -25,7 +19,6 @@ export default function EnterpriseMonthlyReportPage() {
         </div>
       </div>
 
-      {/* Top Banner / Período */}
       <div className="bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#E1E7F0] dark:border-[#343941] shadow-xs p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-[#2552C8] dark:text-blue-400 flex items-center justify-center">
@@ -50,7 +43,6 @@ export default function EnterpriseMonthlyReportPage() {
         </button>
       </div>
 
-      {/* 3 Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white dark:bg-[#1C1E22] p-6 rounded-3xl border border-[#E1E7F0] dark:border-[#343941] shadow-xs space-y-2">
           <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
@@ -104,9 +96,7 @@ export default function EnterpriseMonthlyReportPage() {
         </div>
       </div>
 
-      {/* Main Grid: Evolução semanal (7 cols) + Resumo do mês (5 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Gráfico Evolução Semanal */}
         <div className="lg:col-span-7 bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#E1E7F0] dark:border-[#343941] shadow-xs p-6 space-y-4">
           <div>
             <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">
@@ -120,7 +110,6 @@ export default function EnterpriseMonthlyReportPage() {
           <WeeklyViewsChart />
         </div>
 
-        {/* Resumo do mês */}
         <div className="lg:col-span-5 bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#E1E7F0] dark:border-[#343941] shadow-xs p-6 space-y-4">
           <div>
             <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">
@@ -132,7 +121,6 @@ export default function EnterpriseMonthlyReportPage() {
           </div>
 
           <div className="space-y-4 pt-2">
-            {/* Mais visto */}
             <div className="p-4 rounded-2xl bg-[#F5F8FC]/80 dark:bg-[#252A32]/60 border border-gray-100 dark:border-[#343941] space-y-1">
               <span className="text-[10px] font-bold text-[#64748B] dark:text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
                 <Sparkles size={12} className="text-amber-500" />
@@ -146,7 +134,6 @@ export default function EnterpriseMonthlyReportPage() {
               </p>
             </div>
 
-            {/* Maior crescimento */}
             <div className="p-4 rounded-2xl bg-[#F5F8FC]/80 dark:bg-[#252A32]/60 border border-gray-100 dark:border-[#343941] space-y-1">
               <span className="text-[10px] font-bold text-[#64748B] dark:text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
                 <TrendingUp size={12} className="text-emerald-500" />
@@ -160,7 +147,6 @@ export default function EnterpriseMonthlyReportPage() {
               </p>
             </div>
 
-            {/* Melhor horário */}
             <div className="p-4 rounded-2xl bg-[#F5F8FC]/80 dark:bg-[#252A32]/60 border border-gray-100 dark:border-[#343941] space-y-1">
               <span className="text-[10px] font-bold text-[#64748B] dark:text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
                 <Clock size={12} className="text-[#2552C8] dark:text-blue-400" />
@@ -177,11 +163,10 @@ export default function EnterpriseMonthlyReportPage() {
         </div>
       </div>
 
-      {/* Modal */}
       <EnterpriseCreateAdModal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
       />
-    </EnterpriseLayout>
+    </>
   );
 }

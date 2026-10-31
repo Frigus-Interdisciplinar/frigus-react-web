@@ -6,6 +6,7 @@ import {
   ShoppingBasket,
   UsersRound,
   MessageCircle,
+  Sparkles,
   Settings,
 } from "lucide-react";
 import NavigationItem from "./NavigationItem";
@@ -21,6 +22,7 @@ export type SectionString =
   | "shopping-list"
   | "family-members"
   | "chat"
+  | "chat-ai"
   | "settings"
   | "alerts"
   | "profile"
@@ -73,6 +75,12 @@ const navigationItems: NavItem[] = [
     section: "chat",
   },
   {
+    label: "Chat IA",
+    href: "/chat-ai",
+    icon: <Sparkles size={18} />,
+    section: "chat-ai",
+  },
+  {
     label: "Configurações",
     href: "/settings",
     icon: <Settings size={18} />,
@@ -86,10 +94,15 @@ export type SidebarProps = {
 
 export default function Sidebar({ activeSection }: SidebarProps) {
   const user = useStore((state) => state.user);
-  const initials = user?.name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() ?? "HP";
+  const initials =
+    user?.name
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase() ?? "—";
   return (
     <aside className="h-screen sticky top-0 bg-sidebar-bg dark:bg-[#171819] border-r border-transparent dark:border-white/5 w-[232px] p-3 flex flex-col justify-between shrink-0 select-none z-20 transition-colors">
-      {/* Header com Logo */}
       <div className="flex flex-col gap-6">
         <Link
           to="/home"
@@ -105,7 +118,6 @@ export default function Sidebar({ activeSection }: SidebarProps) {
           </span>
         </Link>
 
-        {/* Links de Navegação */}
         <nav className="flex flex-col gap-1">
           {navigationItems.map((item) => (
             <NavigationItem
@@ -117,7 +129,6 @@ export default function Sidebar({ activeSection }: SidebarProps) {
         </nav>
       </div>
 
-      {/* Perfil do Usuário na Base */}
       <Link
         to="/profile"
         className="pt-4 border-t border-white/10 flex items-center gap-3 px-2 hover:bg-white/5 rounded-lg transition-colors py-2"
@@ -127,10 +138,12 @@ export default function Sidebar({ activeSection }: SidebarProps) {
         </div>
         <div className="flex flex-col overflow-hidden">
           <span className="text-white text-xs font-bold truncate">
-            {user?.name ?? "Henrique Paulo"}
+            {user?.name ?? "Minha conta"}
           </span>
           <span className="text-sidebar-muted text-[11px] truncate">
-            {user?.accountType === "DOMESTIC" ? "Plano doméstico" : "Plano Frigus"}
+            {user?.accountType === "DOMESTIC"
+              ? "Plano doméstico"
+              : "Plano Frigus"}
           </span>
         </div>
       </Link>

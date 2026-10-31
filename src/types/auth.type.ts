@@ -4,8 +4,11 @@ export interface AuthUser {
   id: string;
   name: string;
   email: string;
-  birthDate: string;
+  birthDate?: string;
+  profilePictureUrl?: string;
   accountType: AccountType;
+  planSelectionRequired?: boolean;
+  pendingPlanTransactionId?: string;
 }
 
 export interface LoginResponseDto {
@@ -16,6 +19,6 @@ export interface RegisterResponseDto {
   id: string;
   name: string;
   accountType: AccountType;
-  birthDate: string;
+  birthDate?: string;
   email: string;
 }

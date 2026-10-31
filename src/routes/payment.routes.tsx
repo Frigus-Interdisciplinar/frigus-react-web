@@ -7,8 +7,40 @@ const WebViewSuccess = lazyPage(() => import("@/pages/Payment/WebViewSuccess"));
 const WebViewError = lazyPage(() => import("@/pages/Payment/WebViewError"));
 
 export const paymentRoutes = [
-  <Route key="checkout" path="/checkout" element={<AuthGuard><CheckoutPage /></AuthGuard>} />,
-  <Route key="checkout-webview" path="/checkout/webview" element={<AuthGuard><CheckoutPage /></AuthGuard>} />,
-  <Route key="checkout-webview-success" path="/checkout/webview/success" element={<AuthGuard><WebViewSuccess /></AuthGuard>} />,
-  <Route key="checkout-webview-error" path="/checkout/webview/error" element={<AuthGuard><WebViewError /></AuthGuard>} />,
+  <Route
+    key="checkout"
+    path="/checkout"
+    element={
+      <AuthGuard allowPlanSelection>
+        <CheckoutPage />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="checkout-webview"
+    path="/checkout/webview"
+    element={
+      <AuthGuard allowPlanSelection>
+        <CheckoutPage />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="checkout-webview-success"
+    path="/checkout/webview/success"
+    element={
+      <AuthGuard allowPlanSelection>
+        <WebViewSuccess />
+      </AuthGuard>
+    }
+  />,
+  <Route
+    key="checkout-webview-error"
+    path="/checkout/webview/error"
+    element={
+      <AuthGuard allowPlanSelection>
+        <WebViewError />
+      </AuthGuard>
+    }
+  />,
 ];

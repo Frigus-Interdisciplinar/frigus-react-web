@@ -1,19 +1,16 @@
 import { useState } from "react";
 import { Users, UserPlus, RotateCcw, MapPin } from "lucide-react";
-import EnterpriseLayout from "@/components/EnterpriseLayout";
-import { AgeDemographicsChart, RegionsChart } from "@/components/EnterpriseCharts";
+import {
+  AgeDemographicsChart,
+  RegionsChart,
+} from "@/components/EnterpriseCharts";
 import { EnterpriseCreateAdModal } from "@/components/EnterpriseModals";
 
 export default function EnterpriseAudiencePage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   return (
-    <EnterpriseLayout
-      activeSection="audience"
-      breadcrumb="Área empresarial    /    Público atingido"
-      onOpenCreateAd={() => setIsCreateOpen(true)}
-    >
-      {/* Header */}
+    <>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">
@@ -25,7 +22,6 @@ export default function EnterpriseAudiencePage() {
         </div>
       </div>
 
-      {/* 4 Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-[#E1E7F0] dark:border-[#343941] shadow-xs space-y-2">
           <div className="flex items-center justify-between">
@@ -104,9 +100,7 @@ export default function EnterpriseAudiencePage() {
         </div>
       </div>
 
-      {/* Main Grid: Faixa etária (6 cols) + Alcance por região (6 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-        {/* Faixa etária */}
         <div className="bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#E1E7F0] dark:border-[#343941] shadow-xs p-6 space-y-5">
           <div>
             <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">
@@ -120,7 +114,6 @@ export default function EnterpriseAudiencePage() {
           <AgeDemographicsChart />
         </div>
 
-        {/* Alcance por região */}
         <div className="bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#E1E7F0] dark:border-[#343941] shadow-xs p-6 space-y-5">
           <div>
             <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">
@@ -135,11 +128,10 @@ export default function EnterpriseAudiencePage() {
         </div>
       </div>
 
-      {/* Modal */}
       <EnterpriseCreateAdModal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
       />
-    </EnterpriseLayout>
+    </>
   );
 }

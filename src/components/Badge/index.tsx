@@ -23,8 +23,7 @@ const variantStyles: Record<BadgeVariant, string> = {
     "bg-[#FFF9E6] text-[#D97706] border border-[#D97706]/20 dark:bg-[#382C10] dark:text-[#FBBF24] dark:border-[#FBBF24]/30",
   danger:
     "bg-[#FCECF0] text-[#A92C49] border border-[#A92C49]/20 dark:bg-[#442B36] dark:text-[#FFB4C4] dark:border-[#FFB4C4]/30",
-  info:
-    "bg-[#EAF1FF] text-[#2552C8] border border-[#2552C8]/20 dark:bg-[#1B2A4A] dark:text-[#A7BCFF] dark:border-[#A7BCFF]/30",
+  info: "bg-[#EAF1FF] text-[#2552C8] border border-[#2552C8]/20 dark:bg-[#1B2A4A] dark:text-[#A7BCFF] dark:border-[#A7BCFF]/30",
   neutral:
     "bg-[#F0F3F8] text-[#596B85] border border-[#596B85]/20 dark:bg-[#252E3E] dark:text-[#ADB6C8] dark:border-[#ADB6C8]/30",
   primary:
@@ -43,7 +42,7 @@ export default function Badge({
       className={cn(
         "inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-xs font-medium leading-none tracking-wide select-none",
         variantStyles[variant],
-        className
+        className,
       )}
     >
       {children}

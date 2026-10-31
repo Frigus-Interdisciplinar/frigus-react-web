@@ -1,10 +1,11 @@
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { UserPlus, Shield } from "lucide-react";
-import AppLayout from "@/components/AppLayout";
 import Badge from "@/components/Badge";
 import { InviteMemberModal } from "@/components/Modal";
 import type { InviteMemberData } from "@/components/Modal/InviteMemberModal";
-import { api } from "@/utils/api.util";
+import { inviteGroupMember, listGroups } from "@/services/group.service";
 
 type Member = {
   id: string;
@@ -19,55 +20,98 @@ type Member = {
 };
 
 export default function FamilyMembersPage() {
+  const [searchParams] = useSearchParams();
   const [members, setMembers] = useState<Member[]>([]);
-  const [isInviteOpen, setIsInviteOpen] = useState(false);
+  const [isInviteOpen, setIsInviteOpen] = useState(
+    () => searchParams.get("alias") === "convidar-membro",
+  );
   const [groupId, setGroupId] = useState<string>();
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     let active = true;
-    api.get<Array<{ id: string; members?: Array<{ userId: string; name: string; email: string; role: string }> }>>("/web/core/groups")
+    const controller = new AbortController();
+    listGroups(controller.signal)
       .then((groups) => {
         if (!active) return;
         const group = groups[0];
-        if (!group) { setError("Ainda não há um grupo familiar para compartilhar."); return; }
+        if (!group) {
+          setError("Ainda não há um grupo familiar para compartilhar.");
+          return;
+        }
         setGroupId(group.id);
-        setMembers((group.members ?? []).map((member) => ({
-          id: member.userId,
-          name: member.name,
-          email: member.email,
-          role: member.role === "OWNER" ? "Administrador" : member.role === "EDITOR" ? "Pode editar" : "Visualizar",
-          roleType: member.role === "OWNER" ? "admin" : member.role === "EDITOR" ? "editor" : "viewer",
-          lastAccess: "Membro do grupo",
-          isCurrentUser: member.role === "OWNER",
-          avatarLetter: member.name?.charAt(0).toUpperCase() || "U",
-          avatarBg: "bg-frigus-ice text-frigus-navy",
-        })));
+        setMembers(
+          (group.members ?? []).map((member) => ({
+            id: member.userId,
+            name: member.name,
+            email: member.email,
+            role:
+              member.role === "OWNER"
+                ? "Administrador"
+                : member.role === "EDITOR"
+                  ? "Pode editar"
+                  : "Visualizar",
+            roleType:
+              member.role === "OWNER"
+                ? "admin"
+                : member.role === "EDITOR"
+                  ? "editor"
+                  : "viewer",
+            lastAccess: "Membro do grupo",
+            isCurrentUser: member.role === "OWNER",
+            avatarLetter: member.name?.charAt(0).toUpperCase() || "U",
+            avatarBg: "bg-frigus-ice text-frigus-navy",
+          })),
+        );
       })
-      .catch(() => active && setError("Não foi possível carregar os membros. Tente novamente."));
-    return () => { active = false; };
+      .catch(
+        () =>
+          active &&
+          setError("Não foi possível carregar os membros. Tente novamente."),
+      )
+      .finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, []);
 
   const handleInvite = async (data: InviteMemberData) => {
     if (!groupId) return;
     setError("");
     try {
-      await api.post(`/web/core/groups/${groupId}/invitations`, {
+      await inviteGroupMember(groupId, {
         email: data.email,
         name: data.name,
         memberRole: data.role === "Pode editar" ? "EDITOR" : "VIEWER",
       });
       setIsInviteOpen(false);
-      setError("Convite enviado. A pessoa aparecerá na lista depois de aceitar.");
-    } catch {
-      setError("Não foi possível enviar o convite. Confira o e-mail e tente novamente.");
+      setSuccess(
+        "Convite enviado. A pessoa aparecerá na lista depois de aceitar.",
+      );
+    } catch (error) {
+      setError(
+        "Não foi possível enviar o convite. Confira o e-mail e tente novamente.",
+      );
+      throw error;
     }
   };
 
   return (
-    <AppLayout activeSection="family-members">
+    <>
       <div className="space-y-6">
-        {/* Cabeçalho */}
+        {loading && <LoadingSpinner label="Carregando membros…" />}
+        {success && (
+          <p
+            role="status"
+            aria-live="polite"
+            className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
+          >
+            {success}
+          </p>
+        )}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-frigus-navy dark:text-white">
@@ -81,15 +125,24 @@ export default function FamilyMembersPage() {
           <button
             type="button"
             onClick={() => setIsInviteOpen(true)}
+            aria-expanded={isInviteOpen}
+            aria-haspopup="dialog"
+            aria-controls="invite-member-dialog"
             className="inline-flex items-center gap-2 bg-[#2552C8] hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-xs self-start sm:self-auto cursor-pointer"
           >
             <UserPlus size={16} />
             <span>Convidar membro</span>
           </button>
         </div>
-        {error && <p role="status" className="text-sm text-amber-700 dark:text-amber-300">{error}</p>}
+        {error && (
+          <p
+            role="alert"
+            className="text-sm text-amber-700 dark:text-amber-300"
+          >
+            {error}
+          </p>
+        )}
 
-        {/* Hero Banner */}
         <div className="bg-frigus-primary dark:bg-[#18233C] rounded-3xl p-6 md:p-8 text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm border border-transparent dark:border-blue-900/30">
           <div className="space-y-2 max-w-xl z-10">
             <span className="text-[11px] uppercase tracking-wider font-bold text-frigus-ice dark:text-blue-200 font-sans">
@@ -99,11 +152,11 @@ export default function FamilyMembersPage() {
               Todo mundo alinhado para cuidar do estoque
             </h2>
             <p className="text-frigus-ice/90 dark:text-blue-200/80 text-sm font-sans leading-relaxed">
-              Mantenha os familiares a par do que precisa ser comprado e evite desperdícios na rotina doméstica.
+              Mantenha os familiares a par do que precisa ser comprado e evite
+              desperdícios na rotina doméstica.
             </p>
           </div>
 
-          {/* Quick Stats Card */}
           <div className="bg-white/10 dark:bg-black/20 backdrop-blur-xs rounded-2xl p-5 border border-white/20 dark:border-white/10 w-full sm:w-auto flex items-center gap-6 z-10 shrink-0">
             <div className="text-center">
               <span className="font-montserrat font-bold text-2xl text-white block">
@@ -124,12 +177,10 @@ export default function FamilyMembersPage() {
             </div>
           </div>
 
-          {/* Background circles */}
           <div className="absolute right-0 bottom-0 w-64 h-64 rounded-full bg-blue-600/30 blur-2xl pointer-events-none" />
           <div className="absolute left-1/2 -top-10 w-48 h-48 rounded-full bg-frigus-accent/20 blur-2xl pointer-events-none" />
         </div>
 
-        {/* Informações sobre Permissões */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div className="bg-white dark:bg-[#1C1E22] rounded-2xl p-4 border border-gray-200/80 dark:border-[#343941] flex items-start gap-3">
             <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-900/30 text-frigus-primary dark:text-blue-400 flex items-center justify-center shrink-0">
@@ -174,7 +225,6 @@ export default function FamilyMembersPage() {
           </div>
         </div>
 
-        {/* Tabela de Membros */}
         <div className="bg-white dark:bg-[#1C1E22] rounded-3xl p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -265,7 +315,6 @@ export default function FamilyMembersPage() {
           </div>
         </div>
 
-        {/* Modal Dedicado de Convidar Membro (Figma 1879:4682) */}
         <InviteMemberModal
           isOpen={isInviteOpen}
           onClose={() => setIsInviteOpen(false)}
@@ -273,6 +322,6 @@ export default function FamilyMembersPage() {
           householdName="Casa Henrique"
         />
       </div>
-    </AppLayout>
+    </>
   );
 }

@@ -1,4 +1,3 @@
-// 1. Gráfico de Compras ao longo do mês (Gastos e Compras - Figma 1879:1752)
 export function WeeklySpendingChart() {
   const data = [
     { week: "01–07 ago", value: 3420, height: "48%" },
@@ -10,7 +9,6 @@ export function WeeklySpendingChart() {
   return (
     <div className="w-full flex flex-col gap-2">
       <div className="flex items-end justify-between gap-4 h-48 pt-6 pb-2 border-b border-gray-100 dark:border-[#343941] relative">
-        {/* Linhas de grade e valores no eixo Y */}
         <div className="absolute inset-x-0 top-6 border-b border-dashed border-gray-100 dark:border-[#343941] flex items-center justify-between text-[10px] text-gray-400 dark:text-neutral-500">
           <span>7 mil</span>
         </div>
@@ -21,10 +19,12 @@ export function WeeklySpendingChart() {
           <span>0</span>
         </div>
 
-        {/* Barras */}
         <div className="flex-1 flex items-end justify-around h-full z-10 pl-8">
           {data.map((item) => (
-            <div key={item.week} className="flex flex-col items-center gap-1.5 h-full justify-end group">
+            <div
+              key={item.week}
+              className="flex flex-col items-center gap-1.5 h-full justify-end group"
+            >
               <span className="text-[11px] font-bold text-[#141C55] dark:text-white opacity-0 group-hover:opacity-100 transition-opacity">
                 R$ {item.value.toLocaleString("pt-BR")}
               </span>
@@ -37,7 +37,6 @@ export function WeeklySpendingChart() {
         </div>
       </div>
 
-      {/* Rótulos eixo X */}
       <div className="flex justify-around pl-8 text-xs font-medium text-gray-500 dark:text-neutral-400">
         {data.map((item) => (
           <span key={item.week}>{item.week}</span>
@@ -46,8 +45,6 @@ export function WeeklySpendingChart() {
     </div>
   );
 }
-
-// 2. Gráfico de Tendência de Desperdícios (Figma 1879:1666)
 export function WasteTrendChart() {
   const data = [
     { week: "01–07 ago", value: 28, height: "82%" },
@@ -59,17 +56,18 @@ export function WasteTrendChart() {
   return (
     <div className="w-full flex flex-col gap-2">
       <div className="flex items-end justify-between gap-4 h-48 pt-6 pb-2 border-b border-gray-100 dark:border-[#343941] relative">
-        {/* Linha da meta */}
         <div className="absolute inset-x-0 top-[52%] border-b-2 border-dashed border-amber-400 dark:border-amber-500/80 z-0">
           <span className="absolute right-0 -top-4 text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-2 py-0.5 rounded-md">
             Meta: 18,5 kg / período
           </span>
         </div>
 
-        {/* Barras de volume descartado */}
         <div className="flex-1 flex items-end justify-around h-full z-10 pl-6">
           {data.map((item) => (
-            <div key={item.week} className="flex flex-col items-center gap-1.5 h-full justify-end group">
+            <div
+              key={item.week}
+              className="flex flex-col items-center gap-1.5 h-full justify-end group"
+            >
               <span className="text-[11px] font-bold text-[#141C55] dark:text-white">
                 {item.value} kg
               </span>
@@ -82,7 +80,6 @@ export function WasteTrendChart() {
         </div>
       </div>
 
-      {/* Rótulos eixo X */}
       <div className="flex justify-around pl-6 text-xs font-medium text-gray-500 dark:text-neutral-400">
         {data.map((item) => (
           <span key={item.week}>{item.week}</span>
@@ -91,15 +88,11 @@ export function WasteTrendChart() {
     </div>
   );
 }
-
-// 3. Gráfico Donut de Motivos de Desperdício (Figma 1879:1666)
 export function WasteDonutChart() {
   return (
     <div className="flex items-center gap-6">
-      {/* SVG Donut */}
       <div className="relative w-36 h-36 shrink-0 flex items-center justify-center">
         <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-          {/* Segmento 1: Validade expirada 50% (red) */}
           <circle
             cx="50"
             cy="50"
@@ -110,7 +103,6 @@ export function WasteDonutChart() {
             strokeDasharray="119.38 238.76"
             strokeDashoffset="0"
           />
-          {/* Segmento 2: Manuseio 25% (amber) */}
           <circle
             cx="50"
             cy="50"
@@ -121,7 +113,6 @@ export function WasteDonutChart() {
             strokeDasharray="59.69 238.76"
             strokeDashoffset="-119.38"
           />
-          {/* Segmento 3: Transporte 15% (blue) */}
           <circle
             cx="50"
             cy="50"
@@ -132,7 +123,6 @@ export function WasteDonutChart() {
             strokeDasharray="35.81 238.76"
             strokeDashoffset="-179.07"
           />
-          {/* Segmento 4: Excesso de preparo 10% (purple) */}
           <circle
             cx="50"
             cy="50"
@@ -145,38 +135,49 @@ export function WasteDonutChart() {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <span className="text-base font-bold text-[#141C55] dark:text-white leading-tight">86 kg</span>
-          <span className="text-[10px] text-gray-400 dark:text-neutral-400">descartados</span>
+          <span className="text-base font-bold text-[#141C55] dark:text-white leading-tight">
+            86 kg
+          </span>
+          <span className="text-[10px] text-gray-400 dark:text-neutral-400">
+            descartados
+          </span>
         </div>
       </div>
 
-      {/* Legenda dos Motivos */}
       <div className="flex flex-col gap-2 flex-1">
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-red-500" />
-            <span className="text-gray-600 dark:text-neutral-300">Validade expirada</span>
+            <span className="text-gray-600 dark:text-neutral-300">
+              Validade expirada
+            </span>
           </div>
           <span className="font-bold text-[#141C55] dark:text-white">50%</span>
         </div>
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-            <span className="text-gray-600 dark:text-neutral-300">Manuseio</span>
+            <span className="text-gray-600 dark:text-neutral-300">
+              Manuseio
+            </span>
           </div>
           <span className="font-bold text-[#141C55] dark:text-white">25%</span>
         </div>
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-            <span className="text-gray-600 dark:text-neutral-300">Transporte</span>
+            <span className="text-gray-600 dark:text-neutral-300">
+              Transporte
+            </span>
           </div>
           <span className="font-bold text-[#141C55] dark:text-white">15%</span>
         </div>
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-purple-500" />
-            <span className="text-gray-600 dark:text-neutral-300">Excesso de preparo</span>
+            <span className="text-gray-600 dark:text-neutral-300">
+              Excesso de preparo
+            </span>
           </div>
           <span className="font-bold text-[#141C55] dark:text-white">10%</span>
         </div>
@@ -184,8 +185,6 @@ export function WasteDonutChart() {
     </div>
   );
 }
-
-// 4. Gráfico de Movimentações de Estoque - Entradas vs Saídas (Relatório Mensal - Figma 1879:1384)
 export function StockFlowChart() {
   const data = [
     { week: "01–07 ago", inQty: 85, outQty: 62 },
@@ -199,11 +198,15 @@ export function StockFlowChart() {
       <div className="flex items-center justify-end gap-5 mb-2 text-xs">
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-sm bg-[#2552C8]" />
-          <span className="text-gray-600 dark:text-neutral-300 font-medium">Entradas</span>
+          <span className="text-gray-600 dark:text-neutral-300 font-medium">
+            Entradas
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <span className="w-3 h-3 rounded-sm bg-[#70A2D7]" />
-          <span className="text-gray-600 dark:text-neutral-300 font-medium">Saídas</span>
+          <span className="text-gray-600 dark:text-neutral-300 font-medium">
+            Saídas
+          </span>
         </div>
       </div>
 
@@ -220,7 +223,10 @@ export function StockFlowChart() {
 
         <div className="flex-1 flex items-end justify-around h-full z-10 pl-6">
           {data.map((item) => (
-            <div key={item.week} className="flex items-end gap-2 h-full justify-center">
+            <div
+              key={item.week}
+              className="flex items-end gap-2 h-full justify-center"
+            >
               <div
                 style={{ height: `${(item.inQty / 100) * 100}%` }}
                 className="w-6 bg-[#2552C8] rounded-t-md shadow-xs"

@@ -67,7 +67,6 @@ export default function ForgotPasswordPage() {
               required
             />
 
-            {/* Aviso link seguro */}
             <div className="bg-[#ECF2FD] rounded-xl p-4 flex items-start sm:items-center gap-3">
               <Info className="size-5 text-frigus-primary shrink-0 mt-0.5 sm:mt-0" />
               <p className="text-[14px] text-[#70809F] leading-snug">

@@ -1,40 +1,101 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import AuthLayout from "@/components/AuthLayout";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Checkbox from "@/components/Checkbox";
 import ThemeToggle from "@/components/ThemeToggle";
 import { ShieldCheck } from "lucide-react";
-import { ensureStarterWorkspace, login } from "@/services/auth.service";
+import GoogleSignInButton from "@/components/GoogleSignInButton";
+import {
+  ensureStarterWorkspace,
+  login,
+  loginWithGoogle,
+} from "@/services/auth.service";
 import { useStore } from "@/store/store";
+import { loginSchema } from "@/schemas/auth.schema";
+import { getAccountHome, getSessionDestination } from "@/utils/plan.util";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState<string>("");
-  const [rawPassword, setRawPassword] = useState<string>("");
-  const [rememberMe, setRememberMe] = useState<boolean>(false);
+  const [credentials, setCredentials] = useState({
+    email: "",
+    rawPassword: "",
+    rememberMe: false,
+  });
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>("");
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<"email" | "rawPassword", string>>
+  >({});
   const navigate = useNavigate();
+  const location = useLocation();
   const saveUser = useStore((state) => state.login);
+
+  const completeLogin = async (session: Awaited<ReturnType<typeof login>>) => {
+    if (!session.user.planSelectionRequired)
+      await ensureStarterWorkspace(session.user.accountType);
+    saveUser(session.user);
+    const fallback = getAccountHome(session.user.accountType);
+    const requested = (location.state as { from?: unknown } | null)?.from;
+    const returnTo =
+      typeof requested === "string" &&
+      requested.startsWith("/") &&
+      !requested.startsWith("//")
+        ? requested
+        : fallback;
+    navigate(
+      session.user.planSelectionRequired
+        ? getSessionDestination(session.user)
+        : returnTo,
+      { replace: true },
+    );
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
-
-    if (!email || !rawPassword) {
-      setError("Por favor, preencha todos os campos.");
+    const validation = loginSchema.safeParse(credentials);
+    if (!validation.success) {
+      const nextErrors: Partial<Record<"email" | "rawPassword", string>> = {};
+      for (const issue of validation.error.issues) {
+        const field = issue.path[0];
+        if (
+          (field === "email" || field === "rawPassword") &&
+          !nextErrors[field]
+        ) {
+          nextErrors[field] = issue.message;
+        }
+      }
+      setFieldErrors(nextErrors);
       return;
     }
+    setFieldErrors({});
 
     setLoading(true);
     try {
-      const session = await login({ email: email.trim(), rawPassword, rememberMe });
-      await ensureStarterWorkspace(session.user.accountType);
-      saveUser(session.user);
-      navigate(session.user.accountType === "COMMERCIAL" ? "/commercial" : session.user.accountType === "BUSINESS" ? "/enterprise" : "/home", { replace: true });
+      await completeLogin(await login(credentials));
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível entrar. Confira seus dados e tente novamente.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Não foi possível entrar. Confira seus dados e tente novamente.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleCredential = async (idToken: string) => {
+    setError("");
+    setLoading(true);
+    try {
+      await completeLogin(await loginWithGoogle(idToken, credentials.rememberMe));
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Não foi possível entrar com o Google. Tente novamente.",
+      );
     } finally {
       setLoading(false);
     }
@@ -62,14 +123,24 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full mt-6">
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-4 w-full mt-6"
+        >
           <Input
             id="login-input-email"
             label="E-mail"
             type="email"
             placeholder="Digite seu e-mail"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={credentials.email}
+            maxLength={254}
+            error={fieldErrors.email}
+            onChange={(e) =>
+              setCredentials((current) => ({
+                ...current,
+                email: e.target.value,
+              }))
+            }
             required
             autoFocus
             className="h-[58px] rounded-md"
@@ -80,8 +151,15 @@ export default function LoginPage() {
             label="Senha"
             type="password"
             placeholder="Digite sua senha"
-            value={rawPassword}
-            onChange={(e) => setRawPassword(e.target.value)}
+            value={credentials.rawPassword}
+            maxLength={128}
+            error={fieldErrors.rawPassword}
+            onChange={(e) =>
+              setCredentials((current) => ({
+                ...current,
+                rawPassword: e.target.value,
+              }))
+            }
             showPasswordToggle
             required
             className="h-[58px] rounded-md"
@@ -91,8 +169,13 @@ export default function LoginPage() {
             <Checkbox
               id="remember-me"
               label="Manter conectado"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
+              checked={credentials.rememberMe}
+              onChange={(e) =>
+                setCredentials((current) => ({
+                  ...current,
+                  rememberMe: e.target.checked,
+                }))
+              }
             />
             <Link
               to="/forgot-password"
@@ -103,7 +186,9 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <p className="text-xs text-red-500 font-medium">{error}</p>
+            <p role="alert" className="text-xs text-red-500 font-medium">
+              {error}
+            </p>
           )}
 
           <div className="mt-2">
@@ -111,6 +196,7 @@ export default function LoginPage() {
               type="submit"
               variant="primary"
               disabled={loading}
+              aria-live="polite"
               className="w-full h-[58px] rounded-md text-base font-bold shadow-md shadow-frigus-primary/20"
             >
               {loading ? "Entrando..." : "Entrar"}
@@ -132,6 +218,17 @@ export default function LoginPage() {
             </Link>
           </p>
         </form>
+
+        <div className="flex w-full items-center gap-3 py-5 text-xs text-gray-400 dark:text-gray-500" aria-hidden="true">
+          <span className="h-px flex-1 bg-gray-200 dark:bg-[#343941]" />
+          <span>ou</span>
+          <span className="h-px flex-1 bg-gray-200 dark:bg-[#343941]" />
+        </div>
+        <GoogleSignInButton
+          disabled={loading}
+          onCredential={handleGoogleCredential}
+          onError={setError}
+        />
       </div>
     </AuthLayout>
   );

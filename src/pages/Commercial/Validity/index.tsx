@@ -1,44 +1,96 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useLatestRequest } from "@/hooks/useLatestRequest";
 import { AlertOctagon, AlertCircle } from "lucide-react";
-import CommercialLayout from "@/components/CommercialLayout";
 import { CommercialRegisterWasteModal } from "@/components/CommercialModals";
-import { api } from "@/utils/api.util";
-import { getInventoryContext, listStockProducts, type StockProduct } from "@/services/inventory.service";
+import { createDiscard } from "@/services/discard.service";
+import {
+  getInventoryContext,
+  listStockProducts,
+  type StockProduct,
+} from "@/services/inventory.service";
 
 export default function CommercialValidityPage() {
   const [isWasteModalOpen, setIsWasteModalOpen] = useState(false);
   const [products, setProducts] = useState<StockProduct[]>([]);
   const [error, setError] = useState("");
-  const loadStock = async () => {
+  const beginRequest = useLatestRequest();
+  const loadStock = useCallback(async () => {
+    const signal = beginRequest();
     try {
-      const context = await getInventoryContext();
-      setProducts((await Promise.all(context.stocks.map((stock) => listStockProducts(stock.id)))).flat());
+      const context = await getInventoryContext(signal);
+      const products = (
+        await Promise.all(
+          context.stocks.map((stock) => listStockProducts(stock.id, signal)),
+        )
+      ).flat();
+      if (signal.aborted) return;
+      setProducts(products);
       setError("");
-    } catch { setError("Não foi possível carregar validades e quantidades do estoque."); }
-  };
-  useEffect(() => { void loadStock(); }, []);
+    } catch {
+      if (!signal.aborted)
+        setError(
+          "Não foi possível carregar validades e quantidades do estoque.",
+        );
+    }
+  }, [beginRequest]);
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => void loadStock(), 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [loadStock]);
 
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const expiring = products.map((item) => ({ item, days: Math.ceil((new Date(`${item.expireDate}T00:00:00`).getTime() - today.getTime()) / 86400000) })).filter(({ days }) => days <= 3);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const expiring = products
+    .map((item) => ({
+      item,
+      days: Math.ceil(
+        (new Date(`${item.expireDate}T00:00:00`).getTime() - today.getTime()) /
+          86400000,
+      ),
+    }))
+    .filter(({ days }) => days <= 3);
   const expiryPriorities = expiring.map(({ item, days }) => ({
+    id: item.id,
     product: item.product?.name ?? `Produto #${item.productId}`,
     batch: `Lote #${item.id} · ${item.product?.storagePlace ?? "Estoque"}`,
     quantity: `${item.quantity} ${item.product?.unitOfMeasure ?? "un"}`,
     date: new Date(`${item.expireDate}T00:00:00`).toLocaleDateString("pt-BR"),
-    status: days < 0 ? "Vencido" : days === 0 ? "Vence hoje" : `Em ${days} dia(s)`,
-    statusColor: days < 0 ? "bg-red-50 text-red-700 border-red-200" : "bg-amber-50 text-amber-700 border-amber-200",
+    status:
+      days < 0 ? "Vencido" : days === 0 ? "Vence hoje" : `Em ${days} dia(s)`,
+    statusColor:
+      days < 0
+        ? "bg-red-50 text-red-700 border-red-200"
+        : "bg-amber-50 text-amber-700 border-amber-200",
   }));
-  const lowStockItems = products.filter((item) => item.minimalQuantity !== undefined && item.quantity <= item.minimalQuantity).map((item) => ({
-    product: item.product?.name ?? `Produto #${item.productId}`,
-    minimum: `Mínimo: ${item.minimalQuantity} ${item.product?.unitOfMeasure ?? "un"}`,
-    available: `${item.quantity} ${item.product?.unitOfMeasure ?? "un"} disponíveis`,
-    percentage: item.minimalQuantity ? Math.min(100, Math.round(item.quantity / item.minimalQuantity * 100)) : 0,
-  }));
-  const recordDiscard = async (input: { stockProductId: number; quantity: number; reason: string }) => { await api.post("/web/core/discards", input); await loadStock(); };
+  const lowStockItems = products
+    .filter(
+      (item) =>
+        item.minimalQuantity !== undefined &&
+        item.quantity <= item.minimalQuantity,
+    )
+    .map((item) => ({
+      id: item.id,
+      product: item.product?.name ?? `Produto #${item.productId}`,
+      minimum: `Mínimo: ${item.minimalQuantity} ${item.product?.unitOfMeasure ?? "un"}`,
+      available: `${item.quantity} ${item.product?.unitOfMeasure ?? "un"} disponíveis`,
+      percentage: item.minimalQuantity
+        ? Math.min(
+            100,
+            Math.round((item.quantity / item.minimalQuantity) * 100),
+          )
+        : 0,
+    }));
+  const recordDiscard = async (input: {
+    stockProductId: number;
+    quantity: number;
+    reason: string;
+  }) => {
+    await createDiscard(input);
+    await loadStock();
+  };
 
   return (
-    <CommercialLayout activeSection="validity" breadcrumb="Área comercial    /    Validades">
-      {/* Header */}
+    <>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold font-montserrat text-[#141C55] dark:text-white">
@@ -52,63 +104,96 @@ export default function CommercialValidityPage() {
           type="button"
           disabled={products.length === 0}
           onClick={() => setIsWasteModalOpen(true)}
+          aria-expanded={isWasteModalOpen}
+          aria-haspopup="dialog"
+          aria-controls="commercial-modal-dialog"
           className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white px-4 py-2.5 rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
         >
           <AlertOctagon size={16} />
           <span>Registrar perda</span>
         </button>
       </div>
-      {error && <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error} <button onClick={() => void loadStock()} className="underline">Tentar novamente</button></p>}
+      {error && (
+        <p
+          role="alert"
+          className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
+          {error}{" "}
+          <button onClick={() => void loadStock()} className="underline">
+            Tentar novamente
+          </button>
+        </p>
+      )}
 
-      {/* 3 Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-red-100 dark:border-red-950/60 shadow-xs relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-1 bg-red-500" />
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">Vencidos</span>
+            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+              Vencidos
+            </span>
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/50">
               Ação imediata
             </span>
           </div>
-          <p className="text-3xl font-bold font-montserrat text-red-600 dark:text-red-400 mt-2">{expiryPriorities.filter((item) => item.status === "Vencido").length}</p>
-          <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">lotes para retirar</span>
+          <p className="text-3xl font-bold font-montserrat text-red-600 dark:text-red-400 mt-2">
+            {
+              expiryPriorities.filter((item) => item.status === "Vencido")
+                .length
+            }
+          </p>
+          <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">
+            lotes para retirar
+          </span>
         </div>
 
         <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-amber-100 dark:border-amber-950/60 shadow-xs relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-1 bg-amber-500" />
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">Próximos do vencimento</span>
+            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+              Próximos do vencimento
+            </span>
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50">
               Usar primeiro
             </span>
           </div>
-          <p className="text-3xl font-bold font-montserrat text-amber-600 dark:text-amber-400 mt-2">{expiring.filter((item) => item.days >= 0).length}</p>
-          <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">vencem em até 3 dias</span>
+          <p className="text-3xl font-bold font-montserrat text-amber-600 dark:text-amber-400 mt-2">
+            {expiring.filter((item) => item.days >= 0).length}
+          </p>
+          <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">
+            vencem em até 3 dias
+          </span>
         </div>
 
         <div className="bg-white dark:bg-[#1C1E22] p-5 rounded-2xl border border-orange-100 dark:border-orange-950/60 shadow-xs relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-1 bg-orange-500" />
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">Quantidade baixa</span>
+            <span className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+              Quantidade baixa
+            </span>
             <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-orange-50 dark:bg-orange-950/50 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-900/50">
               Repor estoque
             </span>
           </div>
-          <p className="text-3xl font-bold font-montserrat text-orange-600 dark:text-orange-400 mt-2">{lowStockItems.length}</p>
-          <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">abaixo do mínimo</span>
+          <p className="text-3xl font-bold font-montserrat text-orange-600 dark:text-orange-400 mt-2">
+            {lowStockItems.length}
+          </p>
+          <span className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-1 block">
+            abaixo do mínimo
+          </span>
         </div>
       </div>
 
-      {/* Main Two Panels Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Painel Esquerdo: Prioridades de vencimento (7 cols) */}
         <div className="lg:col-span-7 bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">
                 Prioridades de vencimento
               </h2>
-              <p className="text-xs text-[#64748B] dark:text-neutral-400">Lotes que precisam de atenção primeiro.</p>
+              <p className="text-xs text-[#64748B] dark:text-neutral-400">
+                Lotes que precisam de atenção primeiro.
+              </p>
             </div>
             <span className="px-3 py-1 rounded-full text-xs font-bold bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-400 border border-red-200/60 dark:border-red-900/50">
               {expiryPriorities.length} prioridades
@@ -126,16 +211,29 @@ export default function CommercialValidityPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-[#343941]">
-                {expiryPriorities.map((item, idx) => (
-                  <tr key={idx} className="hover:bg-gray-50/70 dark:hover:bg-[#252A32] transition-colors">
+                {expiryPriorities.map((item) => (
+                  <tr
+                    key={item.id}
+                    className="hover:bg-gray-50/70 dark:hover:bg-[#252A32] transition-colors"
+                  >
                     <td className="py-3 px-3">
-                      <p className="font-bold text-[#141C55] dark:text-white">{item.product}</p>
-                      <p className="text-[11px] text-[#64748B] dark:text-neutral-400">{item.batch}</p>
+                      <p className="font-bold text-[#141C55] dark:text-white">
+                        {item.product}
+                      </p>
+                      <p className="text-[11px] text-[#64748B] dark:text-neutral-400">
+                        {item.batch}
+                      </p>
                     </td>
-                    <td className="py-3 px-3 font-semibold text-[#141C55] dark:text-white">{item.quantity}</td>
-                    <td className="py-3 px-3 text-gray-600 dark:text-neutral-300">{item.date}</td>
+                    <td className="py-3 px-3 font-semibold text-[#141C55] dark:text-white">
+                      {item.quantity}
+                    </td>
+                    <td className="py-3 px-3 text-gray-600 dark:text-neutral-300">
+                      {item.date}
+                    </td>
                     <td className="py-3 px-3 text-right">
-                      <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold border ${item.statusColor}`}>
+                      <span
+                        className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold border ${item.statusColor}`}
+                      >
                         {item.status}
                       </span>
                     </td>
@@ -146,7 +244,6 @@ export default function CommercialValidityPage() {
           </div>
         </div>
 
-        {/* Painel Direito: Reposição necessária (5 cols) */}
         <div className="lg:col-span-5 bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#e1e7f0] dark:border-[#343941] shadow-xs p-6 flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-4">
@@ -154,7 +251,9 @@ export default function CommercialValidityPage() {
                 <h2 className="text-base font-bold font-montserrat text-[#141C55] dark:text-white">
                   Reposição necessária
                 </h2>
-                <p className="text-xs text-[#64748B] dark:text-neutral-400">Itens abaixo da quantidade mínima.</p>
+                <p className="text-xs text-[#64748B] dark:text-neutral-400">
+                  Itens abaixo da quantidade mínima.
+                </p>
               </div>
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-50 dark:bg-orange-950/50 text-orange-700 dark:text-orange-400 border border-orange-200/60 dark:border-orange-900/50">
                 {lowStockItems.length} itens
@@ -162,17 +261,27 @@ export default function CommercialValidityPage() {
             </div>
 
             <div className="space-y-4 pt-2">
-              {lowStockItems.map((item, idx) => (
-                <div key={idx} className="p-4 rounded-2xl bg-gray-50/70 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941] space-y-2">
+              {lowStockItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="p-4 rounded-2xl bg-gray-50/70 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941] space-y-2"
+                >
                   <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-xs text-[#141C55] dark:text-white">{item.product}</h3>
-                    <span className="text-[11px] text-gray-500 dark:text-neutral-400 font-medium">{item.minimum}</span>
+                    <h3 className="font-bold text-xs text-[#141C55] dark:text-white">
+                      {item.product}
+                    </h3>
+                    <span className="text-[11px] text-gray-500 dark:text-neutral-400 font-medium">
+                      {item.minimum}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-orange-600 dark:text-orange-400 font-bold">{item.available}</span>
-                    <span className="text-gray-400 dark:text-neutral-500 text-[10px]">{item.percentage}% do ideal</span>
+                    <span className="text-orange-600 dark:text-orange-400 font-bold">
+                      {item.available}
+                    </span>
+                    <span className="text-gray-400 dark:text-neutral-500 text-[10px]">
+                      {item.percentage}% do ideal
+                    </span>
                   </div>
-                  {/* Track Bar */}
                   <div className="w-full h-2 rounded-full bg-gray-200 dark:bg-neutral-700 overflow-hidden">
                     <div
                       style={{ width: `${item.percentage}%` }}
@@ -185,21 +294,29 @@ export default function CommercialValidityPage() {
           </div>
 
           <div className="mt-6 p-4 rounded-2xl bg-blue-50/50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900/40 flex items-center gap-3">
-            <AlertCircle size={18} className="text-[#2552C8] dark:text-blue-400 shrink-0" />
+            <AlertCircle
+              size={18}
+              className="text-[#2552C8] dark:text-blue-400 shrink-0"
+            />
             <p className="text-[11px] text-[#141C55] dark:text-blue-200 leading-snug">
-              Produtos com quantidade crítica são enviados automaticamente como sugestão para a <strong>Lista de Compras</strong>.
+              Produtos com quantidade crítica são enviados automaticamente como
+              sugestão para a <strong>Lista de Compras</strong>.
             </p>
           </div>
         </div>
       </div>
 
-      {/* Modal Registrar Perda */}
       <CommercialRegisterWasteModal
         isOpen={isWasteModalOpen}
         onClose={() => setIsWasteModalOpen(false)}
-        products={products.map((item) => ({ id: item.id, name: item.product?.name ?? `Produto #${item.productId}`, quantity: item.quantity, unit: item.product?.unitOfMeasure ?? "un" }))}
+        products={products.map((item) => ({
+          id: item.id,
+          name: item.product?.name ?? `Produto #${item.productId}`,
+          quantity: item.quantity,
+          unit: item.product?.unitOfMeasure ?? "un",
+        }))}
         onRecord={recordDiscard}
       />
-    </CommercialLayout>
+    </>
   );
 }

@@ -5,19 +5,36 @@ import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Checkbox from "@/components/Checkbox";
 import ThemeToggle from "@/components/ThemeToggle";
-import { ensureStarterWorkspace, register, login } from "@/services/auth.service";
+import { register, login } from "@/services/auth.service";
 import { useStore } from "@/store/store";
 import type { AccountType } from "@/types/auth.type";
+import { registerSchema } from "@/schemas/auth.schema";
+import { getPlansPath } from "@/utils/plan.util";
+
+type RegistrationFields = {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  birthDate: string;
+  accountType: AccountType;
+  acceptTerms: boolean;
+};
 
 export default function RegisterPage() {
-  const [name, setName] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [confirmPassword, setConfirmPassword] = useState<string>("");
-  const [birthDate, setBirthDate] = useState<string>("");
-  const [accountType, setAccountType] = useState<AccountType>("DOMESTIC");
-  const [acceptTerms, setAcceptTerms] = useState<boolean>(false);
+  const [registration, setRegistration] = useState<RegistrationFields>({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    birthDate: "",
+    accountType: "DOMESTIC",
+    acceptTerms: false,
+  });
   const [error, setError] = useState<string>("");
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<keyof RegistrationFields, string>>
+  >({});
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
   const saveUser = useStore((state) => state.login);
@@ -25,31 +42,66 @@ export default function RegisterPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
+    const nextErrors: Partial<Record<keyof RegistrationFields, string>> = {};
 
-    if (!acceptTerms) {
-      setError("Você precisa aceitar os termos de uso para continuar.");
-      return;
+    const validation = registerSchema.safeParse({
+      name: registration.name,
+      email: registration.email,
+      rawPassword: registration.password,
+      birthDate: registration.birthDate,
+      accountType: registration.accountType,
+    });
+    if (!validation.success) {
+      for (const issue of validation.error.issues) {
+        const field = issue.path[0];
+        if (
+          (field === "name" ||
+            field === "email" ||
+            field === "birthDate" ||
+            field === "accountType") &&
+          !nextErrors[field]
+        ) {
+          nextErrors[field] = issue.message;
+        }
+        if (field === "rawPassword" && !nextErrors.password) {
+          nextErrors.password = issue.message;
+        }
+      }
     }
-
-    if (password !== confirmPassword) {
-      setError("As senhas não coincidem.");
-      return;
+    if (registration.password !== registration.confirmPassword) {
+      nextErrors.confirmPassword = "As senhas não coincidem.";
     }
-
-    if (!birthDate) {
-      setError("Informe sua data de nascimento.");
+    if (!registration.acceptTerms) {
+      nextErrors.acceptTerms =
+        "Você precisa aceitar os termos de uso para continuar.";
+    }
+    setFieldErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) {
       return;
     }
 
     setLoading(true);
     try {
-      const account = await register({ name: name.trim(), email: email.trim(), rawPassword: password, birthDate, accountType });
-      const session = await login({ email: account.email, rawPassword: password, rememberMe: true });
-      await ensureStarterWorkspace(session.user.accountType);
+      const account = await register({
+        name: registration.name,
+        email: registration.email,
+        rawPassword: registration.password,
+        birthDate: registration.birthDate,
+        accountType: registration.accountType,
+      });
+      const session = await login({
+        email: account.email,
+        rawPassword: registration.password,
+        rememberMe: true,
+      });
       saveUser(session.user);
-      navigate(accountType === "COMMERCIAL" ? "/commercial" : accountType === "BUSINESS" ? "/enterprise" : "/home", { replace: true });
+      navigate(getPlansPath(session.user.accountType), { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Não foi possível criar sua conta. Tente novamente.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Não foi possível criar sua conta. Tente novamente.",
+      );
     } finally {
       setLoading(false);
     }
@@ -72,7 +124,7 @@ export default function RegisterPage() {
             Crie sua conta
           </h2>
           <p className="font-normal text-gray-500 dark:text-gray-400 text-sm mt-1.5">
-            Leva menos de dois minutos para começar.
+            Primeiro, crie sua conta. Em seguida, escolha seu plano.
           </p>
         </div>
 
@@ -81,8 +133,14 @@ export default function RegisterPage() {
             id="register-input-name"
             label="Nome completo"
             placeholder="Digite seu nome"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={registration.name}
+            error={fieldErrors.name}
+            onChange={(e) =>
+              setRegistration((current) => ({
+                ...current,
+                name: e.target.value,
+              }))
+            }
             required
             autoFocus
           />
@@ -92,29 +150,74 @@ export default function RegisterPage() {
             label="E-mail"
             type="email"
             placeholder="Digite seu e-mail"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={registration.email}
+            maxLength={254}
+            error={fieldErrors.email}
+            onChange={(e) =>
+              setRegistration((current) => ({
+                ...current,
+                email: e.target.value,
+              }))
+            }
             required
           />
 
-          <Input id="register-input-birth-date" label="Data de nascimento" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} required />
+          <Input
+            id="register-input-birth-date"
+            label="Data de nascimento"
+            type="date"
+            value={registration.birthDate}
+            error={fieldErrors.birthDate}
+            onChange={(e) =>
+              setRegistration((current) => ({
+                ...current,
+                birthDate: e.target.value,
+              }))
+            }
+            required
+          />
 
-          <label className="flex flex-col gap-1.5 text-sm font-medium text-frigus-navy dark:text-white">
+          <label
+            htmlFor="field-pages-auth-register-index-tsx-1"
+            className="flex flex-col gap-1.5 text-sm font-medium text-frigus-navy dark:text-white"
+          >
             Tipo de conta
-            <select value={accountType} onChange={(e) => setAccountType(e.target.value as AccountType)} className="h-11 rounded-lg border border-[#C9DEF9] bg-white px-3 text-sm dark:border-[#343941] dark:bg-[#15171A] dark:text-white">
+            <select
+              id="field-pages-auth-register-index-tsx-1"
+              value={registration.accountType}
+              onChange={(e) =>
+                setRegistration((current) => ({
+                  ...current,
+                  accountType: e.target.value as AccountType,
+                }))
+              }
+              className="h-11 rounded-lg border border-[#C9DEF9] bg-white px-3 text-sm dark:border-[#343941] dark:bg-[#15171A] dark:text-white"
+            >
               <option value="DOMESTIC">Doméstico</option>
               <option value="COMMERCIAL">Comercial</option>
               <option value="BUSINESS">Empresarial</option>
             </select>
           </label>
+          {fieldErrors.accountType && (
+            <p role="alert" className="text-xs text-red-600">
+              {fieldErrors.accountType}
+            </p>
+          )}
 
           <Input
             id="register-input-password"
             label="Senha"
             type="password"
             placeholder="Crie uma senha segura"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={registration.password}
+            maxLength={20}
+            error={fieldErrors.password}
+            onChange={(e) =>
+              setRegistration((current) => ({
+                ...current,
+                password: e.target.value,
+              }))
+            }
             showPasswordToggle
             required
           />
@@ -124,8 +227,15 @@ export default function RegisterPage() {
             label="Confirmar senha"
             type="password"
             placeholder="Digite a senha novamente"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            value={registration.confirmPassword}
+            maxLength={20}
+            error={fieldErrors.confirmPassword}
+            onChange={(e) =>
+              setRegistration((current) => ({
+                ...current,
+                confirmPassword: e.target.value,
+              }))
+            }
             showPasswordToggle
             required
           />
@@ -133,8 +243,13 @@ export default function RegisterPage() {
           <div className="mt-1">
             <Checkbox
               id="register-terms"
-              checked={acceptTerms}
-              onChange={(e) => setAcceptTerms(e.target.checked)}
+              checked={registration.acceptTerms}
+              onChange={(e) =>
+                setRegistration((current) => ({
+                  ...current,
+                  acceptTerms: e.target.checked,
+                }))
+              }
               label={
                 <span className="text-xs text-gray-500 dark:text-gray-400 leading-snug">
                   Li e aceito os{" "}
@@ -149,9 +264,16 @@ export default function RegisterPage() {
               }
             />
           </div>
+          {fieldErrors.acceptTerms && (
+            <p role="alert" className="text-xs text-red-600">
+              {fieldErrors.acceptTerms}
+            </p>
+          )}
 
           {error && (
-            <p className="text-xs text-red-500 font-medium">{error}</p>
+            <p role="alert" className="text-xs text-red-500 font-medium">
+              {error}
+            </p>
           )}
 
           <div className="mt-2">
@@ -159,6 +281,7 @@ export default function RegisterPage() {
               type="submit"
               variant="primary"
               disabled={loading}
+              aria-live="polite"
               className="w-full h-12 text-base font-bold shadow-md shadow-frigus-primary/20"
             >
               {loading ? "Criando conta..." : "Continuar"}

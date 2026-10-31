@@ -1,41 +1,67 @@
-# Checklist do Frontend Frigus (v2)
+# TODO — requisitos pendentes do frontend
 
-Atualizado sobre `feat/v2` depois de implementar as pendências que podiam ser resolvidas diretamente no código. Itens que dependem de conteúdo externo, publicação ou validação humana seguem explicitamente pendentes.
+Branch: `feat/v2`. Atualizado após a rodada adicional de implementação. Itens que dependem de conteúdo aprovado, publicação ou demonstração ao vivo continuam pendentes.
 
-## Implementado nesta atualização
+## Implementado nesta rodada
 
-- [x] Adicionar Context de autenticação com Provider e hook tipado, integrado ao usuário mantido pelo Zustand.
-- [x] Criar página 404 com retorno pela navegação do React Router.
-- [x] Aplicar carregamento de páginas com `React.lazy` e `Suspense`.
-- [x] Criar hook assíncrono tipado com estado de carregamento/erro e cancelamento via `AbortController`; aplicar à consulta de detalhes da receita.
-- [x] Versionar a persistência do Zustand e validar os dados do usuário ao hidratar; versionar e migrar o tema legado.
-- [x] Validar parâmetros de rota nas três páginas que usam `useParams` antes de consultar ou exibir dados.
-- [x] Trocar links internos de login para `Link` e devolver o botão de revelar senha à ordem de tabulação com foco visível.
-- [x] Extrair consultas e ações de receitas para `src/services/recipe.service.ts`.
-- [x] Usar `useReducer` tipado por `State` e `Action` no fluxo de redefinição de senha.
-- [x] Manter chamadas a endpoints sem `dangerouslySetInnerHTML`; conteúdo de API continua renderizado como texto JSX.
-- [x] Manter URLs de ambiente documentadas em `.env.example` sem segredos.
+- [x] Aplicar `src/components/<Nome>/index.tsx` e `src/pages/<Nome>/index.tsx` aos arquivos que estavam soltos nas pastas.
+- [x] Mover chamadas diretas à API para serviços por recurso; páginas e componentes não chamam `api`.
+- [x] Tipar métodos de serviço com `Promise<Tipo>` e adicionar tratamento de erro; centralizar os tipos de anúncios, estoque, receitas, chat, grupos, notificações, listas e operações comerciais em `src/types/`.
+- [x] Adicionar validação tipada na fronteira dos serviços para autenticação, checkout, estoque, listas, anúncios, despesas, descartes e convites.
+- [x] Validar URLs HTTP(S) de anúncios antes de usá-las em `href`/`src`.
+- [x] Agrupar estado relacionado de configurações, checkout e cadastro de alimento; manter updates imutáveis.
+- [x] Corrigir dependências dos efeitos encontrados pelo lint; build e lint passam.
+- [x] Trocar chaves por índice por IDs/valores estáveis nas listas dinâmicas revisadas.
+- [x] Implementar foco inicial, contenção de Tab, Escape e retorno de foco nos modais; adicionar semântica de diálogo, abas ARIA e foco visível global.
+- [x] Nomear interfaces para props que ainda estavam declaradas inline e completar controle ARIA/foco do painel rápido de notificações.
+- [x] Separar os modais comerciais e empresariais em componentes e pastas próprias, preservando os imports de barrel já utilizados.
+- [x] Validar em runtime respostas de autenticação, contexto/grupos, estoque, anúncios, notificações, chat, receitas, listas, despesas, descartes, convites e transações com schemas Zod.
+- [x] Agrupar os campos relacionados nos formulários comerciais de convite, perda, compra e cadastro/edição de anúncio, edição de alimento, convite familiar, pagamento e detalhes do lote.
+- [x] Agrupar campos de login e cadastro; validar e exibir erros por campo, limitar tamanhos de entrada e anunciar erros e carregamento.
+- [x] Associar explicitamente labels e controles em formulários revisados; adicionar limites de tamanho e melhorar o grupo acessível de permissão de convite.
+- [x] Completar navegação por setas, Home e End nas abas de listas domésticas e comerciais; acrescentar atributos de estado/diálogo a gatilhos revisados.
+- [x] Exibir feedback de sucesso em operações de cadastro/revisão comercial e inclusão doméstica; anunciar o estado de carregamento dos botões envolvidos.
+- [x] Remover API direta de páginas sem introduzir `fetch`, `any` ou `dangerouslySetInnerHTML`; `.env` não está versionado.
+- [x] Fazer o cadastro seguir para a escolha obrigatória de plano compatível com o tipo de conta; ativar o gratuito e retomar escolha/checkout pendente após novo login.
+- [x] Buscar catálogo e preços no backend, iniciar checkout pago e liberar o acesso somente após aprovação da transação; cobrir estados de espera, recusa, erro e aprovação.
+- [x] Persistir no Core API o estado de escolha pendente e a transação associada; adicionar a migração Flyway `V018__user_plan_selection.sql` e documentar o fluxo nos READMEs.
+- [x] Adicionar cobertura automatizada para cadastro, login, escolha de plano e resultado de checkout.
+- [x] Carregar a assinatura ativa do endpoint de planos no perfil, exibir plano/preço/limites reais e apontar a troca de plano para o catálogo atualizado.
 
-## Ainda pendente no código
+## Ainda falta implementar
 
-- [ ] Aplicar a convenção de pastas e `index.tsx` a todos os componentes e páginas; vários arquivos ainda ficam diretamente em `src/components` e `src/pages`.
-- [ ] Dividir componentes e páginas extensos, incluindo `CommercialModals` e `EnterpriseModals`.
-- [ ] Mover todas as chamadas diretas de `api` em páginas para serviços próprios por domínio e tipar/validar todos os retornos dinâmicos.
-- [ ] Completar entidades tipadas por domínio e remover casts ou `unknown` sem validação em telas restantes.
-- [ ] Criar schemas tipados por formulário e garantir que todos os dados enviados à API passem por validação e normalização.
-- [ ] Validar URLs externas de anúncios antes de usá-las em `href` e `src`.
-- [ ] Agrupar estados relacionados de formulários e revisar os fluxos que ainda têm estados paralelos.
-- [ ] Completar revisão de dependências e efeitos. O lint ainda aponta 12 usos de estado síncrono em efeitos e uma dependência incompleta em estoque doméstico; também resta um escape desnecessário na expressão de senha.
-- [ ] Exibir estados visíveis de carregamento, sucesso e erro em todas as operações assíncronas, com `role="alert"`/`aria-live` conforme o caso.
-- [ ] Corrigir e documentar destinos de termos de uso e política de privacidade; o texto aprovado desses documentos não existe no projeto.
-- [ ] Completar atributos ARIA, gerenciamento de foco em modais, landmarks e auditoria de `label`/`alt` em todo o app.
+### Separação e validação
 
-## Validação manual e publicação
+- [ ] Completar schemas tipados, sanitização e mensagens específicas por campo nos formulários restantes; revisar a consistência entre erros de validação e mensagens apresentadas em cada campo.
+- [ ] Agrupar em um objeto os campos relacionados dos formulários restantes que ainda mantêm vários `useState` paralelos.
+- [ ] Comparar schemas de resposta runtime com contratos atuais do BFF/Core API e ajustar campos opcionais/nulos conforme os payloads reais.
+- [ ] Completar estados de carregamento, sucesso e erro para todas as mutações assíncronas. Algumas ações ainda mostram somente o erro ou atualizam a lista sem confirmação explícita.
 
-- [ ] Testar teclado e leitor de tela (NVDA ou VoiceOver), incluindo foco em modais, menus e abas.
-- [ ] Medir contraste WCAG 2.1 AA nos temas claro e escuro.
-- [ ] Confirmar recarga de rotas internas na hospedagem e testar os fluxos publicados.
-- [ ] Demonstrar chunks sob demanda no Network e justificar `useMemo`/`useCallback` com React Profiler.
-- [ ] Publicar em Vercel ou GitHub Pages e adicionar a URL pública ao README. Requer conta e conteúdo de ambiente da implantação.
-- [ ] Fazer roteiro de apresentação ponta a ponta: três rotas, 404, rota privada, formulário, estados assíncronos, Network/Profiler e leitor de tela.
-- [ ] Preservar o histórico de commits convencionais já existente; não criar commits artificiais para cumprir distribuição temporal.
+### Acessibilidade e apresentação
+
+- [ ] Revisar os controles e gatilhos restantes para garantir associações label/campo e atributos ARIA consistentes em todas as rotas.
+- [ ] Completar `aria-expanded`, `aria-controls` e `aria-haspopup` nos gatilhos restantes que abrem menus/modais.
+- [ ] Conferir landmarks semânticos em todas as rotas e medir contraste de texto nos temas claro e escuro (4,5:1 para texto normal; 3:1 para texto grande).
+- [ ] Testar a aplicação sem mouse e com NVDA ou VoiceOver, incluindo foco de abertura/fechamento, abas, menus, mensagens e leitura de contexto.
+- [ ] Demonstrar chunks por rota no Network e explicar as otimizações de `useMemo`/`useCallback` com o React DevTools Profiler.
+- [ ] Ensaiar o fluxo de apresentação ponta a ponta, incluindo rota privada, 404, validação de formulário, estados assíncronos e acessibilidade.
+
+### Conteúdo e publicação
+
+- [ ] Receber o conteúdo aprovado de Termos de Uso e Política de Privacidade e configurar seus destinos. O projeto não contém os documentos finais.
+- [ ] Publicar em Vercel ou GitHub Pages e inserir a URL pública no `README.md`.
+- [ ] Testar a publicação, recarga direta de rotas internas e variáveis de ambiente de produção.
+
+### Validação do ambiente local
+
+- [x] Aplicar a migração Flyway `V018__user_plan_selection.sql` no banco local; o histórico Flyway confirma a versão `018` com sucesso.
+- [x] Validar na stack local o cadastro pelo BFF, login, retomada da escolha de plano e ativação do plano gratuito até a entrada no painel.
+- [x] Confirmar que a escolha de um plano pago abre o checkout demonstrativo com preço vindo do catálogo e aviso explícito de que não há cobrança.
+- [ ] Completar um checkout pago local até aprovação/recusa e confirmar retomada após novo login. A tela exige aceitar Termos de Uso e Política de Privacidade, então o teste foi interrompido antes dessa confirmação.
+- [ ] Aplicar a migração Flyway `V018__user_plan_selection.sql` no ambiente compartilhado antes de publicar a Core API/frontend atualizados.
+
+## Critérios já atendidos antes desta rodada
+
+- Context de autenticação com Provider/hook tipado integrado ao Zustand e rotas protegidas por `AuthGuard`; `useReducer` tipado na redefinição de senha.
+- Hook assíncrono tipado com `AbortController`, lazy loading com `React.lazy`/`Suspense`, 404, validação de `useParams` e persistência versionada.
+- `src/` sem `.js`/`.jsx`; histórico com pelo menos 20 commits Conventional Commits distribuídos por mais de quatro semanas.

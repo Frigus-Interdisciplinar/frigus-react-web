@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-29",
+  "timezone": "America/Sao_Paulo",
+  "project": "frigus-react-web",
+  "testsPassed": 76,
+  "testsFailed": 0,
+  "stackTestsSkipped": 13,
+  "applicationTypecheck": "passed",
+  "testsTypecheck": "passed",
+  "eslint": "passed",
+  "productionBuild": "passed",
+  "knownDependencyVulnerabilitiesBefore": 5,
+  "knownDependencyVulnerabilitiesAfter": 0,
+  "nginxSyntax": "passed",
+  "nginxHttpHeaders": "passed",
+  "browserScope": "login page, desktop and 390x844 mobile, skip link and overflow",
+  "jsxSectionCommentsRemoved": 263,
+  "deploymentPerformed": false
+}

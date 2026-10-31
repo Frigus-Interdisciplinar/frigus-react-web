@@ -1,47 +1,60 @@
-import { useEffect, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { ThemeContext, type Theme } from "./ThemeContext";
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("frigus-theme");
-      if (saved) {
-        try {
-          const parsed: unknown = JSON.parse(saved);
-          if (parsed && typeof parsed === "object" && "theme" in parsed &&
-            (parsed.theme === "light" || parsed.theme === "dark") &&
-            "_versao" in parsed && parsed._versao === 1) return parsed.theme;
-        } catch {
-          // Migrate the previous plain-string representation below.
-        }
-        if (saved === "light" || saved === "dark") return saved;
-      }
-      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+function readTheme(): Theme {
+  try {
+    const saved = localStorage.getItem("frigus-theme");
+    if (saved === "light" || saved === "dark") return saved;
+    if (saved) {
+      const parsed: unknown = JSON.parse(saved);
+      if (
+        parsed &&
+        typeof parsed === "object" &&
+        "theme" in parsed &&
+        (parsed.theme === "light" || parsed.theme === "dark") &&
+        "_versao" in parsed &&
+        parsed._versao === 1
+      )
+        return parsed.theme;
     }
-    return "light";
-  });
+  } catch {
+    // tema em memória quando o armazenamento está bloqueado ou corrompido
+  }
+  return window.matchMedia("(prefers-color-scheme: dark)").matches
+    ? "dark"
+    : "light";
+}
+
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const [theme, setTheme] = useState<Theme>(readTheme);
 
   useEffect(() => {
-    const root = document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    try {
+      localStorage.setItem(
+        "frigus-theme",
+        JSON.stringify({ _versao: 1, theme }),
+      );
+    } catch {
+      // O tema funciona em memória quando o armazenamento está bloqueado.
     }
-    localStorage.setItem("frigus-theme", JSON.stringify({ _versao: 1, theme }));
   }, [theme]);
 
-  const toggleTheme = () => {
-    setThemeState((prev) => (prev === "dark" ? "light" : "dark"));
-  };
-
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
-  };
+  const toggleTheme = useCallback(() => {
+    setTheme((previous) => (previous === "dark" ? "light" : "dark"));
+  }, []);
+  const value = useMemo(
+    () => ({ theme, toggleTheme, setTheme }),
+    [theme, toggleTheme],
+  );
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
-      {children}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
 }

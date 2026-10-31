@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import { Check, Sparkles } from "lucide-react";
-import AppLayout from "@/components/AppLayout";
 import Badge from "@/components/Badge";
 
 type Plan = {
@@ -68,9 +67,8 @@ const plans: Plan[] = [
 
 export default function PlansPage() {
   return (
-    <AppLayout activeSection="plans">
+    <>
       <div className="space-y-8 max-w-5xl mx-auto py-2">
-        {/* Cabeçalho */}
         <div className="text-center space-y-2 max-w-lg mx-auto">
           <Badge variant="primary" className="mb-2">
             Usuário Doméstico
@@ -83,7 +81,6 @@ export default function PlansPage() {
           </p>
         </div>
 
-        {/* 3 Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
           {plans.map((plan) => (
             <div
@@ -130,8 +127,11 @@ export default function PlansPage() {
                   <span className="text-[11px] font-bold text-gray-400 dark:text-neutral-400 uppercase tracking-wider block">
                     Incluso no plano:
                   </span>
-                  {plan.features.map((feat, idx) => (
-                    <div key={idx} className="flex items-start gap-2.5 text-xs text-gray-600 dark:text-neutral-300">
+                  {plan.features.map((feat) => (
+                    <div
+                      key={feat}
+                      className="flex items-start gap-2.5 text-xs text-gray-600 dark:text-neutral-300"
+                    >
                       <div className="w-4 h-4 rounded-full bg-blue-50 dark:bg-blue-900/40 text-frigus-primary dark:text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
                         <Check size={12} strokeWidth={3} />
                       </div>
@@ -166,6 +166,6 @@ export default function PlansPage() {
           ))}
         </div>
       </div>
-    </AppLayout>
+    </>
   );
 }

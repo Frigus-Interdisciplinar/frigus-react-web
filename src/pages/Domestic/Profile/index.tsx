@@ -1,28 +1,46 @@
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { User, Mail, Phone, Home, Shield, Bell, Edit } from "lucide-react";
-import AppLayout from "@/components/AppLayout";
 import Badge from "@/components/Badge";
 import { useStore } from "@/store/store";
-import { api } from "@/utils/api.util";
+import { getInventorySummary } from "@/services/inventory.service";
+import { listGroups } from "@/services/group.service";
+import { getMySubscription } from "@/services/plan.service";
+import { formatPlanPrice, getPlansPath } from "@/utils/plan.util";
 
 export default function ProfilePage() {
   const user = useStore((state) => state.user);
   const [groupName, setGroupName] = useState("—");
   const [memberCount, setMemberCount] = useState(1);
   const [itemCount, setItemCount] = useState(0);
-  const accountLabel = user?.accountType === "COMMERCIAL" ? "Comercial" : user?.accountType === "BUSINESS" ? "Empresarial" : "Doméstica";
+  const [subscription, setSubscription] = useState<Awaited<ReturnType<typeof getMySubscription>> | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const initials = user?.name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() ?? "";
   useEffect(() => {
-    void api.get<Array<{ name: string; membersCount: number }>>("/web/core/groups").then((groups) => {
-      if (groups[0]) { setGroupName(groups[0].name); setMemberCount(groups[0].membersCount); }
-    }).catch(() => undefined);
-    void api.get<{ itemCount: number }>("/web/core/inventory/summary").then((summary) => setItemCount(summary.itemCount)).catch(() => undefined);
+    let active = true;
+    const controller = new AbortController();
+    void Promise.all([
+      listGroups(controller.signal),
+      getInventorySummary(controller.signal),
+      getMySubscription(controller.signal),
+    ])
+      .then(([groups, summary, currentSubscription]) => {
+        if (!active) return;
+        if (groups[0]) { setGroupName(groups[0].name); setMemberCount(groups[0].membersCount ?? groups[0].members?.length ?? 1); }
+        setItemCount(summary.itemCount);
+        setSubscription(currentSubscription);
+      })
+      .catch((reason: unknown) => active && setLoadError(reason instanceof Error ? reason.message : "Não foi possível carregar os dados do perfil."))
+      .finally(() => active && setLoading(false));
+    return () => { active = false; controller.abort(); };
   }, []);
   return (
-    <AppLayout activeSection="profile">
+    <>
       <div className="space-y-6 max-w-4xl mx-auto">
-        {/* Cabeçalho */}
+        {loading && <LoadingSpinner label="Carregando perfil…" />}
+        {loadError && <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{loadError}</p>}
         <div>
           <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-frigus-navy dark:text-white">
             Meu perfil
@@ -32,7 +50,6 @@ export default function ProfilePage() {
           </p>
         </div>
 
-        {/* Hero Card do Usuário */}
         <div className="bg-white dark:bg-[#1C1E22] rounded-3xl p-6 md:p-8 border border-gray-200/80 dark:border-[#343941] shadow-xs space-y-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-5">
@@ -58,14 +75,13 @@ export default function ProfilePage() {
             </Link>
           </div>
 
-          {/* Faixa de Estatísticas */}
           <div className="grid grid-cols-3 gap-4 pt-6 border-t border-gray-100 dark:border-[#343941]">
             <div className="text-center sm:text-left p-3 rounded-2xl bg-gray-50 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941]">
               <span className="text-[10px] uppercase font-bold text-gray-400 dark:text-neutral-400 tracking-wider block">
                 Plano
               </span>
               <span className="font-montserrat font-bold text-base text-frigus-primary dark:text-blue-400">
-                {accountLabel}
+                {subscription?.plan.name ?? "Carregando…"}
               </span>
             </div>
             <div className="text-center sm:text-left p-3 rounded-2xl bg-gray-50 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941]">
@@ -87,7 +103,6 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Dados Pessoais */}
         <div className="bg-white dark:bg-[#1C1E22] rounded-3xl p-6 md:p-8 border border-gray-200/80 dark:border-[#343941] shadow-xs space-y-6">
           <div className="flex items-center justify-between">
             <div>
@@ -139,9 +154,7 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Preferências e Plano */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {/* Card Preferências */}
           <div className="bg-white dark:bg-[#1C1E22] rounded-3xl p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs space-y-4">
             <h3 className="font-montserrat font-bold text-frigus-navy dark:text-white text-base">
               Preferências
@@ -188,29 +201,30 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Card Plano Atual */}
           <div className="bg-frigus-navy dark:bg-[#18233C] text-white rounded-3xl p-6 shadow-xs flex flex-col justify-between space-y-4 border border-transparent dark:border-blue-900/30">
             <div>
               <span className="text-[10px] font-bold text-frigus-ice dark:text-blue-200 uppercase tracking-wider block">
                 Assinatura
               </span>
               <h3 className="font-montserrat font-bold text-lg mt-1">
-                Plano Doméstico Gratuito
+                {subscription?.plan.name ?? "Carregando assinatura…"}
               </h3>
               <p className="text-xs text-frigus-ice/80 dark:text-blue-200/80 mt-1 leading-relaxed">
-                Você está utilizando a versão Free com até 40 produtos e 1 geladeira.
+                {subscription
+                  ? `${subscription.status === "ACTIVE" ? "Assinatura ativa" : `Status: ${subscription.status.toLowerCase()}`} · ${subscription.plan.price === 0 ? "Gratuito" : `${formatPlanPrice(subscription.plan.price)}${subscription.plan.billingInterval === "YEARLY" ? "/ano" : "/mês"}`}${subscription.plan.limits ? ` · até ${subscription.plan.limits.maxProductsPerStock >= 2_147_483_647 ? "ilimitados" : subscription.plan.limits.maxProductsPerStock} produtos por estoque e ${subscription.plan.limits.maxStocks >= 2_147_483_647 ? "estoques ilimitados" : `${subscription.plan.limits.maxStocks} ${subscription.plan.limits.maxStocks === 1 ? "estoque" : "estoques"}`}.` : "."}`
+                  : "Consultando sua assinatura atual."}
               </p>
             </div>
 
             <Link
-              to="/plans"
+              to={getPlansPath(user?.accountType ?? "DOMESTIC")}
               className="py-2.5 px-4 bg-frigus-accent hover:bg-[#F2BD50] text-frigus-navy rounded-xl text-xs font-bold text-center block transition-colors"
             >
-              Fazer upgrade de plano
+              {subscription?.plan.planCode === "FREE" ? "Fazer upgrade de plano" : "Ver outros planos"}
             </Link>
           </div>
         </div>
       </div>
-    </AppLayout>
+    </>
   );
 }

@@ -1,4 +1,3 @@
-// 1. WeeklyViewsChart (Visualizações e cliques por semana)
 export function WeeklyViewsChart() {
   const points = [
     { day: "03", views: 42, clicks: 18 },
@@ -18,23 +17,29 @@ export function WeeklyViewsChart() {
       <div className="flex items-center gap-6 justify-end text-xs">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-[#2552C8]" />
-          <span className="text-[#64748B] dark:text-neutral-400 font-medium">Visualizações</span>
+          <span className="text-[#64748B] dark:text-neutral-400 font-medium">
+            Visualizações
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-cyan-400" />
-          <span className="text-[#64748B] dark:text-neutral-400 font-medium">Cliques</span>
+          <span className="text-[#64748B] dark:text-neutral-400 font-medium">
+            Cliques
+          </span>
         </div>
       </div>
 
       <div className="h-48 flex items-end justify-between gap-3 pt-4 border-b border-[#E1E7F0] dark:border-[#343941]">
-        {points.map((p, idx) => {
+        {points.map((p) => {
           const viewsHeight = `${(p.views / maxVal) * 100}%`;
           const clicksHeight = `${(p.clicks / maxVal) * 100}%`;
 
           return (
-            <div key={idx} className="flex-1 flex flex-col items-center h-full justify-end group">
+            <div
+              key={p.day}
+              className="flex-1 flex flex-col items-center h-full justify-end group"
+            >
               <div className="w-full flex items-end justify-center gap-1.5 h-full">
-                {/* Views Bar */}
                 <div
                   style={{ height: viewsHeight }}
                   className="w-3.5 bg-linear-to-t from-[#2552C8] to-[#467bf7] rounded-t-md transition-all duration-300 group-hover:brightness-110 relative"
@@ -44,7 +49,6 @@ export function WeeklyViewsChart() {
                   </div>
                 </div>
 
-                {/* Clicks Bar */}
                 <div
                   style={{ height: clicksHeight }}
                   className="w-3.5 bg-linear-to-t from-cyan-500 to-cyan-300 rounded-t-md transition-all duration-300 group-hover:brightness-110 relative"
@@ -65,8 +69,6 @@ export function WeeklyViewsChart() {
     </div>
   );
 }
-
-// 2. ViewsByPeriodChart (Visitas por período: 01, 03, 05, 07, 09)
 export function ViewsByPeriodChart() {
   const data = [
     { period: "01", value: 38 },
@@ -81,10 +83,13 @@ export function ViewsByPeriodChart() {
   return (
     <div className="w-full space-y-4">
       <div className="h-44 flex items-end justify-between gap-4 pt-4 border-b border-[#E1E7F0] dark:border-[#343941]">
-        {data.map((d, idx) => {
+        {data.map((d) => {
           const height = `${(d.value / max) * 100}%`;
           return (
-            <div key={idx} className="flex-1 flex flex-col items-center h-full justify-end group">
+            <div
+              key={d.period}
+              className="flex-1 flex flex-col items-center h-full justify-end group"
+            >
               <div
                 style={{ height }}
                 className="w-10 bg-linear-to-t from-[#2552C8] to-[#60a5fa] rounded-t-xl transition-all duration-300 group-hover:brightness-110 relative"
@@ -103,8 +108,6 @@ export function ViewsByPeriodChart() {
     </div>
   );
 }
-
-// 3. AgeDemographicsChart (Faixa etária: 18-24 anos 32%, 25-34 anos 41%, 35-44 anos 18%, 45+ anos 9%)
 export function AgeDemographicsChart() {
   const demographics = [
     { label: "18–24 anos", percentage: 32, color: "bg-blue-500" },
@@ -115,8 +118,8 @@ export function AgeDemographicsChart() {
 
   return (
     <div className="space-y-4">
-      {demographics.map((item, idx) => (
-        <div key={idx} className="space-y-1.5">
+      {demographics.map((item) => (
+        <div key={item.label} className="space-y-1.5">
           <div className="flex items-center justify-between text-xs font-semibold">
             <span className="text-[#141C55] dark:text-white">{item.label}</span>
             <span className="text-[#64748B] dark:text-neutral-300 font-bold">
@@ -134,8 +137,6 @@ export function AgeDemographicsChart() {
     </div>
   );
 }
-
-// 4. RegionsChart (Alcance por região: SP 42%, RJ 21%, MG 16%, PR 9%, Outros 12%)
 export function RegionsChart() {
   const regions = [
     { name: "São Paulo", percentage: 42, color: "bg-[#2552C8]" },
@@ -147,8 +148,8 @@ export function RegionsChart() {
 
   return (
     <div className="space-y-4">
-      {regions.map((reg, idx) => (
-        <div key={idx} className="space-y-1.5">
+      {regions.map((reg) => (
+        <div key={reg.name} className="space-y-1.5">
           <div className="flex items-center justify-between text-xs font-semibold">
             <span className="text-[#141C55] dark:text-white">{reg.name}</span>
             <span className="text-[#64748B] dark:text-neutral-300 font-bold">
