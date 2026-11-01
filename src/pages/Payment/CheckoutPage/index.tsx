@@ -172,11 +172,6 @@ export default function CheckoutPage() {
                       : ""}
                 </p>
               </div>
-              <p className="mb-5 rounded-md border border-amber-200 bg-amber-50 px-3.5 py-3 text-xs leading-relaxed text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
-                Ambiente de demonstração: nenhuma cobrança é feita. Use apenas
-                os quatro dígitos de teste; nenhum dado real de cartão é
-                solicitado.
-              </p>
               <form
                 onSubmit={(event) => void handleCheckout(event)}
                 aria-busy={processing}
