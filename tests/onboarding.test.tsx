@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthProvider";
@@ -7,9 +7,10 @@ import AuthGuard from "@/components/AuthGuard";
 import PlanSelection from "@/components/PlanSelection";
 import RegisterPage from "@/pages/Auth/Register";
 import LoginPage from "@/pages/Auth/Login";
+import ChooseProfilePage from "@/pages/Common/ChooseProfilePage";
 import CheckoutPage from "@/pages/Payment/CheckoutPage";
 import PaymentStatusPage from "@/pages/Payment/WebViewSuccess";
-import { login, register, ensureStarterWorkspace, refreshSession } from "@/services/auth.service";
+import { chooseOnboardingAccountType, login, loginWithGoogle, register, ensureStarterWorkspace, refreshSession } from "@/services/auth.service";
 import { listPlans, finishPlanSelection } from "@/services/plan.service";
 import { createCheckoutTransaction, getTransaction } from "@/services/transaction.service";
 import { useStore } from "@/store/store";
@@ -17,11 +18,24 @@ import type { AuthUser, AccountType } from "@/types/auth.type";
 import type { Plan } from "@/schemas/plan.schema";
 
 vi.mock("@/hooks/useTheme", () => ({ useTheme: () => ({ theme: "light", toggleTheme: vi.fn(), setTheme: vi.fn() }) }));
-vi.mock("@/services/auth.service", () => ({ register: vi.fn(), login: vi.fn(), ensureStarterWorkspace: vi.fn(), refreshSession: vi.fn() }));
+vi.mock("@/services/auth.service", () => ({ chooseOnboardingAccountType: vi.fn(), register: vi.fn(), login: vi.fn(), loginWithGoogle: vi.fn(), ensureStarterWorkspace: vi.fn(), refreshSession: vi.fn() }));
 vi.mock("@/services/plan.service", () => ({ listPlans: vi.fn(), finishPlanSelection: vi.fn() }));
 vi.mock("@/services/transaction.service", () => ({ createCheckoutTransaction: vi.fn(), getTransaction: vi.fn() }));
+vi.mock("@/components/GoogleSignInButton", () => ({
+  default: ({ onCredential }: { onCredential: (idToken: string) => void }) => (
+    <button type="button" onClick={() => onCredential("synthetic-id-token")}>
+      Google mock
+    </button>
+  ),
+}));
 
 const transactionId = "ba2b929e-4772-4d54-a13c-562e81896722";
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>((resolvePromise) => { resolve = resolvePromise; });
+  return { promise, resolve };
+}
+
 const newUser: AuthUser = { id: "user", name: "Pessoa de teste", email: "teste@example.test", accountType: "DOMESTIC", planSelectionRequired: true };
 const activeUser = { ...newUser, planSelectionRequired: false };
 const catalog: Plan[] = [
@@ -38,6 +52,7 @@ function renderFlow(path: string) {
   return render(<MemoryRouter initialEntries={[path]}><AuthProvider><Location /><Routes>
     <Route path="/register" element={<RegisterPage />} />
     <Route path="/login" element={<LoginPage />} />
+    <Route path="/choose-profile" element={<AuthGuard allowPlanSelection><ChooseProfilePage /></AuthGuard>} />
     <Route path="/plans/domestic" element={<AuthGuard allowPlanSelection accountType="DOMESTIC"><PlanSelection accountType="DOMESTIC" /></AuthGuard>} />
     <Route path="/plans/commercial" element={<AuthGuard allowPlanSelection accountType="COMMERCIAL"><PlanSelection accountType="COMMERCIAL" /></AuthGuard>} />
     <Route path="/plans/enterprise" element={<AuthGuard allowPlanSelection accountType="BUSINESS"><PlanSelection accountType="BUSINESS" /></AuthGuard>} />
@@ -62,6 +77,30 @@ beforeEach(() => {
 afterEach(() => cleanup());
 
 describe("cadastro e login", () => {
+  it("exibe erros de cadastro vazio sem enviar a requisição", () => {
+    useStore.setState({ user: null });
+    renderFlow("/register");
+    fireEvent.click(screen.getByRole("button", { name: "Continuar" }));
+
+    const errors = screen.getAllByRole("alert").map((alert) => alert.textContent);
+    expect(errors).toContain("Informe o nome");
+    expect(errors).toContain("Email inválido");
+    expect(errors).toContain("Informe uma data de nascimento válida.");
+    expect(errors).toContain("Você precisa aceitar os termos de uso para continuar.");
+    expect(register).not.toHaveBeenCalled();
+  });
+
+  it("exibe erros de login vazio sem enviar a requisição", () => {
+    useStore.setState({ user: null });
+    renderFlow("/login");
+    fireEvent.click(screen.getByRole("button", { name: "Entrar" }));
+
+    const errors = screen.getAllByRole("alert").map((alert) => alert.textContent);
+    expect(errors).toContain("Email inválido");
+    expect(errors).toContain("Informe a senha");
+    expect(login).not.toHaveBeenCalled();
+  });
+
   it.each<[AccountType, string]>([["DOMESTIC", "/plans/domestic"], ["COMMERCIAL", "/plans/commercial"], ["BUSINESS", "/plans/enterprise"]])("leva o novo cadastro %s à escolha de planos", async (accountType, path) => {
     useStore.setState({ user: null });
     const account = { ...newUser, accountType };
@@ -81,6 +120,24 @@ describe("cadastro e login", () => {
     expect(useStore.getState().user?.planSelectionRequired).toBe(true);
   });
 
+  it("mostra duplicidade de e-mail e preserva o formulário sem iniciar a sessão", async () => {
+    useStore.setState({ user: null });
+    vi.mocked(register).mockRejectedValue(new Error("O email digitado já está cadastrado"));
+    renderFlow("/register");
+    fireEvent.change(screen.getByLabelText("Nome completo"), { target: { value: "Pessoa de teste" } });
+    fireEvent.change(screen.getByLabelText("E-mail"), { target: { value: "teste@example.test" } });
+    fireEvent.change(screen.getByLabelText("Data de nascimento"), { target: { value: "1990-01-01" } });
+    fireEvent.change(screen.getByLabelText("Senha", { exact: true }), { target: { value: "Senha@123" } });
+    fireEvent.change(screen.getByLabelText("Confirmar senha"), { target: { value: "Senha@123" } });
+    fireEvent.click(screen.getByRole("checkbox", { name: /Li e aceito/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Continuar" }));
+
+    expect((await screen.findByRole("alert")).textContent).toContain("já está cadastrado");
+    expect((screen.getByLabelText("E-mail") as HTMLInputElement).value).toBe("teste@example.test");
+    expect(login).not.toHaveBeenCalled();
+    expect(screen.getByTestId("route").textContent).toBe("/register");
+  });
+
   it("retoma um pagamento pendente no login", async () => {
     useStore.setState({ user: null });
     vi.mocked(login).mockResolvedValue({ user: { ...newUser, pendingPlanTransactionId: transactionId } });
@@ -89,6 +146,37 @@ describe("cadastro e login", () => {
     fireEvent.change(screen.getByLabelText("Senha", { exact: true }), { target: { value: "Senha@123" } });
     fireEvent.click(screen.getByRole("button", { name: "Entrar" }));
     await waitFor(() => expect(screen.getByTestId("route").textContent).toBe(`/checkout/webview/success?transactionId=${transactionId}`));
+    expect(ensureStarterWorkspace).not.toHaveBeenCalled();
+  });
+
+  it("limpa o erro do login quando a pessoa edita as credenciais", async () => {
+    useStore.setState({ user: null });
+    vi.mocked(login).mockRejectedValue(new Error("Email ou senha incorretos"));
+    renderFlow("/login");
+    fireEvent.change(screen.getByLabelText("E-mail"), { target: { value: "teste@example.test" } });
+    fireEvent.change(screen.getByLabelText("Senha", { exact: true }), { target: { value: "Senha@123" } });
+    fireEvent.click(screen.getByRole("button", { name: "Entrar" }));
+    expect((await screen.findByRole("alert")).textContent).toContain("Email ou senha incorretos");
+
+    fireEvent.change(screen.getByLabelText("E-mail"), { target: { value: "" } });
+
+    expect(screen.queryByRole("alert")).toBeNull();
+  });
+
+  it("leva uma nova conta Google à escolha do perfil e depois aos planos", async () => {
+    useStore.setState({ user: null });
+    vi.mocked(loginWithGoogle).mockResolvedValue({ user: newUser });
+    vi.mocked(chooseOnboardingAccountType).mockResolvedValue(newUser);
+    renderFlow("/login");
+
+    fireEvent.click(screen.getByRole("button", { name: "Google mock" }));
+    await screen.findByRole("heading", { name: "Escolha o seu perfil" });
+    expect(ensureStarterWorkspace).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Continuar com perfil doméstico" }));
+    await screen.findByRole("heading", { name: "Escolha o plano para sua casa" });
+    expect(loginWithGoogle).toHaveBeenCalledWith("synthetic-id-token", false);
+    expect(chooseOnboardingAccountType).toHaveBeenCalledWith("DOMESTIC");
     expect(ensureStarterWorkspace).not.toHaveBeenCalled();
   });
 
@@ -120,6 +208,24 @@ describe("escolha e checkout", () => {
     expect(screen.queryByRole("heading", { name: "Finalizar pagamento" })).toBeNull();
   });
 
+  it("desabilita todos os planos e ignora cliques repetidos durante a ativação gratuita", async () => {
+    const pendingTransaction = deferred<Awaited<ReturnType<typeof createCheckoutTransaction>>>();
+    vi.mocked(createCheckoutTransaction).mockReturnValue(pendingTransaction.promise);
+    renderFlow("/plans/domestic");
+
+    fireEvent.click(await screen.findByRole("button", { name: "Começar grátis" }));
+    const activatingButton = await screen.findByRole("button", { name: "Ativando plano…" });
+    const paidPlanButton = screen.getByRole("button", { name: "Escolher Plus API" });
+    expect(activatingButton.hasAttribute("disabled")).toBe(true);
+    expect(paidPlanButton.hasAttribute("disabled")).toBe(true);
+
+    fireEvent.click(activatingButton);
+    expect(createCheckoutTransaction).toHaveBeenCalledTimes(1);
+
+    await act(async () => pendingTransaction.resolve({ id: transactionId, status: "APPROVED", planCode: "FREE", amount: 0 }));
+    await screen.findByText("Painel doméstico");
+  });
+
   it("mantém a escolha pendente se a ativação falha", async () => {
     vi.mocked(createCheckoutTransaction).mockRejectedValue(new Error("Ativação indisponível"));
     renderFlow("/plans/domestic");
@@ -143,6 +249,26 @@ describe("escolha e checkout", () => {
     expect(useStore.getState().user?.planSelectionRequired).toBe(true);
     expect(useStore.getState().user?.pendingPlanTransactionId).toBe(transactionId);
     expect(finishPlanSelection).not.toHaveBeenCalled();
+  });
+
+  it("desabilita o checkout pendente e impede uma segunda submissão", async () => {
+    const pendingTransaction = deferred<Awaited<ReturnType<typeof createCheckoutTransaction>>>();
+    vi.mocked(createCheckoutTransaction).mockReturnValue(pendingTransaction.promise);
+    renderFlow("/checkout?plan=PLUS");
+
+    fireEvent.click(await screen.findByRole("radio", { name: "Pix" }));
+    fireEvent.click(screen.getByRole("checkbox", { name: /Li e aceito/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Confirmar pagamento/ }));
+
+    const pendingButton = await screen.findByRole("button", { name: "Enviando pagamento…" });
+    expect(pendingButton.hasAttribute("disabled")).toBe(true);
+    const form = pendingButton.closest("form");
+    expect(form).not.toBeNull();
+    fireEvent.submit(form!);
+    expect(createCheckoutTransaction).toHaveBeenCalledTimes(1);
+
+    await act(async () => pendingTransaction.resolve({ id: transactionId, status: "PENDING", planCode: "PLUS", amount: 37.57 }));
+    await screen.findByRole("heading", { name: "Aguardando confirmação" });
   });
 
   it("não permite um plano de outro tipo de conta por URL", async () => {

@@ -201,8 +201,8 @@ html[data-dyslexia-font="true"] body :where(*) {
 }
 
 .a11y-icon-button {
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.75rem;
+  height: 2.75rem;
 }
 
 .a11y-control {
@@ -222,7 +222,7 @@ html[data-dyslexia-font="true"] body :where(*) {
 }
 
 .a11y-segmented-control button {
-  min-height: 2.5rem;
+  min-height: 2.75rem;
   padding: 0.4rem;
   font-size: 0.875rem;
 }
@@ -274,7 +274,7 @@ html[data-dyslexia-font="true"] body :where(*) {
 }
 
 .a11y-reset-button {
-  min-height: 2.5rem;
+  min-height: 2.75rem;
   padding: 0.55rem 0.75rem;
   font-size: 0.875rem;
 }
@@ -327,11 +327,21 @@ html[data-high-contrast="true"]
 @media (max-width: 480px) {
   .a11y-tools {
     right: max(0.75rem, env(safe-area-inset-right));
-    bottom: max(0.75rem, env(safe-area-inset-bottom));
+    top: max(4.75rem, env(safe-area-inset-top));
+    bottom: auto;
   }
 
   .a11y-trigger {
+    width: 2.75rem;
     min-height: 2.75rem;
-    padding: 0.65rem 0.75rem;
+    padding: 0;
+  }
+
+  .a11y-trigger span {
+    display: none;
+  }
+
+  .a11y-panel {
+    max-height: calc(100dvh - 9rem);
   }
 }

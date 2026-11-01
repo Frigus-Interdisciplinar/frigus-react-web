@@ -34,7 +34,14 @@ export const authRoutes = (
     <Route path="/recover-password/step-1" element={<ForgotPasswordStep1 />} />
     <Route path="/recover-password/step-2" element={<ForgotPasswordStep2 />} />
     <Route path="/recover-password/step-3" element={<ForgotPasswordStep3 />} />
-    <Route path="/choose-profile" element={<ChooseProfilePage />} />
+    <Route
+      path="/choose-profile"
+      element={
+        <AuthGuard allowPlanSelection>
+          <ChooseProfilePage />
+        </AuthGuard>
+      }
+    />
     <Route
       path="/plans/domestic"
       element={

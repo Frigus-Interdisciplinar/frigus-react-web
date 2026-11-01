@@ -58,6 +58,19 @@ export function loginWithGoogle(
   );
 }
 
+export function chooseOnboardingAccountType(
+  accountType: LoginResponseDto["user"]["accountType"],
+): Promise<LoginResponseDto["user"]> {
+  return serviceCall(async () =>
+    validateForm(
+      authUserResponseSchema,
+      await api.patch<unknown>("/web/profile/onboarding/account-type", {
+        accountType,
+      }),
+    ),
+  );
+}
+
 export function register(data: RegisterInput): Promise<RegisterResponseDto> {
   const sanitized = validateForm(registerSchema, {
     ...data,

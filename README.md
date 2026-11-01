@@ -225,7 +225,7 @@ npm run dev
 
 O Vite imprime o endereço local ao iniciar (por padrão, `http://localhost:5173`). Para desenvolver contra a stack completa, use o Docker Compose da pasta pai; o frontend passa a usar `/api` e o Nginx encaminha as chamadas ao BFF.
 
-Consulte [`../LOCAL-STACK.md`](../LOCAL-STACK.md) e [`../.env.compose.example`](../.env.compose.example) para configurar a stack integrada com BFF, Core API, bancos e Frigus AI. O arquivo `.env.compose` contém segredos locais e não deve ser commitado.
+Consulte [`../docker-compose.yml`](../docker-compose.yml) e [`../.env.compose.example`](../.env.compose.example) para configurar a stack integrada com BFF, Core API, bancos e Frigus AI. O arquivo `.env.compose` contém segredos locais e não deve ser commitado.
 
 ### Comandos
 
@@ -245,7 +245,7 @@ Consulte [`../LOCAL-STACK.md`](../LOCAL-STACK.md) e [`../.env.compose.example`](
 npm run test
 ```
 
-Esse teste importa schemas de `../frigus-bff`, portanto o repositório do BFF precisa estar ao lado deste diretório para rodar a suíte completa.
+Esse teste importa schemas do repositório `../bff` (caminho `../../bff` a partir do arquivo de teste), portanto o BFF precisa estar ao lado deste diretório para rodar a suíte completa.
 
 `tests/contracts.live.test.ts` contém verificações contra a stack Docker local. Elas ficam desabilitadas por padrão e só rodam com `RUN_STACK_CONTRACTS=1`. Precisam de um BFF/Core API local, Docker e credenciais de uma conta de demonstração local (`FRIGUS_TEST_EMAIL` e `FRIGUS_TEST_PASSWORD`). `FRIGUS_STACK_URL` pode apontar para a URL local da API; por padrão é `http://127.0.0.1:5173/api`. Esse fluxo cria e altera dados de teste no banco local; não aponte-o para produção.
 
@@ -284,7 +284,7 @@ docker compose --env-file .env.compose up --build
 
 ## Tecnologias relacionadas
 
-- **BFF:** [`../frigus-bff`](../frigus-bff/) — API do frontend e ponto de entrada para os serviços de backend.
+- **BFF:** [`../bff`](../bff/) — API do frontend e ponto de entrada para os serviços de backend.
 - **Core API:** [`../frigus-core-api`](../frigus-core-api/) — regras de negócio e dados principais do Frigus.
 - **Assistente:** [`../frigus-ai`](../frigus-ai/) — API do assistente de IA.
-- **Stack local:** [`../docker-compose.yml`](../docker-compose.yml) e [`../LOCAL-STACK.md`](../LOCAL-STACK.md).
+- **Stack local:** [`../docker-compose.yml`](../docker-compose.yml) e [`../.env.compose.example`](../.env.compose.example).

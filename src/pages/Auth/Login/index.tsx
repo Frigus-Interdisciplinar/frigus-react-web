@@ -31,7 +31,10 @@ export default function LoginPage() {
   const location = useLocation();
   const saveUser = useStore((state) => state.login);
 
-  const completeLogin = async (session: Awaited<ReturnType<typeof login>>) => {
+  const completeLogin = async (
+    session: Awaited<ReturnType<typeof login>>,
+    googleLogin = false,
+  ) => {
     if (!session.user.planSelectionRequired)
       await ensureStarterWorkspace(session.user.accountType);
     saveUser(session.user);
@@ -45,7 +48,9 @@ export default function LoginPage() {
         : fallback;
     navigate(
       session.user.planSelectionRequired
-        ? getSessionDestination(session.user)
+        ? googleLogin && !session.user.pendingPlanTransactionId
+          ? "/choose-profile"
+          : getSessionDestination(session.user)
         : returnTo,
       { replace: true },
     );
@@ -89,7 +94,10 @@ export default function LoginPage() {
     setError("");
     setLoading(true);
     try {
-      await completeLogin(await loginWithGoogle(idToken, credentials.rememberMe));
+      await completeLogin(
+        await loginWithGoogle(idToken, credentials.rememberMe),
+        true,
+      );
     } catch (err) {
       setError(
         err instanceof Error
@@ -125,6 +133,7 @@ export default function LoginPage() {
 
         <form
           onSubmit={handleSubmit}
+          noValidate
           className="flex flex-col gap-4 w-full mt-6"
         >
           <Input
@@ -135,12 +144,14 @@ export default function LoginPage() {
             value={credentials.email}
             maxLength={254}
             error={fieldErrors.email}
-            onChange={(e) =>
+            onChange={(e) => {
+              setError("");
+              setFieldErrors((current) => ({ ...current, email: undefined }));
               setCredentials((current) => ({
                 ...current,
                 email: e.target.value,
-              }))
-            }
+              }));
+            }}
             required
             autoFocus
             className="h-[58px] rounded-md"
@@ -154,12 +165,17 @@ export default function LoginPage() {
             value={credentials.rawPassword}
             maxLength={128}
             error={fieldErrors.rawPassword}
-            onChange={(e) =>
+            onChange={(e) => {
+              setError("");
+              setFieldErrors((current) => ({
+                ...current,
+                rawPassword: undefined,
+              }));
               setCredentials((current) => ({
                 ...current,
                 rawPassword: e.target.value,
-              }))
-            }
+              }));
+            }}
             showPasswordToggle
             required
             className="h-[58px] rounded-md"
@@ -179,7 +195,7 @@ export default function LoginPage() {
             />
             <Link
               to="/forgot-password"
-              className="text-frigus-primary dark:text-[#A7BCFF] font-semibold hover:underline"
+              className="inline-flex min-h-11 items-center text-frigus-primary dark:text-[#A7BCFF] font-semibold hover:underline"
             >
               Esqueci minha senha
             </Link>
@@ -212,7 +228,7 @@ export default function LoginPage() {
             Ainda não tem uma conta?{" "}
             <Link
               to="/register"
-              className="text-frigus-primary dark:text-[#A7BCFF] font-bold hover:underline"
+              className="inline-flex min-h-11 items-center text-frigus-primary dark:text-[#A7BCFF] font-bold hover:underline"
             >
               Cadastre-se
             </Link>

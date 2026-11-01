@@ -128,7 +128,7 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
           <Input
             id="register-input-name"
             label="Nome completo"
@@ -292,7 +292,7 @@ export default function RegisterPage() {
             Já tem uma conta?{" "}
             <Link
               to="/login"
-              className="text-frigus-primary dark:text-[#A7BCFF] font-bold hover:underline"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center text-frigus-primary dark:text-[#A7BCFF] font-bold hover:underline"
             >
               Entrar
             </Link>

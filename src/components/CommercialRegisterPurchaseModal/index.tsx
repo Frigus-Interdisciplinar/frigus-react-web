@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useResetModalState } from "@/hooks/useResetModalState";
 import type { CommercialRegisterPurchaseModalProps } from "@/components/CommercialModals/types";
 import { CommercialModalBase } from "@/components/CommercialModalBase";
 
@@ -16,6 +17,16 @@ export function CommercialRegisterPurchaseModal({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [saving, setSaving] = useState(false);
+  useResetModalState(isOpen, () => {
+    setForm({
+      description: "",
+      supplier: "",
+      amount: "",
+      expenseDate: new Date().toISOString().slice(0, 10),
+    });
+    setError("");
+    setSuccess("");
+  });
   return (
     <CommercialModalBase
       isOpen={isOpen}

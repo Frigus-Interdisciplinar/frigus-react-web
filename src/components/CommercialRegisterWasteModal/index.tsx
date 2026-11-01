@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useResetModalState } from "@/hooks/useResetModalState";
 import type { CommercialRegisterWasteModalProps } from "@/components/CommercialModals/types";
 import { CommercialModalBase } from "@/components/CommercialModalBase";
 
@@ -16,6 +17,11 @@ export function CommercialRegisterWasteModal({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [saving, setSaving] = useState(false);
+  useResetModalState(isOpen, () => {
+    setForm({ stockProductId: 0, quantity: "", reason: "" });
+    setError("");
+    setSuccess("");
+  });
   const selectedStockProductId = form.stockProductId || products[0]?.id || 0;
   return (
     <CommercialModalBase

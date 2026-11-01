@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { X } from "lucide-react";
 import { useModalFocus } from "@/hooks/useModalFocus";
+import { useResetModalState } from "@/hooks/useResetModalState";
 
 export type NewFoodData = {
   name: string;
@@ -48,6 +49,10 @@ export default function AddFoodModal({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const dialogRef = useModalFocus(isOpen, onClose);
+  useResetModalState(isOpen, () => {
+    setForm({ ...INITIAL_FORM });
+    setError("");
+  });
 
   if (!isOpen) return null;
 

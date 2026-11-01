@@ -71,7 +71,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             <button
               type="button"
               onClick={() => setIsPasswordVisible((prev) => !prev)}
-              className="absolute right-3 text-[#70809F] hover:text-frigus-primary dark:hover:text-blue-400 transition-colors p-1 flex items-center justify-center cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-frigus-primary"
+              className="absolute right-0 inline-flex size-11 items-center justify-center rounded-r-md text-[#70809F] hover:text-frigus-primary dark:hover:text-blue-400 transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-frigus-primary"
               aria-label={isPasswordVisible ? "Ocultar senha" : "Ver senha"}
               aria-pressed={isPasswordVisible}
               aria-controls={inputId}

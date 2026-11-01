@@ -6,6 +6,7 @@ import { ensureStarterWorkspace, refreshSession } from "@/services/auth.service"
 import { useStore } from "@/store/store";
 import AccessibilityTools from "@/components/AccessibilityTools";
 import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
+import DocumentTitle from "@/components/DocumentTitle";
 
 let sessionBootstrap: ReturnType<typeof refreshSession> | null = null;
 
@@ -55,6 +56,7 @@ export default function App() {
     <AccessibilityProvider>
       <ThemeProvider>
         <BrowserRouter>
+          <DocumentTitle />
           <AccessibilityTools />
           <AuthProvider>
             {workspaceError ? <main id="main-content" tabIndex={-1} className="mx-auto max-w-lg space-y-4 p-8 text-center text-text-main"><h1 className="text-xl font-bold">Não foi possível preparar sua conta</h1><p role="alert">{workspaceError}</p><button type="button" onClick={() => window.location.reload()} className="rounded-lg bg-frigus-primary px-5 py-3 font-semibold text-white">Tentar novamente</button></main> : <AppRoutes />}

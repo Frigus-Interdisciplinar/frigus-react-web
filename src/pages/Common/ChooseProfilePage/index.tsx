@@ -1,17 +1,48 @@
-import { useNavigate, Link } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { Home, Store, Building2, Check, ArrowRight } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import FrigusLogo from "@/assets/frigus-logo-text.svg";
+import { useState } from "react";
+import type { AccountType } from "@/types/auth.type";
+import { chooseOnboardingAccountType } from "@/services/auth.service";
+import { useStore } from "@/store/store";
+import { getAccountHome, getPlansPath } from "@/utils/plan.util";
 
 export default function ChooseProfilePage() {
   const navigate = useNavigate();
+  const user = useStore((state) => state.user);
+  const saveUser = useStore((state) => state.login);
+  const [saving, setSaving] = useState<AccountType | null>(null);
+  const [error, setError] = useState("");
+
+  if (user && !user.planSelectionRequired) {
+    return <Navigate to={getAccountHome(user.accountType)} replace />;
+  }
+
+  const handleChooseProfile = async (accountType: AccountType) => {
+    setSaving(accountType);
+    setError("");
+    try {
+      const updatedUser = await chooseOnboardingAccountType(accountType);
+      saveUser(updatedUser);
+      navigate(getPlansPath(accountType), { replace: true });
+    } catch (reason) {
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : "Não foi possível salvar seu perfil. Tente novamente.",
+      );
+    } finally {
+      setSaving(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F5F8FC] dark:bg-[#0F172A] flex flex-col justify-between p-6 sm:p-10 transition-colors">
       <header className="max-w-6xl w-full mx-auto flex items-center justify-between pb-6 border-b border-[#E1E7F0] dark:border-[#343941]">
-        <Link to="/" className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <img src={FrigusLogo} alt="Frigus Logo" className="h-9 w-auto" />
-        </Link>
+        </div>
         <div className="flex items-center gap-4">
           <span className="text-xs font-semibold text-frigus-primary dark:text-[#A7BCFF] bg-blue-50 dark:bg-[#1B2A4A] px-3 py-1 rounded-full border border-blue-100 dark:border-blue-900/40">
             Etapa 1 de 2
@@ -33,6 +64,15 @@ export default function ChooseProfilePage() {
             Selecione o perfil que combina com o seu jeito de usar o Frigus
           </p>
         </div>
+
+        {error && (
+          <p
+            role="alert"
+            className="mx-auto mb-6 max-w-2xl rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300"
+          >
+            {error}
+          </p>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-stretch">
           <div className="relative bg-white dark:bg-[#1C1E22] rounded-2xl border border-[#C9DEF9] dark:border-[#343941] p-7 flex flex-col justify-between shadow-sm hover:shadow-lg transition-all duration-200 group">
@@ -71,18 +111,12 @@ export default function ChooseProfilePage() {
             <div className="mt-8 space-y-2.5">
               <button
                 type="button"
-                onClick={() => navigate("/plans/domestic")}
-                className="w-full h-11 bg-frigus-primary hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                onClick={() => void handleChooseProfile("DOMESTIC")}
+                disabled={saving !== null}
+                className="w-full h-11 bg-frigus-primary hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm disabled:cursor-wait disabled:opacity-60"
               >
-                <span>Escolher doméstico</span>
-                <ArrowRight className="size-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate("/home")}
-                className="w-full text-center text-xs font-semibold text-gray-500 hover:text-frigus-primary dark:text-neutral-400 dark:hover:text-white transition-colors cursor-pointer py-1"
-              >
-                Acessar painel doméstico →
+                <span>{saving === "DOMESTIC" ? "Salvando perfil…" : "Continuar com perfil doméstico"}</span>
+                {saving !== "DOMESTIC" && <ArrowRight className="size-4" />}
               </button>
             </div>
           </div>
@@ -123,18 +157,12 @@ export default function ChooseProfilePage() {
             <div className="mt-8 space-y-2.5">
               <button
                 type="button"
-                onClick={() => navigate("/plans/commercial")}
-                className="w-full h-11 bg-frigus-primary hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                onClick={() => void handleChooseProfile("COMMERCIAL")}
+                disabled={saving !== null}
+                className="w-full h-11 bg-frigus-primary hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm disabled:cursor-wait disabled:opacity-60"
               >
-                <span>Escolher comercial</span>
-                <ArrowRight className="size-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate("/commercial/stock")}
-                className="w-full text-center text-xs font-semibold text-gray-500 hover:text-frigus-primary dark:text-neutral-400 dark:hover:text-white transition-colors cursor-pointer py-1"
-              >
-                Acessar painel comercial →
+                <span>{saving === "COMMERCIAL" ? "Salvando perfil…" : "Continuar com perfil comercial"}</span>
+                {saving !== "COMMERCIAL" && <ArrowRight className="size-4" />}
               </button>
             </div>
           </div>
@@ -175,18 +203,12 @@ export default function ChooseProfilePage() {
             <div className="mt-8 space-y-2.5">
               <button
                 type="button"
-                onClick={() => navigate("/plans/enterprise")}
-                className="w-full h-11 bg-frigus-primary hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                onClick={() => void handleChooseProfile("BUSINESS")}
+                disabled={saving !== null}
+                className="w-full h-11 bg-frigus-primary hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm disabled:cursor-wait disabled:opacity-60"
               >
-                <span>Escolher empresarial</span>
-                <ArrowRight className="size-4" />
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate("/enterprise")}
-                className="w-full text-center text-xs font-semibold text-gray-500 hover:text-frigus-primary dark:text-neutral-400 dark:hover:text-white transition-colors cursor-pointer py-1"
-              >
-                Acessar painel empresarial →
+                <span>{saving === "BUSINESS" ? "Salvando perfil…" : "Continuar com perfil empresarial"}</span>
+                {saving !== "BUSINESS" && <ArrowRight className="size-4" />}
               </button>
             </div>
           </div>

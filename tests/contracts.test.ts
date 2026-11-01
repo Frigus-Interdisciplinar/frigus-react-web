@@ -8,7 +8,7 @@ import { advertisementInputSchema } from "@/schemas/advertisement.schema";
 import { checkoutSchema } from "@/schemas/checkout.schema";
 import { transactionInputSchema } from "@/schemas/transaction.schema";
 import { chatMessageSchema } from "@/schemas/chat.schema";
-import * as bff from "../../frigus-bff/src/schemas/core-api.schema";
+import * as bff from "../../bff/src/schemas/core-api.schema";
 
 const product = { name: "Arroz", category: "GRAIN", storagePlace: "PANTRY", unitPrice: 12.5, unitOfMeasure: "KILOGRAM" };
 const stockItem = { productId: 1, stockId: 1, quantity: 0, expireDate: "2026-12-01" };
@@ -88,7 +88,7 @@ describe("Respostas Jackson: campos nullable não bloqueiam as telas", () => {
     ["movimentação", response.stockMovementResponseSchema, { id: 1, movementType: "IN", quantity: 1 }, { date: null, observation: null, balanceAfter: null }],
     ["mensagem com anexo", response.chatMessageResponseSchema, { id: 1, conversationId: "id", senderId: "id", senderName: "A" }, { content: null, messageType: null, attachments: null, createdAt: null }],
     ["conversa vazia", response.conversationResponseSchema, { id: "id", conversationType: "PRIVATE" }, { groupId: null, groupName: null, name: null, latestMessage: null }],
-    ["usuário Google/legado", response.authUserResponseSchema, { id: "id", name: "A", email: "a@example.test", accountType: "DOMESTIC" }, { birthDate: null, profilePictureUrl: null }],
+    ["novo usuário Google aguardando escolha de plano", response.authUserResponseSchema, { id: "id", name: "A", email: "a@example.test", accountType: "DOMESTIC", planSelectionRequired: true }, { birthDate: null, profilePictureUrl: null, pendingPlanTransactionId: null }],
     ["convite", response.invitationResponseSchema, { id: "id", email: "a@example.test" }, { name: null, acceptedAt: null, revokedAt: null }],
     ["grupo", response.groupResponseSchema, { id: "id", name: "Casa" }, { bannerPicture: null, members: null }],
     ["anúncio", response.advertisementResponseSchema, { ...advertisement, id: "id", advertiserId: "id", advertiserName: "A", status: "DRAFT", impressions: 0, clicks: 0, createdAt: "now", updatedAt: "now" }, { destinationUrl: null, price: null, startDate: null, endDate: null }],
@@ -109,4 +109,3 @@ describe("Respostas Jackson: campos nullable não bloqueiam as telas", () => {
     expect(response.groupMemberResponseSchema.parse({ userId: "id", name: "A", email: "a@example.test", memberRole: "EDITOR", isOwner: true }).role).toBe("OWNER");
   });
 });
-

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Upload, Calendar } from "lucide-react";
+import { useResetModalState } from "@/hooks/useResetModalState";
 import type { EnterpriseModalVisibilityProps } from "@/components/EnterpriseModals/types";
 import { EnterpriseModalBase } from "@/components/EnterpriseModalBase";
 
@@ -14,6 +15,16 @@ export function EnterpriseCreateAdModal({
     startDate: "",
     endDate: "",
     description: "",
+  });
+  useResetModalState(isOpen, () => {
+    setForm({
+      name: "",
+      category: "Congelados",
+      price: "",
+      startDate: "",
+      endDate: "",
+      description: "",
+    });
   });
 
   const handleSubmit = (e: React.FormEvent) => {

@@ -6,7 +6,7 @@ vi.mock("axios", async (importOriginal) => {
   const actual = await importOriginal<typeof import("axios")>();
   return { ...actual, default: { ...actual.default, create: () => http } };
 });
-import { api, ApiError } from "@/utils/api.util";
+import { api } from "@/utils/api.util";
 
 function httpError(status: number, data: unknown = {}) {
   return new AxiosError("HTTP error", "ERR_BAD_RESPONSE", undefined, undefined, {
@@ -40,10 +40,27 @@ describe("renovação de sessão e erros HTTP", () => {
     expect(dispatchEvent).not.toHaveBeenCalled();
   });
 
+  it("preserva uma mensagem segura quando uma dependência rejeita com objeto simples", async () => {
+    http.request.mockRejectedValue({ message: "Falha ao processar credencial.\n detalhe interno" });
+    await expect(api.post("/web/auth/google", {})).rejects.toMatchObject({
+      message: "Falha ao processar credencial.",
+    });
+  });
+
+  it("usa uma mensagem legível quando uma dependência rejeita sem mensagem", async () => {
+    http.request.mockRejectedValue(null);
+    await expect(api.post("/web/auth/google", {})).rejects.toMatchObject({
+      message: "Não foi possível concluir a requisição. Tente novamente.",
+    });
+  });
+
   it("não encerra a sessão quando a renovação falha por rede", async () => {
     http.request.mockRejectedValue(httpError(401));
     http.post.mockRejectedValue(new AxiosError("offline", "ERR_NETWORK"));
-    await expect(api.get("/web/profile")).rejects.toBeInstanceOf(ApiError);
+    await expect(api.get("/web/profile")).rejects.toMatchObject({
+      name: "ApiError",
+      message: "Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.",
+    });
     expect(dispatchEvent).not.toHaveBeenCalled();
   });
 
@@ -89,8 +106,27 @@ describe("renovação de sessão e erros HTTP", () => {
     expect(dispatchEvent).not.toHaveBeenCalled();
   });
 
-  it.each([null, "texto", { message: { secret: "valor" } }, { message: ["erro"] }])("valida a mensagem de erro recebida: %j", async (data) => {
+  it.each([null, "texto", { message: { secret: "valor" } }, { message: ["erro"] }])("usa uma mensagem segura para payloads sem mensagem validada: %j", async (data) => {
     http.request.mockRejectedValue(httpError(422, data));
-    await expect(api.get("/web/profile")).rejects.toMatchObject({ message: "Erro na requisição.", status: 422 });
+    await expect(api.get("/web/profile")).rejects.toMatchObject({ message: "Verifique os dados enviados e tente novamente.", status: 422 });
+  });
+
+  it("prefere a mensagem de exibição do servidor", async () => {
+    http.request.mockRejectedValue(httpError(503, {
+      message: "ServiceUnavailableException",
+      displayMessage: "Tente novamente em instantes.",
+    }));
+    await expect(api.get("/web/profile")).rejects.toMatchObject({
+      message: "Tente novamente em instantes.",
+      status: 503,
+    });
+  });
+
+  it("traduz respostas HTTP em texto simples para mensagens compreensíveis", async () => {
+    http.request.mockRejectedValue(httpError(404, "404 Not Found"));
+    await expect(api.post("/web/auth/google", {})).rejects.toMatchObject({
+      message: "O serviço solicitado não foi encontrado. Tente novamente mais tarde.",
+      status: 404,
+    });
   });
 });

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useResetModalState } from "@/hooks/useResetModalState";
 import type { ModalVisibilityProps } from "@/components/CommercialModals/types";
 import { CommercialModalBase } from "@/components/CommercialModalBase";
 
@@ -15,6 +16,18 @@ export function CommercialEditBatchModal({
     unit: "Quilograma (kg)",
     expiry: "18/09/2026",
     unitCost: "R$ 18,90",
+  });
+  useResetModalState(isOpen, () => {
+    setFormData({
+      product: "Peito de frango",
+      batchCode: "FR-2048",
+      category: "Proteínas",
+      location: "Câmara fria",
+      quantity: "32",
+      unit: "Quilograma (kg)",
+      expiry: "18/09/2026",
+      unitCost: "R$ 18,90",
+    });
   });
 
   return (

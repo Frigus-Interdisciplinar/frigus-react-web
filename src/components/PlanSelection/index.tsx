@@ -86,7 +86,14 @@ export default function PlanSelection({
         <Link to="/" aria-label="Frigus">
           <img src={FrigusLogo} alt="Frigus" className="h-9 w-auto" />
         </Link>
-        <ThemeToggle />
+        <div className="flex items-center gap-4">
+          {user?.planSelectionRequired && (
+            <span className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-semibold text-frigus-primary dark:border-blue-900/40 dark:bg-[#1B2A4A] dark:text-[#A7BCFF]">
+              Etapa 2 de 2
+            </span>
+          )}
+          <ThemeToggle />
+        </div>
       </header>
       <main
         id="main-content"

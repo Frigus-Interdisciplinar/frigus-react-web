@@ -15,7 +15,7 @@ export default function Checkbox({
   return (
     <label
       htmlFor={id}
-      className="inline-flex items-center gap-2 cursor-pointer select-none group"
+      className="inline-flex min-h-11 items-center gap-2 cursor-pointer select-none group"
     >
       <div className="relative flex items-center justify-center shrink-0 size-4">
         <input

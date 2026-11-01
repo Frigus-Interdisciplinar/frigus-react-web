@@ -89,7 +89,7 @@ export default function ForgotPasswordStep1() {
           <div className="text-center pt-2">
             <Link
               to="/login"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-frigus-primary dark:text-[#A7BCFF] hover:underline"
+              className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-frigus-primary dark:text-[#A7BCFF] hover:underline"
             >
               <ArrowLeft className="size-4" /> Voltar ao Login
             </Link>

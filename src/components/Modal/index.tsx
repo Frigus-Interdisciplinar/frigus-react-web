@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useModalFocus } from "@/hooks/useModalFocus";
+import { useResetModalState } from "@/hooks/useResetModalState";
 import ModalHeader from "./ModalHeader";
 import ModalTitle from "./ModalTitle";
 import ModalInput from "./ModalInput";
@@ -56,6 +57,11 @@ export default function Modal({
   const [confirming, setConfirming] = useState(false);
   const [confirmError, setConfirmError] = useState("");
   const dialogRef = useModalFocus(isOpen, onClose);
+  useResetModalState(isOpen, () => {
+    setSearch("");
+    setSelectedIds([...defaultSelectedIds]);
+    setConfirmError("");
+  });
 
   if (!isOpen) return null;
 

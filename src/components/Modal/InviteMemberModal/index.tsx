@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { X } from "lucide-react";
 import { useModalFocus } from "@/hooks/useModalFocus";
+import { useResetModalState } from "@/hooks/useResetModalState";
 
 export type InviteMemberData = {
   name: string;
@@ -29,6 +30,10 @@ export default function InviteMemberModal({
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  useResetModalState(isOpen, () => {
+    setForm({ name: "", email: "", role: "Pode editar" });
+    setError("");
+  });
 
   if (!isOpen) return null;
 

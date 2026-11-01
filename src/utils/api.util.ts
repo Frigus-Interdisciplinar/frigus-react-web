@@ -24,22 +24,71 @@ export class ApiError extends Error {
 
 function requestError(error: unknown): Error {
   if (!axios.isAxiosError<unknown>(error)) {
-    return error instanceof Error
-      ? error
-      : new Error("Erro na requisição.", { cause: error });
+    if (error instanceof Error) return error;
+
+    const message = (() => {
+      if (typeof error === "string") return error;
+      if (
+        error &&
+        typeof error === "object" &&
+        "message" in error &&
+        typeof error.message === "string"
+      ) {
+        return error.message;
+      }
+      return "";
+    })()
+      .split(/[\r\n]/, 1)[0]
+      .split("")
+      .map((character) => {
+        const code = character.charCodeAt(0);
+        return code < 0x20 || code === 0x7f ? " " : character;
+      })
+      .join("")
+      .trim()
+      .slice(0, 500);
+
+    return new Error(
+      message || "Não foi possível concluir a requisição. Tente novamente.",
+      { cause: error },
+    );
   }
 
   const data = error.response?.data;
-  const message =
-    data &&
-    typeof data === "object" &&
-    "message" in data &&
-    typeof data.message === "string"
+  const message = (() => {
+    if (typeof data === "string") return "";
+    if (!data || typeof data !== "object") return "";
+    if (
+      "displayMessage" in data &&
+      typeof data.displayMessage === "string" &&
+      data.displayMessage.trim()
+    ) {
+      return data.displayMessage.trim().slice(0, 500);
+    }
+    return "message" in data && typeof data.message === "string"
       ? data.message.trim().slice(0, 500)
       : "";
+  })();
+  const status = error.response?.status;
+  const fallbackMessage =
+    status === 404
+      ? "O serviço solicitado não foi encontrado. Tente novamente mais tarde."
+      : status !== undefined && status >= 500
+        ? "Serviço temporariamente indisponível. Tente novamente."
+        : status === 400 || status === 422
+          ? "Verifique os dados enviados e tente novamente."
+          : status === 401
+            ? "Não foi possível autenticar esta solicitação."
+            : status === 403
+              ? "Você não tem permissão para realizar esta ação."
+              : !error.response
+                ? error.code === "ECONNABORTED" || error.code === "ETIMEDOUT"
+                  ? "O servidor demorou para responder. Tente novamente."
+                  : "Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente."
+                : "Não foi possível concluir a requisição. Tente novamente.";
   return new ApiError(
-    message || "Erro na requisição.",
-    error.response?.status,
+    message || fallbackMessage,
+    status,
     error,
   );
 }

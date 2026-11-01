@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useResetModalState } from "@/hooks/useResetModalState";
 import type { CommercialManageAccessModalProps } from "@/components/CommercialModals/types";
 import { CommercialModalBase } from "@/components/CommercialModalBase";
 
@@ -14,6 +15,11 @@ export function CommercialManageAccessModal({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  useResetModalState(isOpen, () => {
+    setRole(memberRole);
+    setError("");
+    setSuccess("");
+  });
   return (
     <CommercialModalBase
       isOpen={isOpen}

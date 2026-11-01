@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useResetModalState } from "@/hooks/useResetModalState";
 import type { CommercialInviteEmployeeModalProps } from "@/components/CommercialModals/types";
 import { CommercialModalBase } from "@/components/CommercialModalBase";
 
@@ -15,6 +16,11 @@ export function CommercialInviteEmployeeModal({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [saving, setSaving] = useState(false);
+  useResetModalState(isOpen, () => {
+    setForm({ name: "", email: "", role: "EDITOR" });
+    setError("");
+    setSuccess("");
+  });
   return (
     <CommercialModalBase
       isOpen={isOpen}

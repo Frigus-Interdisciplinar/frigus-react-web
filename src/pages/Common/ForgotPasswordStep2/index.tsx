@@ -136,6 +136,7 @@ export default function ForgotPasswordStep2() {
             {digits.map((digit, idx) => (
               <input
                 key={idx}
+                aria-label={`Dígito ${idx + 1} do código de recuperação`}
                 ref={(el) => {
                   inputsRef.current[idx] = el;
                 }}
@@ -162,7 +163,7 @@ export default function ForgotPasswordStep2() {
               type="button"
               onClick={handleResend}
               disabled={resending}
-              className="font-semibold text-frigus-primary dark:text-[#A7BCFF] hover:underline cursor-pointer disabled:opacity-50"
+              className="inline-flex min-h-11 items-center px-2 font-semibold text-frigus-primary dark:text-[#A7BCFF] hover:underline cursor-pointer disabled:opacity-50"
             >
               {resending ? "Reenviando..." : "Reenviar código"}
             </button>
@@ -185,7 +186,7 @@ export default function ForgotPasswordStep2() {
           <div className="text-center pt-1">
             <Link
               to="/login"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-frigus-primary dark:text-[#A7BCFF] hover:underline"
+              className="inline-flex min-h-11 items-center gap-1.5 text-sm font-semibold text-frigus-primary dark:text-[#A7BCFF] hover:underline"
             >
               <ArrowLeft className="size-4" /> Voltar ao Login
             </Link>

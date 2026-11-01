@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Check } from "lucide-react";
+import { useResetModalState } from "@/hooks/useResetModalState";
 import type { CommercialFilterStockModalProps } from "@/components/CommercialModals/types";
 import { CommercialModalBase } from "@/components/CommercialModalBase";
 
@@ -12,6 +13,9 @@ export function CommercialFilterStockModal({
   const [current, setCurrent] = useState(
     selectedCategory || "Todas as categorias",
   );
+  useResetModalState(isOpen, () => {
+    setCurrent(selectedCategory || "Todas as categorias");
+  });
 
   const categories = [
     "Todas as categorias",

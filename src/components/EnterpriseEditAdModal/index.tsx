@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ImageIcon } from "lucide-react";
+import { useResetModalState } from "@/hooks/useResetModalState";
 import type { EnterpriseEditAdModalProps } from "@/components/EnterpriseModals/types";
 import { EnterpriseModalBase } from "@/components/EnterpriseModalBase";
 
@@ -23,6 +24,16 @@ export function EnterpriseEditAdModal({
     startDate: initialData.startDate,
     endDate: initialData.endDate,
     description: initialData.description,
+  });
+  useResetModalState(isOpen, () => {
+    setForm({
+      name: initialData.name,
+      category: initialData.category,
+      price: initialData.price,
+      startDate: initialData.startDate,
+      endDate: initialData.endDate,
+      description: initialData.description,
+    });
   });
 
   return (

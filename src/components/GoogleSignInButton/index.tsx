@@ -69,6 +69,7 @@ export default function GoogleSignInButton({
   const credentialHandler = useRef(onCredential);
   const errorHandler = useRef(onError);
   const [loadError, setLoadError] = useState("");
+  const [googleApi, setGoogleApi] = useState<GoogleIdentityApi | null>(null);
   const { theme } = useTheme();
   const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim() ?? "";
 
@@ -78,8 +79,7 @@ export default function GoogleSignInButton({
   }, [onCredential, onError]);
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!clientId || !container) return;
+    if (!clientId) return;
     let active = true;
 
     void loadGoogleIdentity()
@@ -89,16 +89,10 @@ export default function GoogleSignInButton({
           client_id: clientId,
           callback: ({ credential }) => {
             if (credential) credentialHandler.current(credential);
-            else errorHandler.current("O Google não retornou uma credencial válida." );
+            else errorHandler.current("O Google não retornou uma credencial válida.");
           },
         });
-        google.accounts.id.renderButton(container, {
-          theme: theme === "dark" ? "outline_dark" : "outline",
-          size: "large",
-          text: "signin_with",
-          shape: "rectangular",
-          width: Math.max(200, Math.min(400, container.clientWidth)),
-        });
+        setGoogleApi(google);
       })
       .catch((reason: unknown) => {
         if (!active) return;
@@ -111,9 +105,24 @@ export default function GoogleSignInButton({
 
     return () => {
       active = false;
-      container.replaceChildren();
     };
-  }, [clientId, theme]);
+  }, [clientId]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!googleApi || !container) return;
+
+    container.replaceChildren();
+    googleApi.accounts.id.renderButton(container, {
+      theme: theme === "dark" ? "outline_dark" : "outline",
+      size: "large",
+      text: "signin_with",
+      shape: "rectangular",
+      width: Math.max(200, Math.min(400, container.clientWidth)),
+    });
+
+    return () => container.replaceChildren();
+  }, [googleApi, theme]);
 
   if (!clientId) {
     return (

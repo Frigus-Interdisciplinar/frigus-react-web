@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useResetModalState } from "@/hooks/useResetModalState";
 import type { CommercialAddBatchModalProps } from "@/components/CommercialModals/types";
 import { CommercialModalBase } from "@/components/CommercialModalBase";
 
@@ -19,6 +20,20 @@ export function CommercialAddBatchModal({
     unit: "Quilograma (kg)",
     expiry: "",
     unitCost: "0",
+  });
+  useResetModalState(isOpen, () => {
+    setSuccess("");
+    setError("");
+    setFormData({
+      product: "",
+      batchCode: "",
+      category: "Proteínas",
+      location: "Câmara fria",
+      quantity: "0",
+      unit: "Quilograma (kg)",
+      expiry: "",
+      unitCost: "0",
+    });
   });
 
   return (
