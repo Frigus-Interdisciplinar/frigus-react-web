@@ -2,7 +2,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { finishPlanSelection, listPlans } from "@/services/plan.service";
 import { ensureStarterWorkspace, refreshSession } from "@/services/auth.service";
 import { api } from "@/utils/api.util";
-import { getSessionDestination, resolveCheckoutPlanCode } from "@/utils/plan.util";
+import { getLoginReturnPath, getSessionDestination, resolveCheckoutPlanCode } from "@/utils/plan.util";
 
 vi.mock("@/services/auth.service", () => ({ ensureStarterWorkspace: vi.fn(), refreshSession: vi.fn() }));
 vi.mock("@/utils/api.util", () => ({ api: { get: vi.fn() } }));
@@ -15,14 +15,14 @@ it("não conclui a conta se o servidor ainda exige a escolha de plano", async ()
   expect(ensureStarterWorkspace).not.toHaveBeenCalled();
 });
 
-it("usa a sessão renovada e só retorna após preparar o espaço", async () => {
+it("usa a sessão renovada sem criar um espaço ao concluir o plano", async () => {
   const user = { id: "u", name: "A", email: "a@example.test", accountType: "BUSINESS" as const, planSelectionRequired: false };
   vi.mocked(refreshSession).mockResolvedValue({ user });
   vi.mocked(ensureStarterWorkspace).mockResolvedValue({ id: "group", name: "Empresa" });
   const controller = new AbortController();
   expect(await finishPlanSelection(controller.signal)).toEqual(user);
   expect(refreshSession).toHaveBeenCalledWith(controller.signal);
-  expect(ensureStarterWorkspace).toHaveBeenCalledWith("BUSINESS", controller.signal);
+  expect(ensureStarterWorkspace).not.toHaveBeenCalled();
 });
 
 it("valida o catálogo antes de mostrar preços e recusa valores negativos", async () => {
@@ -39,4 +39,15 @@ it("preserva aliases existentes sem aceitar propriedades herdadas como planos", 
 
 it("retoma a transação pendente após restaurar a sessão", () => {
   expect(getSessionDestination({ id: "u", name: "A", email: "a@example.test", accountType: "COMMERCIAL", planSelectionRequired: true, pendingPlanTransactionId: "tx" })).toBe("/checkout/webview/success?transactionId=tx");
+});
+
+it.each([
+  ["COMMERCIAL", "/profile", "/commercial"],
+  ["COMMERCIAL", "/enterprise/ads", "/commercial"],
+  ["BUSINESS", "/profile", "/enterprise"],
+  ["BUSINESS", "/commercial/stock", "/enterprise"],
+  ["COMMERCIAL", "/commercial/expenses?month=2026-11", "/commercial/expenses?month=2026-11"],
+  ["BUSINESS", "/enterprise/ads", "/enterprise/ads"],
+] as const)("redirecionamento de login %s com destino %s", (accountType, requested, expected) => {
+  expect(getLoginReturnPath(requested, accountType)).toBe(expected);
 });

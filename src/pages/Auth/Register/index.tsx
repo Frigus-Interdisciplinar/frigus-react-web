@@ -17,7 +17,7 @@ type RegistrationFields = {
   password: string;
   confirmPassword: string;
   birthDate: string;
-  accountType: AccountType;
+  accountType: AccountType | "";
   acceptTerms: boolean;
 };
 
@@ -28,7 +28,7 @@ export default function RegisterPage() {
     password: "",
     confirmPassword: "",
     birthDate: "",
-    accountType: "DOMESTIC",
+    accountType: "",
     acceptTerms: false,
   });
   const [error, setError] = useState<string>("");
@@ -76,19 +76,13 @@ export default function RegisterPage() {
         "Você precisa aceitar os termos de uso para continuar.";
     }
     setFieldErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) {
+    if (!validation.success || Object.keys(nextErrors).length > 0) {
       return;
     }
 
     setLoading(true);
     try {
-      const account = await register({
-        name: registration.name,
-        email: registration.email,
-        rawPassword: registration.password,
-        birthDate: registration.birthDate,
-        accountType: registration.accountType,
-      });
+      const account = await register(validation.data);
       const session = await login({
         email: account.email,
         rawPassword: registration.password,
@@ -185,14 +179,16 @@ export default function RegisterPage() {
             <select
               id="field-pages-auth-register-index-tsx-1"
               value={registration.accountType}
+              required
               onChange={(e) =>
                 setRegistration((current) => ({
                   ...current,
-                  accountType: e.target.value as AccountType,
+                  accountType: e.target.value as AccountType | "",
                 }))
               }
               className="h-11 rounded-lg border border-[#C9DEF9] bg-white px-3 text-sm dark:border-[#343941] dark:bg-[#15171A] dark:text-white"
             >
+              <option value="">Selecione o tipo de conta</option>
               <option value="DOMESTIC">Doméstico</option>
               <option value="COMMERCIAL">Comercial</option>
               <option value="BUSINESS">Empresarial</option>

@@ -13,12 +13,9 @@ import {
 import { sanitizeText, validateForm } from "@/utils/validation.util";
 import {
   authUserResponseSchema,
-  groupIdentityResponseSchema,
-  inventoryContextResponseSchema,
   loginResponseSchema,
   registerResponseSchema,
 } from "@/schemas/api-response.schema";
-import { z } from "zod";
 
 export interface PasswordRecoveryRequest {
   email: string;
@@ -107,50 +104,6 @@ export function getProfile(): Promise<LoginResponseDto["user"]> {
       await api.get<unknown>("/web/profile"),
     ),
   );
-}
-
-export function ensureStarterWorkspace(
-  accountType: LoginResponseDto["user"]["accountType"],
-  signal?: AbortSignal,
-): Promise<{ id: string; name: string }> {
-  return serviceCall(async () => {
-    const groups = validateForm(
-      z.array(groupIdentityResponseSchema),
-      await api.get<unknown>("/web/core/groups", { signal }),
-    );
-    const labels = {
-      DOMESTIC: "Minha casa",
-      COMMERCIAL: "Meu estabelecimento",
-      BUSINESS: "Minha empresa",
-    };
-    const group =
-      groups[0] ??
-      validateForm(
-        groupIdentityResponseSchema,
-        await api.post<unknown>(
-          "/web/core/groups",
-          { name: labels[accountType] },
-          { signal },
-        ),
-      );
-    const context = validateForm(
-      inventoryContextResponseSchema,
-      await api.get<unknown>(
-        `/web/core/inventory/active-context?groupId=${encodeURIComponent(group.id)}`,
-        { signal },
-      ),
-    );
-    if (context.stocks.length === 0)
-      await api.post<void>(
-        "/web/core/inventory/stocks",
-        {
-          groupId: group.id,
-          name: accountType === "DOMESTIC" ? "Despensa" : "Estoque principal",
-        },
-        { signal },
-      );
-    return group;
-  });
 }
 
 export function requestPasswordRecovery(

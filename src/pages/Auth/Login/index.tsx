@@ -8,13 +8,12 @@ import ThemeToggle from "@/components/ThemeToggle";
 import { ShieldCheck } from "lucide-react";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
 import {
-  ensureStarterWorkspace,
   login,
   loginWithGoogle,
 } from "@/services/auth.service";
 import { useStore } from "@/store/store";
 import { loginSchema } from "@/schemas/auth.schema";
-import { getAccountHome, getSessionDestination } from "@/utils/plan.util";
+import { getLoginReturnPath, getSessionDestination } from "@/utils/plan.util";
 
 export default function LoginPage() {
   const [credentials, setCredentials] = useState({
@@ -35,17 +34,9 @@ export default function LoginPage() {
     session: Awaited<ReturnType<typeof login>>,
     googleLogin = false,
   ) => {
-    if (!session.user.planSelectionRequired)
-      await ensureStarterWorkspace(session.user.accountType);
     saveUser(session.user);
-    const fallback = getAccountHome(session.user.accountType);
     const requested = (location.state as { from?: unknown } | null)?.from;
-    const returnTo =
-      typeof requested === "string" &&
-      requested.startsWith("/") &&
-      !requested.startsWith("//")
-        ? requested
-        : fallback;
+    const returnTo = getLoginReturnPath(requested, session.user.accountType);
     navigate(
       session.user.planSelectionRequired
         ? googleLogin && !session.user.pendingPlanTransactionId

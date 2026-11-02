@@ -4,7 +4,7 @@ import {
   planCatalogSchema,
   planSubscriptionSchema,
 } from "@/schemas/plan.schema";
-import { ensureStarterWorkspace, refreshSession } from "./auth.service";
+import { refreshSession } from "./auth.service";
 
 export async function listPlans(signal?: AbortSignal) {
   return validateForm(
@@ -26,6 +26,5 @@ export async function finishPlanSelection(signal?: AbortSignal) {
     throw new Error(
       "A ativação do plano ainda não foi confirmada. Tente novamente.",
     );
-  await ensureStarterWorkspace(user.accountType, signal);
   return user;
 }

@@ -4,22 +4,32 @@ import AuthLayout from "@/components/AuthLayout";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { Link } from "react-router-dom";
+import { requestPasswordRecovery } from "@/services/auth.service";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [submitted, setSubmitted] = useState<boolean>(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!email) return;
 
     setLoading(true);
-
-    setTimeout(() => {
-      setLoading(false);
+    setError("");
+    try {
+      await requestPasswordRecovery({ email });
       setSubmitted(true);
-    }, 600);
+    } catch (reason) {
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : "Não foi possível solicitar a recuperação da senha.",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -59,6 +69,7 @@ export default function ForgotPasswordPage() {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
             <Input
               id="forgot-password-email"
               label="E-mail"
