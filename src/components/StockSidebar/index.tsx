@@ -8,20 +8,13 @@ export type CategoryStat = {
   percentage: number;
 };
 
-const defaultStats: CategoryStat[] = [
-  { name: "Despensa", count: 46, color: "#2552C8", percentage: 80 },
-  { name: "Geladeira", count: 31, color: "#6D91EA", percentage: 55 },
-  { name: "Frutas e verduras", count: 28, color: "#2D9C6B", percentage: 48 },
-  { name: "Congelados", count: 23, color: "#E1A11B", percentage: 40 },
-];
-
 export type StockSidebarProps = {
-  stats?: CategoryStat[];
+  stats: CategoryStat[];
   onFilterExpired?: () => void;
 };
 
 export default function StockSidebar({
-  stats = defaultStats,
+  stats,
   onFilterExpired,
 }: StockSidebarProps) {
   return (

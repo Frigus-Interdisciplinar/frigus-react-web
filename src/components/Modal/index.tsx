@@ -23,31 +23,14 @@ export type ModalProps = {
   confirmLabel?: string;
 };
 
-const defaultSuggestedItems: SuggestedItem[] = [
-  { id: "1", name: "Arroz integral", category: "Mercearia", quantity: "1 kg" },
-  {
-    id: "2",
-    name: "Peito de frango",
-    category: "Proteínas",
-    quantity: "500 g",
-  },
-  { id: "3", name: "Alface crespa", category: "Hortifruti", quantity: "1 un." },
-  {
-    id: "4",
-    name: "Iogurte natural",
-    category: "Laticínios",
-    quantity: "4 un.",
-  },
-];
-
 export default function Modal({
   isOpen,
   onClose,
   onConfirm,
   title = "Adicionar itens à lista",
   subtitle = "Selecione os alimentos que deseja incluir na sua lista",
-  items = defaultSuggestedItems,
-  defaultSelectedIds = ["1"],
+  items = [],
+  defaultSelectedIds = [],
   helperText = "Você pode ajustar as quantidades depois.",
   cancelLabel = "Cancelar",
   confirmLabel = "Adicionar itens",
@@ -111,11 +94,17 @@ export default function Modal({
           placeholder="Buscar alimento"
         />
 
-        <ModalItemList
-          items={filteredItems}
-          selectedIds={selectedIds}
-          onToggleSelect={toggleSelect}
-        />
+        {filteredItems.length > 0 ? (
+          <ModalItemList
+            items={filteredItems}
+            selectedIds={selectedIds}
+            onToggleSelect={toggleSelect}
+          />
+        ) : (
+          <p role="status" className="px-6 py-8 text-center text-sm text-gray-500">
+            Nenhum item disponível no catálogo.
+          </p>
+        )}
         {confirmError && (
           <p role="alert" className="px-6 text-sm text-red-600">
             {confirmError}

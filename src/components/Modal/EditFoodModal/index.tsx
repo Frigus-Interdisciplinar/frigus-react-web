@@ -15,7 +15,7 @@ export type EditFoodModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSave?: (data: FoodItemData) => void | Promise<void>;
-  initialData?: FoodItemData;
+  initialData: FoodItemData;
 };
 
 interface EditFoodFormProps {
@@ -23,14 +23,6 @@ interface EditFoodFormProps {
   onClose: () => void;
   onSave?: (data: FoodItemData) => void | Promise<void>;
 }
-
-const defaultData: FoodItemData = {
-  name: "Leite integral",
-  category: "Laticínios",
-  location: "Geladeira",
-  quantity: "2 L",
-  expiration: "18 ago 2026",
-};
 
 function EditFoodForm({ initialData, onClose, onSave }: EditFoodFormProps) {
   const [form, setForm] = useState({
@@ -227,7 +219,7 @@ export default function EditFoodModal({
   isOpen,
   onClose,
   onSave,
-  initialData = defaultData,
+  initialData,
 }: EditFoodModalProps) {
   const dialogRef = useModalFocus(isOpen, onClose);
   if (!isOpen) return null;

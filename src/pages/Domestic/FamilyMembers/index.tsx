@@ -26,6 +26,7 @@ export default function FamilyMembersPage() {
     () => searchParams.get("alias") === "convidar-membro",
   );
   const [groupId, setGroupId] = useState<string>();
+  const [groupName, setGroupName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState("");
@@ -42,6 +43,7 @@ export default function FamilyMembersPage() {
           return;
         }
         setGroupId(group.id);
+        setGroupName(group.name);
         setMembers(
           (group.members ?? []).map((member) => ({
             id: member.userId,
@@ -169,7 +171,7 @@ export default function FamilyMembersPage() {
             <div className="w-px h-10 bg-white/20 dark:bg-white/10" />
             <div className="text-center">
               <span className="font-montserrat font-bold text-2xl text-white block">
-                1
+                {members.filter((member) => member.roleType === "admin").length}
               </span>
               <span className="text-[11px] text-frigus-ice dark:text-blue-200 uppercase tracking-wider font-semibold">
                 Administrador
@@ -319,7 +321,7 @@ export default function FamilyMembersPage() {
           isOpen={isInviteOpen}
           onClose={() => setIsInviteOpen(false)}
           onInvite={handleInvite}
-          householdName="Casa Henrique"
+          householdName={groupName}
         />
       </div>
     </>
