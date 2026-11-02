@@ -1,7 +1,7 @@
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Search, ChevronDown, Filter } from "lucide-react";
+import { Minus, Plus, Search, ChevronDown, Filter } from "lucide-react";
 import {
   CommercialAddBatchModal,
   CommercialFilterStockModal,
@@ -12,6 +12,7 @@ import {
   createStockProduct,
   getInventoryContext,
   listStockProducts,
+  updateStockProduct,
   type StockProduct,
 } from "@/services/inventory.service";
 import type { CommercialBatchInput } from "@/components/CommercialModals";
@@ -30,6 +31,7 @@ interface BatchItem {
   category: string;
   location: "Câmara fria" | "Depósito" | "Área de venda" | "Freezers";
   quantity: string;
+  quantityAmount: number;
   unitPrice: number;
   imageUrl?: string;
   expiration: string;
@@ -53,6 +55,7 @@ export default function CommercialStockPage() {
   const [selectedStatus, setSelectedStatus] = useState("Todas");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [decrementingBatchId, setDecrementingBatchId] = useState<string | null>(null);
 
   const beginRequest = useLatestRequest();
   const loadStock = useCallback(async () => {
@@ -102,6 +105,7 @@ export default function CommercialStockPage() {
             category: formatProductCategory(item.product?.category ?? item.category),
             location: places[item.product?.storagePlace ?? ""] ?? "Depósito",
             quantity: `${item.quantity} ${formatUnitOfMeasure(item.product?.unitOfMeasure)}`,
+            quantityAmount: item.quantity,
             expiration: new Date(
               `${item.expireDate}T00:00:00`,
             ).toLocaleDateString("pt-BR"),
@@ -168,6 +172,20 @@ export default function CommercialStockPage() {
       batch: input.batchCode?.trim() || undefined,
     });
     await loadStock();
+  };
+
+  const handleDecrement = async (batch: BatchItem) => {
+    if (batch.quantityAmount <= 0 || decrementingBatchId !== null) return;
+    setDecrementingBatchId(batch.id);
+    setLoadError("");
+    try {
+      await updateStockProduct(Number(batch.id), { quantity: batch.quantityAmount - 1 });
+      await loadStock();
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : "Não foi possível diminuir a quantidade.");
+    } finally {
+      setDecrementingBatchId(null);
+    }
   };
 
   const locationTabs = [
@@ -488,12 +506,24 @@ export default function CommercialStockPage() {
                       {getStatusBadge(batch.status)}
                     </td>
                     <td className="py-4 px-6 text-right">
+                      <div className="inline-flex items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        aria-label={`Diminuir quantidade de ${batch.name}`}
+                        title="Diminuir em 1"
+                        disabled={batch.quantityAmount === 0 || decrementingBatchId !== null}
+                        onClick={() => void handleDecrement(batch)}
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-[#2552C8] hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2552C8] disabled:cursor-not-allowed disabled:opacity-40 dark:border-[#343941] dark:text-blue-400 dark:hover:bg-blue-900/30"
+                      >
+                        <Minus size={15} aria-hidden="true" />
+                      </button>
                       <Link
                         to={`/commercial/stock/${batch.id}`}
                         className="inline-flex items-center px-3 py-1 rounded-lg text-xs font-bold text-[#2552C8] dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
                       >
                         Ver detalhes
                       </Link>
+                      </div>
                     </td>
                   </tr>
                 ))

@@ -1,10 +1,11 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Camera, Check, User } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useStore } from "@/store/store";
 import {
   updateProfile,
   updateProfilePicture,
+  getProfile,
 } from "@/services/profile.service";
 
 const MAX_PHOTO_SIZE_BYTES = 5 * 1024 * 1024;
@@ -22,6 +23,22 @@ export default function ProfileEditPage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    void getProfile()
+      .then((currentUser) => {
+        if (!active) return;
+        setUser(currentUser);
+        setName(currentUser.name);
+        setBirthDate(currentUser.birthDate ?? "");
+        setPreviewUrl(currentUser.profilePictureUrl ?? "");
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [setUser]);
 
   const initials =
     user?.name

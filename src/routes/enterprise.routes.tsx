@@ -1,4 +1,4 @@
-import { Navigate, Route } from "react-router-dom";
+import { Route } from "react-router-dom";
 import AuthGuard from "@/components/AuthGuard";
 import { lazyPage } from "@/routes/lazyPage";
 
@@ -7,6 +7,8 @@ const EnterpriseOverviewPage = lazyPage(
 );
 const EnterpriseAdsPage = lazyPage(() => import("@/pages/Enterprise/Ads"));
 const EnterpriseViewsPage = lazyPage(() => import("@/pages/Enterprise/Views"));
+const EnterpriseReportPage = lazyPage(() => import("@/pages/Enterprise/Report"));
+const EnterpriseAudiencePage = lazyPage(() => import("@/pages/Enterprise/Audience"));
 
 export const enterpriseRoutes = (
   <>
@@ -38,7 +40,7 @@ export const enterpriseRoutes = (
       path="/enterprise/report"
       element={
         <AuthGuard accountType="BUSINESS">
-          <Navigate to="/enterprise/views" replace />
+          <EnterpriseReportPage />
         </AuthGuard>
       }
     />
@@ -46,7 +48,7 @@ export const enterpriseRoutes = (
       path="/enterprise/audience"
       element={
         <AuthGuard accountType="BUSINESS">
-          <Navigate to="/enterprise/views" replace />
+          <EnterpriseAudiencePage />
         </AuthGuard>
       }
     />

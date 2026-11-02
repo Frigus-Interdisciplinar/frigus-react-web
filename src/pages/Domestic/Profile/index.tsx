@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { User, Mail, Phone, Home, Shield, Bell, Edit } from "lucide-react";
 import Badge from "@/components/Badge";
 import { useStore } from "@/store/store";
+import { getProfile } from "@/services/profile.service";
 import { getInventorySummary } from "@/services/inventory.service";
 import { listGroups } from "@/services/group.service";
 import { getMySubscription } from "@/services/plan.service";
@@ -11,6 +12,7 @@ import { formatPlanPrice, getPlansPath } from "@/utils/plan.util";
 
 export default function ProfilePage() {
   const user = useStore((state) => state.user);
+  const setUser = useStore((state) => state.login);
   const groupLabel =
     user?.accountType === "DOMESTIC"
       ? "Nome da casa"
@@ -25,6 +27,9 @@ export default function ProfilePage() {
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
+    void getProfile()
+      .then((currentUser) => active && setUser(currentUser))
+      .catch(() => {});
     void Promise.all([
       listGroups(controller.signal),
       getInventorySummary(controller.signal),
@@ -39,7 +44,7 @@ export default function ProfilePage() {
       .catch((reason: unknown) => active && setLoadError(reason instanceof Error ? reason.message : "Não foi possível carregar os dados do perfil."))
       .finally(() => active && setLoading(false));
     return () => { active = false; controller.abort(); };
-  }, []);
+  }, [setUser]);
   return (
     <>
       <div className="space-y-6 max-w-4xl mx-auto">

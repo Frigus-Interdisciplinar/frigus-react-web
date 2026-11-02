@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Plus, Search } from "lucide-react";
+import { Minus, Plus, Search } from "lucide-react";
 import Badge, { type BadgeVariant } from "@/components/Badge";
 import { AddFoodModal } from "@/components/Modal";
 import type { NewFoodData } from "@/components/Modal/AddFoodModal";
@@ -14,6 +14,7 @@ import {
   createStockProduct,
   getInventoryContext,
   listStockProducts,
+  updateStockProduct,
   type AccountInventoryContext,
   type StockProduct,
 } from "@/services/inventory.service";
@@ -115,6 +116,7 @@ export default function StockPage() {
     useState("Todas as validades");
   const [quantityFilter, setQuantityFilter] = useState("Todas as quantidades");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [decrementingItemId, setDecrementingItemId] = useState<number | null>(null);
 
   const beginRequest = useLatestRequest();
   const loadStock = useCallback(
@@ -195,6 +197,20 @@ export default function StockPage() {
     await loadStock(current);
   };
 
+  const handleDecrement = async (item: StockItem) => {
+    if (item.amount <= 0 || decrementingItemId !== null) return;
+    setDecrementingItemId(item.id);
+    setLoadError("");
+    try {
+      await updateStockProduct(item.id, { quantity: item.amount - 1 });
+      await loadStock(context ?? undefined);
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : "Não foi possível diminuir a quantidade.");
+    } finally {
+      setDecrementingItemId(null);
+    }
+  };
+
   const filteredItems = items.filter((item) => {
     const matchesTab = activeTab === "Todos" || item.location === activeTab;
     const matchesSearch =
@@ -261,6 +277,12 @@ export default function StockPage() {
             </button>
           </div>
         </div>
+
+        {loadError && items.length > 0 && (
+          <p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950/30 dark:text-red-300">
+            {loadError}
+          </p>
+        )}
 
         <div className="bg-white dark:bg-[#1C1E22] rounded-3xl p-4 md:p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs space-y-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -471,12 +493,24 @@ export default function StockPage() {
                           </Badge>
                         </td>
                         <td className="py-3.5 px-4 text-right">
+                          <div className="inline-flex items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              aria-label={`Diminuir quantidade de ${item.name}`}
+                              title="Diminuir em 1"
+                              disabled={item.amount === 0 || decrementingItemId !== null}
+                              onClick={() => void handleDecrement(item)}
+                              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 text-frigus-primary hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-frigus-primary disabled:cursor-not-allowed disabled:opacity-40 dark:border-[#343941] dark:text-blue-400 dark:hover:bg-blue-950/50"
+                            >
+                              <Minus size={15} aria-hidden="true" />
+                            </button>
                           <Link
                             to={`/stock/${item.id}`}
                             className="inline-flex items-center justify-center px-3 py-1 rounded-lg text-xs font-bold text-frigus-primary dark:text-[#5B89F7] hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors"
                           >
                             Ver
                           </Link>
+                          </div>
                         </td>
                       </tr>
                     ))

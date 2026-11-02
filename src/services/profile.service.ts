@@ -10,6 +10,15 @@ export interface ProfileUpdate {
   profilePictureUrl?: string;
 }
 
+export function getProfile(): Promise<AuthUser> {
+  return serviceCall(async () =>
+    validateForm(
+      authUserResponseSchema,
+      await api.get<unknown>("/web/profile"),
+    ),
+  );
+}
+
 interface ProfilePictureUploadTicket {
   uploadUrl: string;
   profilePictureUrl: string;
