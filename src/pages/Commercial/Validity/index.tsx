@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLatestRequest } from "@/hooks/useLatestRequest";
+import {
+  formatStoragePlace,
+  formatUnitOfMeasure,
+} from "@/utils/unit.util";
 import { AlertOctagon, AlertCircle } from "lucide-react";
 import { CommercialRegisterWasteModal } from "@/components/CommercialModals";
 import { createDiscard } from "@/services/discard.service";
@@ -52,8 +56,8 @@ export default function CommercialValidityPage() {
   const expiryPriorities = expiring.map(({ item, days }) => ({
     id: item.id,
     product: item.product?.name ?? `Produto #${item.productId}`,
-    batch: `Lote #${item.id} · ${item.product?.storagePlace ?? "Estoque"}`,
-    quantity: `${item.quantity} ${item.product?.unitOfMeasure ?? "un"}`,
+    batch: `Lote #${item.id} · ${formatStoragePlace(item.product?.storagePlace, "commercial")}`,
+    quantity: `${item.quantity} ${formatUnitOfMeasure(item.product?.unitOfMeasure)}`,
     date: new Date(`${item.expireDate}T00:00:00`).toLocaleDateString("pt-BR"),
     status:
       days < 0 ? "Vencido" : days === 0 ? "Vence hoje" : `Em ${days} dia(s)`,
@@ -71,8 +75,8 @@ export default function CommercialValidityPage() {
     .map((item) => ({
       id: item.id,
       product: item.product?.name ?? `Produto #${item.productId}`,
-      minimum: `Mínimo: ${item.minimalQuantity} ${item.product?.unitOfMeasure ?? "un"}`,
-      available: `${item.quantity} ${item.product?.unitOfMeasure ?? "un"} disponíveis`,
+      minimum: `Mínimo: ${item.minimalQuantity} ${formatUnitOfMeasure(item.product?.unitOfMeasure)}`,
+      available: `${item.quantity} ${formatUnitOfMeasure(item.product?.unitOfMeasure)} disponíveis`,
       percentage: item.minimalQuantity
         ? Math.min(
             100,
@@ -313,7 +317,7 @@ export default function CommercialValidityPage() {
           id: item.id,
           name: item.product?.name ?? `Produto #${item.productId}`,
           quantity: item.quantity,
-          unit: item.product?.unitOfMeasure ?? "un",
+          unit: formatUnitOfMeasure(item.product?.unitOfMeasure),
         }))}
         onRecord={recordDiscard}
       />

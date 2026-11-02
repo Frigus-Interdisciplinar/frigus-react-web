@@ -13,6 +13,10 @@ import {
   listStockProducts,
 } from "@/services/inventory.service";
 import { Skeleton } from "@/components/LoadingSkeleton";
+import {
+  formatStoragePlace,
+  formatUnitOfMeasure,
+} from "@/utils/unit.util";
 
 type AlertItem = {
   id: string;
@@ -69,7 +73,7 @@ export default function AlertsPage() {
             {
               id: String(product.id),
               name,
-              detail: `${product.quantity} ${product.product?.unitOfMeasure ?? "un"} • ${product.product?.storagePlace ?? "Estoque"}`,
+              detail: `${product.quantity} ${formatUnitOfMeasure(product.product?.unitOfMeasure)} • ${formatStoragePlace(product.product?.storagePlace)}`,
               badge: low
                 ? "Estoque baixo"
                 : expired
