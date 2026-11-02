@@ -17,6 +17,14 @@ const prompts = [
   "Sugira uma receita simples para hoje.",
 ];
 
+function renderAssistantMessage(content: string) {
+  return content.split(/(\*\*.+?\*\*)/gs).map((part, index) =>
+    part.startsWith("**") && part.endsWith("**")
+      ? <strong key={index} className="font-semibold">{part.slice(2, -2)}</strong>
+      : part,
+  );
+}
+
 export default function AiChatPage() {
   const [stockId, setStockId] = useState<number | null>(null);
   const [sessionId, setSessionId] = useState<string | undefined>();
@@ -181,7 +189,9 @@ export default function AiChatPage() {
                 className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm leading-6 ${message.role === "user" ? "rounded-br-md bg-[#2552C8] text-white" : "rounded-bl-md bg-[#F5F8FC] text-slate-700 dark:bg-[#252A32] dark:text-neutral-200"}`}
               >
                 <p className="whitespace-pre-wrap break-words">
-                  {message.content}
+                  {message.role === "assistant"
+                    ? renderAssistantMessage(message.content)
+                    : message.content}
                 </p>
                 {message.recipe && (
                   <div className="mt-3 border-t border-slate-200 pt-3 dark:border-[#41464E]">
