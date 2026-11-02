@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Bell } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Bell, LogOut } from "lucide-react";
 import { CommercialNotificationsModal } from "@/components/CommercialModals";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useStore } from "@/store/store";
+import { logout as endSession } from "@/services/auth.service";
 
 interface CommercialTopbarProps {
   breadcrumb?: string;
@@ -14,6 +15,8 @@ export default function CommercialTopbar({
 }: CommercialTopbarProps) {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const user = useStore((state) => state.user);
+  const clearSession = useStore((state) => state.logout);
+  const navigate = useNavigate();
   const initials =
     user?.name
       .split(/\s+/)
@@ -21,6 +24,11 @@ export default function CommercialTopbar({
       .map((part) => part[0])
       .join("")
       .toUpperCase() ?? "";
+  const handleLogout = () => {
+    void endSession().catch(() => undefined);
+    clearSession();
+    navigate("/login", { replace: true });
+  };
 
   return (
     <>
@@ -40,6 +48,16 @@ export default function CommercialTopbar({
             className="relative flex h-9 w-9 items-center justify-center rounded-full border border-[#E1E7F0] text-[#141C55] hover:bg-[#F5F8FC] dark:border-[#343941] dark:text-neutral-200 dark:hover:bg-[#252A32]"
           >
             <Bell size={16} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            onClick={handleLogout}
+            aria-label="Sair da conta"
+            title="Sair da conta"
+            className="flex h-9 items-center justify-center gap-2 rounded-full border border-red-200 px-3 text-xs font-semibold text-red-700 hover:bg-red-50 dark:border-red-900/60 dark:text-red-300 dark:hover:bg-red-950/30"
+          >
+            <LogOut size={16} aria-hidden="true" />
+            <span className="hidden sm:inline">Sair</span>
           </button>
           <Link
             to="/profile"
