@@ -11,17 +11,8 @@ export interface ProfileUpdate {
 }
 
 interface ProfilePictureUploadTicket {
-  path: string;
-  token: string;
-}
-
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL?.replace(/\/$/, "");
-const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-const profilePictureBucket =
-  import.meta.env.VITE_SUPABASE_STORAGE_BUCKET ?? "profile-picture";
-
-function encodeStoragePath(path: string): string {
-  return path.split("/").map(encodeURIComponent).join("/");
+  uploadUrl: string;
+  profilePictureUrl: string;
 }
 
 export function updateProfile(data: ProfileUpdate): Promise<AuthUser> {
@@ -35,38 +26,25 @@ export function updateProfile(data: ProfileUpdate): Promise<AuthUser> {
 
 export function updateProfilePicture(file: File): Promise<AuthUser> {
   return serviceCall(async () => {
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error("O envio de foto de perfil não está configurado.");
-    }
-
     const ticket = await api.post<ProfilePictureUploadTicket>(
       "/web/profile/picture-upload",
       { contentType: file.type },
     );
-    const encodedPath = encodeStoragePath(ticket.path);
-    const uploadUrl = new URL(
-      `/storage/v1/object/upload/sign/${encodeURIComponent(profilePictureBucket)}/${encodedPath}`,
-      supabaseUrl,
-    );
-    uploadUrl.searchParams.set("token", ticket.token);
 
-    const uploadResponse = await fetch(uploadUrl, {
+    const uploadResponse = await fetch(ticket.uploadUrl, {
       method: "PUT",
-      headers: {
-        apikey: supabaseKey,
-        Authorization: `Bearer ${supabaseKey}`,
-        "Content-Type": file.type,
-      },
+      headers: { "Content-Type": file.type },
       body: file,
     });
     if (!uploadResponse.ok) {
       throw new Error("Não foi possível enviar a foto. Tente novamente.");
     }
 
-    const profilePictureUrl = `${supabaseUrl}/storage/v1/object/public/${encodeURIComponent(profilePictureBucket)}/${encodedPath}`;
     return validateForm(
       authUserResponseSchema,
-      await api.patch<unknown>("/web/profile", { profilePictureUrl }),
+      await api.patch<unknown>("/web/profile", {
+        profilePictureUrl: ticket.profilePictureUrl,
+      }),
     );
   });
 }
