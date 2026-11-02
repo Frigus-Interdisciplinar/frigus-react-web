@@ -40,7 +40,7 @@ function ChatContent({ alias }: { alias: string | null }) {
 
   return (
     <>
-      <div className="space-y-4 h-[calc(100vh-140px)] flex flex-col">
+      <div className="flex h-[calc(100dvh-210px)] min-h-[360px] flex-col space-y-4">
         <div>
           <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-frigus-navy dark:text-white">
             Chat da família
@@ -51,7 +51,7 @@ function ChatContent({ alias }: { alias: string | null }) {
         </div>
 
         <div className="flex-1 bg-white dark:bg-[#1C1E22] rounded-3xl border border-gray-200/80 dark:border-[#343941] shadow-xs overflow-hidden grid grid-cols-1 md:grid-cols-12 min-h-0">
-          <div className="md:col-span-4 border-r border-gray-100 dark:border-[#343941] flex flex-col h-full bg-gray-50/30 dark:bg-[#15171B]">
+          <div className="md:col-span-4 flex h-full min-h-0 flex-col border-r border-gray-100 bg-gray-50/30 dark:border-[#343941] dark:bg-[#15171B]">
             <div className="p-4 border-b border-gray-100 dark:border-[#343941]">
               <div className="relative">
                 <Search
@@ -69,7 +69,7 @@ function ChatContent({ alias }: { alias: string | null }) {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto divide-y divide-gray-50 dark:divide-[#343941] p-2 space-y-1">
+            <div className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain divide-y divide-gray-50 p-2 dark:divide-[#343941]">
               <div className="px-3 pt-2 pb-1">
                 <span className="text-[10px] font-bold text-gray-400 dark:text-neutral-400 uppercase tracking-wider">
                   Grupos
@@ -176,8 +176,8 @@ function ChatContent({ alias }: { alias: string | null }) {
             </div>
           </div>
 
-          <div className="md:col-span-8 flex flex-col h-full bg-white dark:bg-[#1C1E22]">
-            <div className="p-4 px-6 border-b border-gray-100 dark:border-[#343941] flex items-center justify-between bg-white dark:bg-[#1C1E22]">
+          <div className="md:col-span-8 flex h-full min-h-0 flex-col bg-white dark:bg-[#1C1E22]">
+            <div className="flex shrink-0 items-center justify-between border-b border-gray-100 bg-white p-4 px-6 dark:border-[#343941] dark:bg-[#1C1E22]">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-frigus-primary dark:bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
                   <Users size={18} />
@@ -201,7 +201,7 @@ function ChatContent({ alias }: { alias: string | null }) {
               role="log"
               aria-label="Mensagens da conversa"
               aria-busy={loading || messagesLoading}
-              className="flex-1 p-6 overflow-y-auto space-y-4 bg-gray-50/40 dark:bg-[#121418]"
+              className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain bg-gray-50/40 p-6 dark:bg-[#121418]"
             >
               {loading && <LoadingSpinner label="Carregando conversas…" />}
               {!loading && !error && !conversations.length && (
@@ -308,7 +308,7 @@ function ChatContent({ alias }: { alias: string | null }) {
 
             <form
               onSubmit={handleSendMessage}
-              className="p-4 bg-white dark:bg-[#1C1E22] border-t border-gray-100 dark:border-[#343941] flex items-center gap-3"
+              className="flex shrink-0 items-center gap-3 border-t border-gray-100 bg-white p-4 dark:border-[#343941] dark:bg-[#1C1E22]"
             >
               <input
                 type="text"
