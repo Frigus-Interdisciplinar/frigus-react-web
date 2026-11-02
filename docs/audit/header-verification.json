@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-29",
+  "method": "GET",
+  "path": "/login",
+  "status": 200,
+  "syntaxCheck": "nginx -t: successful",
+  "temporaryContainerRemoved": true,
+  "headers": {
+    "X-Frame-Options": "DENY",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+    "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: http:; connect-src 'self' https: http://localhost:3000 http://127.0.0.1:3000; frame-src 'none'; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'"
+  }
+}

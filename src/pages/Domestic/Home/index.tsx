@@ -1,44 +1,144 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronRight, ArrowRight, Check } from "lucide-react";
-import AppLayout from "@/components/AppLayout";
+import { ChevronRight, ArrowRight } from "lucide-react";
 import Badge from "@/components/Badge";
+import {
+  getInventoryContext,
+  getInventorySummary,
+  listStockProducts,
+  type StockProduct,
+  type StockSummary,
+} from "@/services/inventory.service";
+import { useStore } from "@/store/store";
+import {
+  getShoppingListPreview,
+  type ShoppingListPreviewItem,
+} from "@/services/shopping-list.service";
+import { Skeleton } from "@/components/LoadingSkeleton";
 
 export default function DashboardPage() {
+  const [summary, setSummary] = useState<StockSummary | null>(null);
+  const [summaryError, setSummaryError] = useState("");
+  const [summaryLoading, setSummaryLoading] = useState(true);
+  const [shoppingItems, setShoppingItems] = useState<ShoppingListPreviewItem[]>(
+    [],
+  );
+  const [shoppingLoading, setShoppingLoading] = useState(true);
+  const [shoppingError, setShoppingError] = useState("");
+  const [recentProducts, setRecentProducts] = useState<StockProduct[]>([]);
+  const [recentLoading, setRecentLoading] = useState(true);
+  const [recentError, setRecentError] = useState("");
+  const user = useStore((state) => state.user);
+  useEffect(() => {
+    const controller = new AbortController();
+    const { signal } = controller;
+    void getInventorySummary(signal)
+      .then((summary) => {
+        if (!signal.aborted) setSummary(summary);
+      })
+      .catch(() => {
+        if (!signal.aborted)
+          setSummaryError("Não foi possível carregar o resumo.");
+      })
+      .finally(() => {
+        if (!signal.aborted) setSummaryLoading(false);
+      });
+    void getShoppingListPreview(signal)
+      .then((items) => {
+        if (!signal.aborted) setShoppingItems(items);
+      })
+      .catch(() => {
+        if (!signal.aborted)
+          setShoppingError("Não foi possível carregar a lista de compras.");
+      })
+      .finally(() => {
+        if (!signal.aborted) setShoppingLoading(false);
+      });
+    void getInventoryContext(signal)
+      .then(async (context) => {
+        const stock = context.stocks[0];
+        if (!stock || signal.aborted) return;
+        const products = await listStockProducts(stock.id, signal);
+        if (!signal.aborted) setRecentProducts(products.slice(0, 4));
+      })
+      .catch(() => {
+        if (!signal.aborted)
+          setRecentError("Não foi possível carregar os produtos recentes.");
+      })
+      .finally(() => {
+        if (!signal.aborted) setRecentLoading(false);
+      });
+    return () => controller.abort();
+  }, []);
+  const nearExpiration = summary?.nearExpiration ?? [];
+  const readyPercentage = summary?.itemCount
+    ? Math.round(
+        ((summary.itemCount - nearExpiration.length) / summary.itemCount) * 100,
+      )
+    : 0;
+  const consumedCount = Object.values(summary?.consumedThisWeek ?? {}).reduce(
+    (total, count) => total + count,
+    0,
+  );
+  const consumptionDays = Object.entries(summary?.consumedThisWeek ?? {}).slice(
+    -7,
+  );
+  const maxDailyConsumption = Math.max(
+    1,
+    ...consumptionDays.map(([, count]) => count),
+  );
+  const firstName = user?.name.trim().split(/\s+/)[0] || "visitante";
   return (
-    <AppLayout activeSection="home">
+    <>
       <div className="space-y-6">
-        {/* Cabeçalho de Boas-Vindas */}
+        {summaryError && (
+          <p role="alert" className="text-sm text-red-700 dark:text-red-300">
+            {summaryError}
+          </p>
+        )}
+        {shoppingError && (
+          <p role="alert" className="text-sm text-red-700 dark:text-red-300">
+            {shoppingError}
+          </p>
+        )}
+        {recentError && (
+          <p role="alert" className="text-sm text-red-700 dark:text-red-300">
+            {recentError}
+          </p>
+        )}
         <div>
-          <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-frigus-navy">
-            Bom dia, Henrique
+          <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-frigus-navy dark:text-white">
+            Bom dia, {firstName}
           </h1>
-          <p className="text-gray-500 text-sm mt-1 font-sans">
+          <p className="text-gray-500 dark:text-neutral-400 text-sm mt-1 font-sans">
             Uma visão clara para aproveitar melhor cada item
           </p>
         </div>
 
-        {/* Linha Superior: Hero Card + Card Para Usar Primeiro */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Hero Banner (8 colunas) */}
-          <div className="lg:col-span-8 bg-frigus-primary rounded-3xl p-6 md:p-8 text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 shadow-sm">
-            {/* Círculos decorativos de fundo */}
-            <div className="absolute right-40 -top-10 w-48 h-48 rounded-full bg-frigus-accent/30 pointer-events-none blur-xl" />
-            <div className="absolute -right-10 -bottom-10 w-44 h-44 rounded-full bg-frigus-ice/20 pointer-events-none blur-lg" />
+          <div className="lg:col-span-8 min-h-[148px] bg-white dark:bg-[#1B1D20] border border-[#D5E1F2] dark:border-[#34383E] rounded-xl p-6 md:p-7 text-[#141C55] dark:text-white relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 shadow-xs">
+            <div className="absolute right-0 top-0 w-[120px] h-[122px] rounded-full bg-[#2552C8]/35 pointer-events-none translate-x-1/4 -translate-y-1/4" />
+            <div className="absolute right-0 bottom-0 w-[120px] h-[122px] rounded-full bg-[#F9C968]/45 pointer-events-none translate-x-1/3 translate-y-1/4" />
 
             <div className="relative z-10 space-y-3 max-w-md">
-              <span className="text-[11px] uppercase tracking-wider font-bold text-frigus-ice font-sans">
-                Sua casa hoje
-              </span>
-              <h2 className="font-montserrat font-bold text-2xl md:text-[26px] leading-tight">
-                3 itens pedem atenção
+              <h2 className="font-montserrat font-bold text-lg leading-tight text-[#141C55] dark:text-white">
+                {summaryLoading ? (
+                  <Skeleton width={190} height={22} />
+                ) : (
+                  <>
+                    {nearExpiration.length}{" "}
+                    {nearExpiration.length === 1 ? "item pede" : "itens pedem"}{" "}
+                    atenção
+                  </>
+                )}
               </h2>
-              <p className="text-frigus-ice text-sm font-sans leading-relaxed">
+              <p className="text-[#536782] dark:text-neutral-300 text-xs font-sans leading-relaxed">
                 Você ainda consegue usá-los antes da validade.
               </p>
               <div className="pt-2">
                 <Link
                   to="/alerts"
-                  className="inline-flex items-center gap-2 bg-frigus-accent hover:bg-[#F2BD50] text-frigus-navy px-4 py-2 rounded-xl text-xs font-bold transition-transform hover:scale-[1.02] active:scale-[0.98]"
+                  className="inline-flex items-center gap-2 bg-[#2552C8] hover:bg-blue-700 text-white px-3.5 py-1.5 rounded-md text-[11px] font-semibold transition-colors"
                 >
                   <span>Ver itens</span>
                   <ChevronRight size={14} />
@@ -46,19 +146,23 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Insight Card interno */}
-            <div className="relative z-10 w-full md:w-56 bg-frigus-navy/90 backdrop-blur-xs rounded-2xl p-4 border border-white/10 flex flex-col justify-between shrink-0 shadow-lg">
+            <div className="relative z-10 w-full md:w-[206px] min-h-[102px] bg-[#141C55] dark:bg-[#15191F] rounded-md p-3.5 border border-white/10 flex flex-row items-center justify-between shrink-0 shadow-sm">
               <div>
                 <span className="text-[10px] uppercase font-bold tracking-wider text-frigus-ice">
                   Estoque em dia
                 </span>
                 <div className="font-montserrat font-bold text-3xl text-white mt-1">
-                  72%
+                  {summaryLoading ? (
+                    <Skeleton width={64} height={32} />
+                  ) : (
+                    `${readyPercentage}%`
+                  )}
                 </div>
-                <span className="text-xs text-frigus-ice/80">dos itens sem alerta</span>
+                <span className="text-xs text-frigus-ice/80">
+                  dos itens sem alerta
+                </span>
               </div>
 
-              {/* Sparkline bars */}
               <div className="flex items-end gap-1.5 h-10 mt-4 pt-1">
                 <div className="w-2.5 h-4 bg-frigus-ice rounded-xs" />
                 <div className="w-2.5 h-7 bg-frigus-ice rounded-xs" />
@@ -69,221 +173,283 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Para usar primeiro (4 colunas) */}
-          <div className="lg:col-span-4 bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs flex flex-col justify-between">
+          <div className="lg:col-span-4 bg-white dark:bg-[#1C1E22] rounded-3xl p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs flex flex-col justify-between">
             <div className="flex items-center justify-between">
-              <h3 className="font-montserrat font-bold text-frigus-navy text-base">
+              <h3 className="font-montserrat font-bold text-frigus-navy dark:text-white text-base">
                 Para usar primeiro
               </h3>
               <Link
                 to="/alerts"
-                className="text-xs font-bold text-frigus-primary hover:underline"
+                className="text-[11px] font-semibold text-[#2552C8] dark:text-[#A7BCFF] hover:underline"
               >
                 Ver todos
               </Link>
             </div>
 
-            <div className="h-px bg-gray-100 my-4" />
+            <div className="h-px bg-gray-100 dark:bg-[#343941] my-4" />
 
-            <div className="space-y-4">
-              {/* Item 1 */}
-              <div className="flex items-center justify-between group">
-                <div className="flex items-center gap-3">
-                  <div className="w-1.5 h-8 bg-red-400 rounded-full" />
-                  <div>
-                    <h4 className="text-sm font-bold text-frigus-navy group-hover:text-frigus-primary transition-colors">
-                      Iogurte natural
-                    </h4>
-                    <p className="text-xs text-gray-400">Geladeira · 2 un.</p>
-                  </div>
+            <div className="space-y-2.5">
+              {summaryLoading && (
+                <div
+                  role="status"
+                  aria-label="Carregando validade dos produtos"
+                  className="space-y-3 py-1"
+                >
+                  {[0, 1].map((item) => (
+                    <div key={item} className="flex items-center gap-3">
+                      <Skeleton width={4} height={28} />
+                      <div className="flex-1 space-y-2">
+                        <Skeleton width="55%" height={12} />
+                        <Skeleton width="80%" height={10} />
+                      </div>
+                      <Skeleton width={58} height={20} />
+                    </div>
+                  ))}
                 </div>
-                <Badge variant="danger">Hoje</Badge>
-              </div>
-
-              {/* Item 2 */}
-              <div className="flex items-center justify-between group">
-                <div className="flex items-center gap-3">
-                  <div className="w-1.5 h-8 bg-frigus-accent rounded-full" />
-                  <div>
-                    <h4 className="text-sm font-bold text-frigus-navy group-hover:text-frigus-primary transition-colors">
-                      Pão integral
-                    </h4>
-                    <p className="text-xs text-gray-400">Despensa · 1 un.</p>
+              )}
+              {!summaryLoading &&
+                nearExpiration.slice(0, 2).map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-1 h-7 rounded-full ${item.productStatus === "EXPIRED" ? "bg-red-500" : "bg-amber-400"}`}
+                      />
+                      <div>
+                        <h4 className="text-[11px] font-semibold text-frigus-navy dark:text-white group-hover:text-frigus-primary dark:group-hover:text-[#5B89F7] transition-colors">
+                          {item.product?.name ?? `Produto ${item.productId}`}
+                        </h4>
+                        <p className="text-[10px] text-gray-500 dark:text-neutral-400">
+                          {item.quantity} un. · validade{" "}
+                          {new Date(
+                            `${item.expireDate}T12:00:00`,
+                          ).toLocaleDateString("pt-BR")}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge
+                      variant={
+                        item.productStatus === "EXPIRED" ? "danger" : "warning"
+                      }
+                    >
+                      {item.productStatus === "EXPIRED"
+                        ? "Vencido"
+                        : "Em breve"}
+                    </Badge>
                   </div>
-                </div>
-                <Badge variant="warning">Amanhã</Badge>
-              </div>
+                ))}
+              {!summaryLoading && nearExpiration.length === 0 && (
+                <p className="text-sm text-gray-500 dark:text-neutral-400">
+                  {summaryError || "Nenhum produto próximo da validade."}
+                </p>
+              )}
             </div>
 
-            <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between text-xs text-gray-400">
+            <div className="mt-3 pt-2 border-t border-gray-100 dark:border-[#343941] flex items-center justify-between text-[10px] text-gray-400 dark:text-neutral-400">
               <span>Evite desperdícios na despensa</span>
-              <ArrowRight size={14} className="text-gray-300" />
+              <ArrowRight
+                size={14}
+                className="text-gray-400 dark:text-neutral-500"
+              />
             </div>
           </div>
         </div>
 
-        {/* Linha Intermediária: Consumo da Semana + Distribuição + Próxima Compra */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-          {/* Consumo da Semana (5 colunas) */}
-          <div className="md:col-span-5 bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs flex flex-col justify-between">
+          <div className="md:col-span-5 bg-white dark:bg-[#1C1E22] rounded-3xl p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs flex flex-col justify-between">
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="font-montserrat font-bold text-frigus-navy text-base">
+                <h3 className="font-montserrat font-bold text-frigus-navy dark:text-white text-base">
                   Consumo da semana
                 </h3>
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="text-xs text-gray-400 dark:text-neutral-400 mt-0.5">
                   Itens retirados do estoque
                 </p>
               </div>
-              <span className="px-3 py-1 rounded-xl text-xs font-bold bg-[#EAF3FF] text-frigus-primary">
-                18 itens usados
+              <span className="px-3 py-1 rounded-xl text-xs font-bold bg-[#EAF3FF] dark:bg-blue-950/50 text-frigus-primary dark:text-[#A7BCFF]">
+                {consumedCount} itens usados
               </span>
             </div>
 
-            {/* Gráfico de Barras */}
             <div className="mt-6">
-              <div className="relative h-32 flex items-end justify-between px-4 pb-6 border-b border-gray-100">
-                {/* Linhas de referência sutis */}
-                <div className="absolute inset-x-0 top-2 border-t border-dashed border-gray-100" />
-                <div className="absolute inset-x-0 top-14 border-t border-dashed border-gray-100" />
+              <div className="relative h-32 flex items-end justify-between px-4 pb-6 border-b border-gray-100 dark:border-[#343941]">
+                <div className="absolute inset-x-0 top-2 border-t border-dashed border-gray-100 dark:border-[#343941]" />
+                <div className="absolute inset-x-0 top-14 border-t border-dashed border-gray-100 dark:border-[#343941]" />
 
-                {/* Barras por dia */}
-                {[
-                  { day: "S", h: "35%", color: "bg-frigus-primary" },
-                  { day: "T", h: "65%", color: "bg-frigus-primary" },
-                  { day: "Q", h: "50%", color: "bg-frigus-primary" },
-                  { day: "Q", h: "80%", color: "bg-frigus-secondary" },
-                  { day: "S", h: "55%", color: "bg-frigus-primary" },
-                  { day: "S", h: "90%", color: "bg-frigus-ice" },
-                  { day: "D", h: "70%", color: "bg-frigus-primary" },
-                ].map((col, idx) => (
-                  <div
-                    key={idx}
-                    className="flex flex-col items-center gap-2 relative z-10 w-7"
-                  >
+                {consumptionDays.length ? (
+                  consumptionDays.map(([day, count], idx) => (
                     <div
-                      className={`w-full ${col.color} rounded-lg transition-all duration-300 hover:brightness-110`}
-                      style={{ height: col.h }}
-                    />
-                    <span className="text-[11px] font-medium text-gray-400">
-                      {col.day}
-                    </span>
-                  </div>
-                ))}
+                      key={day}
+                      className="flex flex-col items-center gap-2 relative z-10 w-7"
+                    >
+                      <div
+                        title={`${count} itens`}
+                        className={`w-full ${idx === consumptionDays.length - 1 ? "bg-frigus-ice dark:bg-[#92ACF7]" : "bg-frigus-primary dark:bg-[#5B89F7]"} rounded-lg transition-all duration-300 hover:brightness-110`}
+                        style={{
+                          height: `${Math.max(8, (count / maxDailyConsumption) * 100)}%`,
+                        }}
+                      />
+                      <span className="text-[11px] font-medium text-gray-400 dark:text-neutral-400">
+                        {day.match(/^\d{4}-\d{2}-\d{2}/)
+                          ? new Date(`${day}T12:00:00`)
+                              .toLocaleDateString("pt-BR", { weekday: "short" })
+                              .slice(0, 1)
+                              .toUpperCase()
+                          : day.slice(0, 1).toUpperCase()}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="absolute inset-0 flex items-center justify-center text-xs text-gray-400 dark:text-neutral-400">
+                    Sem consumo registrado nesta semana
+                  </p>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Distribuição do Estoque (3 colunas) */}
-          <div className="md:col-span-3 bg-frigus-navy text-white rounded-3xl p-6 shadow-xs flex flex-col justify-between">
+          <div className="md:col-span-3 bg-white dark:bg-[#1B1D20] border border-gray-200/80 dark:border-[#34383E] text-[#141C55] dark:text-white rounded-xl p-6 shadow-xs flex flex-col justify-between">
             <div>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-frigus-ice">
-                Distribuição
-              </span>
-              <h3 className="font-montserrat font-bold text-white text-base mt-0.5">
+              <h3 className="font-montserrat font-bold text-[#141C55] dark:text-white text-sm mt-0.5">
                 Seu estoque
               </h3>
             </div>
 
-            {/* Donut central simples com CSS */}
             <div className="my-4 flex items-center justify-center">
-              <div className="relative w-28 h-28 rounded-full border-8 border-frigus-ice flex items-center justify-center border-t-frigus-primary border-r-frigus-accent border-l-[#6D91EA]">
+              <div className="relative w-24 h-24 rounded-full border-[7px] border-[#DDE6F5] dark:border-[#2C303B] flex items-center justify-center border-t-frigus-primary border-r-frigus-accent border-l-[#6D91EA]">
                 <div className="text-center">
-                  <span className="font-montserrat font-bold text-2xl text-white block leading-none">
-                    128
+                  <span className="font-montserrat font-bold text-xl text-[#141C55] dark:text-white block leading-none">
+                    {summaryLoading ? (
+                      <Skeleton width={34} height={24} />
+                    ) : (
+                      (summary?.itemCount ?? 0)
+                    )}
                   </span>
-                  <span className="text-[10px] text-frigus-ice uppercase tracking-wider font-semibold">
+                  <span className="text-[10px] text-[#64748B] dark:text-neutral-400 uppercase tracking-wider font-semibold">
                     itens
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Legenda */}
-            <div className="space-y-1.5 text-xs">
-              <div className="flex items-center justify-between text-frigus-ice">
+            <div className="space-y-1 text-[10px]">
+              <div className="flex items-center justify-between text-[#64748B] dark:text-neutral-300">
                 <span className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-frigus-ice" />
+                  <span className="w-2 h-2 rounded-full bg-frigus-ice dark:bg-neutral-400" />
                   Despensa
                 </span>
-                <span className="font-bold text-white">46</span>
+                <span className="font-semibold text-[#141C55] dark:text-white">
+                  {summaryLoading ? (
+                    <Skeleton width={18} />
+                  ) : (
+                    (summary?.itemsByStoragePlace?.PANTRY ?? 0)
+                  )}
+                </span>
               </div>
-              <div className="flex items-center justify-between text-frigus-ice">
+              <div className="flex items-center justify-between text-[#64748B] dark:text-neutral-300">
                 <span className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-frigus-primary" />
                   Geladeira
                 </span>
-                <span className="font-bold text-white">31</span>
+                <span className="font-semibold text-[#141C55] dark:text-white">
+                  {summaryLoading ? (
+                    <Skeleton width={18} />
+                  ) : (
+                    (summary?.itemsByStoragePlace?.FRIDGE ?? 0)
+                  )}
+                </span>
               </div>
-              <div className="flex items-center justify-between text-frigus-ice">
+              <div className="flex items-center justify-between text-[#64748B] dark:text-neutral-300">
                 <span className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-frigus-accent" />
                   Frescos
                 </span>
-                <span className="font-bold text-white">28</span>
+                <span className="font-semibold text-[#141C55] dark:text-white">
+                  {summaryLoading ? (
+                    <Skeleton width={18} />
+                  ) : (
+                    (summary?.itemsByStoragePlace?.PANTRY ?? 0) +
+                    (summary?.itemsByStoragePlace?.SHELF ?? 0)
+                  )}
+                </span>
               </div>
-              <div className="flex items-center justify-between text-frigus-ice">
+              <div className="flex items-center justify-between text-[#64748B] dark:text-neutral-300">
                 <span className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-[#6D91EA]" />
                   Congelados
                 </span>
-                <span className="font-bold text-white">23</span>
+                <span className="font-semibold text-[#141C55] dark:text-white">
+                  {summaryLoading ? (
+                    <Skeleton width={18} />
+                  ) : (
+                    (summary?.itemsByStoragePlace?.FREEZER ?? 0)
+                  )}
+                </span>
               </div>
             </div>
           </div>
 
-          {/* Próxima Compra (4 colunas) */}
-          <div className="md:col-span-4 bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs flex flex-col justify-between">
+          <div className="md:col-span-4 bg-white dark:bg-[#1C1E22] rounded-3xl p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs flex flex-col justify-between">
             <div>
-              <span className="text-[10px] uppercase font-bold tracking-wider text-gray-400">
-                Próxima compra
-              </span>
-              <h3 className="font-montserrat font-bold text-frigus-navy text-base mt-0.5">
-                Faltam 4 itens
+              <h3 className="font-montserrat font-bold text-frigus-navy dark:text-white text-sm mt-0.5">
+                {summaryLoading ? (
+                  <Skeleton width={90} />
+                ) : (
+                  `Faltam ${summary?.pendingShoppingItems ?? 0} itens`
+                )}
               </h3>
             </div>
 
-            {/* Lista com Checkboxes */}
-            <div className="space-y-3 my-4">
-              {[
-                { name: "Ovos", qty: "12 un.", checked: false },
-                { name: "Aveia", qty: "1 pct", checked: false },
-                { name: "Sabão neutro", qty: "2 un.", checked: true },
-              ].map((item, idx) => (
+            <div className="my-2 space-y-2">
+              {shoppingLoading && (
                 <div
-                  key={idx}
-                  className="flex items-center justify-between p-2 rounded-xl hover:bg-gray-50 transition-colors"
+                  role="status"
+                  aria-label="Carregando lista de compras"
+                  className="space-y-2"
                 >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-4 h-4 rounded-md border flex items-center justify-center transition-colors ${
-                        item.checked
-                          ? "bg-frigus-primary border-frigus-primary text-white"
-                          : "border-gray-300"
-                      }`}
-                    >
-                      {item.checked && <Check size={12} strokeWidth={3} />}
-                    </div>
-                    <span
-                      className={`text-sm font-medium ${
-                        item.checked
-                          ? "line-through text-gray-400"
-                          : "text-frigus-navy font-semibold"
-                      }`}
-                    >
-                      {item.name}
-                    </span>
-                  </div>
-                  <span className="text-xs text-gray-400 font-medium">
-                    {item.qty}
-                  </span>
+                  {[0, 1, 2].map((item) => (
+                    <Skeleton key={item} height={14} />
+                  ))}
                 </div>
-              ))}
+              )}
+              {!shoppingLoading &&
+                shoppingItems
+                  .filter((item) => !item.purchased)
+                  .slice(0, 3)
+                  .map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between gap-2 text-[10px] text-[#536782] dark:text-neutral-300"
+                    >
+                      <span className="flex min-w-0 items-center gap-2">
+                        <span
+                          aria-hidden="true"
+                          className="h-3.5 w-3.5 shrink-0 rounded-[3px] border border-[#D5DEED] dark:border-[#46505B]"
+                        />
+                        <span className="truncate">{item.name}</span>
+                      </span>
+                      <span className="shrink-0">
+                        {item.quantity} {item.unit.toLowerCase()}
+                      </span>
+                    </div>
+                  ))}
+              {!shoppingLoading &&
+                !shoppingError &&
+                shoppingItems.filter((item) => !item.purchased).length ===
+                  0 && (
+                  <p className="text-[11px] text-gray-500 dark:text-neutral-400">
+                    {summary?.pendingShoppingItems
+                      ? "Há itens pendentes na sua lista."
+                      : "Sua lista de compras está em dia."}
+                  </p>
+                )}
             </div>
 
             <Link
               to="/shopping-list"
-              className="w-full py-2.5 px-4 bg-frigus-navy hover:bg-slate-900 text-white rounded-xl text-xs font-bold text-center flex items-center justify-center gap-2 transition-colors"
+              className="w-full py-2 px-3 bg-[#2552C8] hover:bg-blue-700 text-white rounded-md text-[11px] font-semibold text-center flex items-center justify-center gap-2 transition-colors"
             >
               <span>Abrir lista de compras</span>
               <ChevronRight size={14} />
@@ -291,21 +457,20 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Linha Inferior: Últimas Atualizações (Tabela) */}
-        <div className="bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs">
+        <div className="bg-white dark:bg-[#1C1E22] rounded-3xl p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs">
           <div className="mb-4">
-            <h3 className="font-montserrat font-bold text-frigus-navy text-base">
+            <h3 className="font-montserrat font-bold text-frigus-navy dark:text-white text-base">
               Últimas atualizações
             </h3>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Seu estoque foi atualizado pelo aplicativo
+            <p className="text-xs text-gray-400 dark:text-neutral-400 mt-0.5">
+              Produtos cadastrados no seu estoque
             </p>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-sm">
               <thead>
-                <tr className="text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                <tr className="text-[11px] font-bold text-gray-400 dark:text-neutral-400 uppercase tracking-wider border-b border-gray-100 dark:border-[#343941]">
                   <th className="py-3 px-4">Item</th>
                   <th className="py-3 px-4">Categoria</th>
                   <th className="py-3 px-4">Quantidade</th>
@@ -313,36 +478,84 @@ export default function DashboardPage() {
                   <th className="py-3 px-4 text-right">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
-                <tr className="hover:bg-gray-50/70 transition-colors">
-                  <td className="py-3.5 px-4 font-bold text-frigus-navy flex items-center gap-2.5">
-                    <div className="w-1.5 h-4 bg-frigus-primary rounded-full" />
-                    Leite
-                  </td>
-                  <td className="py-3.5 px-4 text-gray-500 text-xs">Laticínios</td>
-                  <td className="py-3.5 px-4 text-gray-500 text-xs">2 un.</td>
-                  <td className="py-3.5 px-4 text-gray-500 text-xs">14 nov.</td>
-                  <td className="py-3.5 px-4 text-right">
-                    <Badge variant="success">Em dia</Badge>
-                  </td>
-                </tr>
-                <tr className="hover:bg-gray-50/70 transition-colors">
-                  <td className="py-3.5 px-4 font-bold text-frigus-navy flex items-center gap-2.5">
-                    <div className="w-1.5 h-4 bg-frigus-ice rounded-full" />
-                    Arroz integral
-                  </td>
-                  <td className="py-3.5 px-4 text-gray-500 text-xs">Despensa</td>
-                  <td className="py-3.5 px-4 text-gray-500 text-xs">1 kg</td>
-                  <td className="py-3.5 px-4 text-gray-500 text-xs">28 nov.</td>
-                  <td className="py-3.5 px-4 text-right">
-                    <Badge variant="success">Em dia</Badge>
-                  </td>
-                </tr>
+              <tbody className="divide-y divide-gray-50 dark:divide-[#343941]/50">
+                {recentLoading &&
+                  Array.from({ length: 3 }, (_, index) => (
+                    <tr key={`loading-${index}`} aria-hidden="true">
+                      {["30%", "18%", "16%", "18%", "12%"].map(
+                        (width, column) => (
+                          <td key={column} className="px-4 py-3.5">
+                            <Skeleton width={width} height={14} />
+                          </td>
+                        ),
+                      )}
+                    </tr>
+                  ))}
+                {!recentLoading &&
+                  recentProducts.map((item) => {
+                    const expired = item.productStatus === "EXPIRED";
+                    const nearExpiry =
+                      item.productStatus === "NEAR_EXPIRATION" ||
+                      nearExpiration.some((near) => near.id === item.id);
+                    return (
+                      <tr
+                        key={item.id}
+                        className="hover:bg-gray-50/70 dark:hover:bg-[#252A32] transition-colors"
+                      >
+                        <td className="py-3.5 px-4 font-bold text-frigus-navy dark:text-white">
+                          <span className="flex items-center gap-2.5">
+                            <span
+                              className={`h-4 w-1.5 rounded-full ${expired ? "bg-red-500" : nearExpiry ? "bg-amber-400" : "bg-frigus-primary"}`}
+                            />
+                            {item.product?.name ?? `Produto ${item.productId}`}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-gray-500 dark:text-neutral-300 text-xs">
+                          {item.product?.category ?? item.category}
+                        </td>
+                        <td className="py-3.5 px-4 text-gray-500 dark:text-neutral-300 text-xs">
+                          {item.quantity} {item.product?.unitOfMeasure ?? "un"}
+                        </td>
+                        <td className="py-3.5 px-4 text-gray-500 dark:text-neutral-300 text-xs">
+                          {new Date(
+                            `${item.expireDate}T12:00:00`,
+                          ).toLocaleDateString("pt-BR")}
+                        </td>
+                        <td className="py-3.5 px-4 text-right">
+                          <Badge
+                            variant={
+                              expired
+                                ? "danger"
+                                : nearExpiry
+                                  ? "warning"
+                                  : "success"
+                            }
+                          >
+                            {expired
+                              ? "Vencido"
+                              : nearExpiry
+                                ? "Atenção"
+                                : "Em dia"}
+                          </Badge>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                {!recentLoading && recentProducts.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="py-6 text-center text-xs text-gray-500 dark:text-neutral-400"
+                    >
+                      {recentError || "Nenhum produto cadastrado ainda."}
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
         </div>
       </div>
-    </AppLayout>
+    </>
   );
 }

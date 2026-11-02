@@ -1,119 +1,206 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Plus, Search, ChevronDown } from "lucide-react";
-import AppLayout from "@/components/AppLayout";
+import { useCallback, useEffect, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Plus, Search } from "lucide-react";
 import Badge, { type BadgeVariant } from "@/components/Badge";
 import { AddFoodModal } from "@/components/Modal";
 import type { NewFoodData } from "@/components/Modal/AddFoodModal";
-import StockSidebar from "./StockSidebar";
+import StockSidebar from "@/components/StockSidebar";
+import { Skeleton } from "@/components/LoadingSkeleton";
+import { useLatestRequest } from "@/hooks/useLatestRequest";
+import { safeHttpUrl } from "@/utils/url.util";
+import {
+  createProduct,
+  createStockProduct,
+  getInventoryContext,
+  listStockProducts,
+  type AccountInventoryContext,
+  type StockProduct,
+} from "@/services/inventory.service";
 
 type StockItem = {
-  id: string;
+  id: number;
   name: string;
   brand: string;
   category: string;
   quantity: string;
   location: "Despensa" | "Geladeira" | "Freezer";
   expiration: string;
+  daysUntilExpiration: number;
+  amount: number;
+  lowStock: boolean;
   status: string;
   statusVariant: BadgeVariant;
   image?: string;
 };
 
-const initialStockItems: StockItem[] = [
-  {
-    id: "1",
-    name: "Leite integral",
-    brand: "Fazenda Bela",
-    category: "Laticínios",
-    quantity: "2 L",
-    location: "Geladeira",
-    expiration: "18 ago",
-    status: "Dentro do prazo",
-    statusVariant: "success",
-    image: "/images/food-leite.png",
-  },
-  {
-    id: "2",
-    name: "Tomate italiano",
-    brand: "Hortifruti",
-    category: "Vegetais",
-    quantity: "6 un",
-    location: "Geladeira",
-    expiration: "15 ago",
-    status: "Vence em breve",
-    statusVariant: "warning",
-    image: "/images/food-tomate.png",
-  },
-  {
-    id: "3",
-    name: "Filé de frango",
-    brand: "Seara",
-    category: "Carnes",
-    quantity: "1,2 kg",
-    location: "Freezer",
-    expiration: "22 set",
-    status: "Dentro do prazo",
-    statusVariant: "success",
-  },
-  {
-    id: "4",
-    name: "Banana prata",
-    brand: "Hortifruti",
-    category: "Frutas",
-    quantity: "1 dúzia",
-    location: "Despensa",
-    expiration: "14 ago",
-    status: "Vence em breve",
-    statusVariant: "warning",
-    image: "/images/food-banana.png",
-  },
-  {
-    id: "5",
-    name: "Feijão carioca",
-    brand: "Camil",
-    category: "Mercearia",
-    quantity: "2 kg",
-    location: "Despensa",
-    expiration: "10 nov",
-    status: "Dentro do prazo",
-    statusVariant: "success",
-    image: "/images/food-feijao.png",
-  },
-  {
-    id: "6",
-    name: "Iogurte natural",
-    brand: "Nestlé",
-    category: "Laticínios",
-    quantity: "3 un",
-    location: "Geladeira",
-    expiration: "12 ago",
-    status: "Vencido",
-    statusVariant: "danger",
-    image: "/images/food-iogurte.png",
-  },
-];
+const categoryLabels: Record<string, string> = {
+  FRUIT: "Frutas",
+  VEGETABLE: "Vegetais",
+  DAIRY: "Laticínios",
+  GRAIN: "Grãos e mercearia",
+  MEAT: "Carnes",
+  BEVERAGE: "Bebidas",
+  CLEANING: "Limpeza",
+  PERSONAL_HYGIENE: "Higiene pessoal",
+};
+const unitLabels: Record<string, string> = {
+  KILOGRAM: "kg",
+  GRAM: "g",
+  LITER: "L",
+  MILLILITER: "ml",
+  UNIT: "un",
+  DOZEN: "dúzia",
+  PACKAGE: "pct",
+};
+const storageLabels: Record<string, StockItem["location"]> = {
+  PANTRY: "Despensa",
+  CABINET: "Despensa",
+  SHELF: "Despensa",
+  FRIDGE: "Geladeira",
+  FREEZER: "Freezer",
+};
+
+function mapStockItem(row: StockProduct): StockItem {
+  const status = row.productStatus ?? "FRESH";
+  return {
+    id: row.id,
+    name: row.product?.name ?? `Produto ${row.productId}`,
+    brand: row.product?.brand ?? "",
+    category:
+      categoryLabels[row.product?.category ?? row.category] ?? row.category,
+    quantity: `${row.quantity} ${unitLabels[row.product?.unitOfMeasure ?? "UNIT"] ?? "un"}`,
+    location:
+      storageLabels[row.product?.storagePlace ?? "PANTRY"] ?? "Despensa",
+    expiration: new Date(`${row.expireDate}T12:00:00`).toLocaleDateString(
+      "pt-BR",
+    ),
+    daysUntilExpiration: Math.ceil(
+      (new Date(`${row.expireDate}T00:00:00`).getTime() -
+        new Date().setHours(0, 0, 0, 0)) /
+        86400000,
+    ),
+    amount: row.quantity,
+    lowStock:
+      row.minimalQuantity !== undefined && row.quantity <= row.minimalQuantity,
+    status:
+      status === "EXPIRED"
+        ? "Vencido"
+        : status === "NEAR_EXPIRATION"
+          ? "Vence em breve"
+          : "Dentro do prazo",
+    statusVariant:
+      status === "EXPIRED"
+        ? "danger"
+        : status === "NEAR_EXPIRATION"
+          ? "warning"
+          : "success",
+    image: safeHttpUrl(row.product?.imageUrl),
+  };
+}
 
 export default function StockPage() {
-  const [items, setItems] = useState<StockItem[]>(initialStockItems);
-  const [activeTab, setActiveTab] = useState<"Todos" | "Despensa" | "Geladeira" | "Freezer">("Todos");
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [items, setItems] = useState<StockItem[]>([]);
+  const [context, setContext] = useState<AccountInventoryContext | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [activeTab, setActiveTab] = useState<
+    "Todos" | "Despensa" | "Geladeira" | "Freezer"
+  >(() => {
+    const alias = searchParams.get("alias");
+    if (alias === "estoque-freezer" || alias === "categorias-freezer")
+      return "Freezer";
+    if (alias === "estoque-despensa" || alias === "categorias-despensa")
+      return "Despensa";
+    if (alias === "categorias-geladeira") return "Geladeira";
+    return "Todos";
+  });
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [categoryFilter, setCategoryFilter] = useState("Todas as categorias");
+  const [expirationFilter, setExpirationFilter] =
+    useState("Todas as validades");
+  const [quantityFilter, setQuantityFilter] = useState("Todas as quantidades");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const handleAddFood = (data: NewFoodData) => {
-    const newItem: StockItem = {
-      id: String(Date.now()),
+  const beginRequest = useLatestRequest();
+  const loadStock = useCallback(
+    async (activeContext?: AccountInventoryContext) => {
+      const signal = beginRequest();
+      try {
+        const current = activeContext ?? (await getInventoryContext(signal));
+        if (signal.aborted) return;
+        setLoadError("");
+        setContext(current);
+        const stockId = current.stocks[0]?.id;
+        const products = stockId
+          ? await listStockProducts(stockId, signal)
+          : [];
+        if (!signal.aborted) setItems(products.map(mapStockItem));
+      } catch (error) {
+        if (!signal.aborted)
+          setLoadError(
+            error instanceof Error
+              ? error.message
+              : "Não foi possível carregar o estoque.",
+          );
+      } finally {
+        if (!signal.aborted) setLoading(false);
+      }
+    },
+    [beginRequest],
+  );
+
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => void loadStock(), 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [loadStock]);
+
+  useEffect(() => {
+    const alias = searchParams.get("alias");
+    const detailAliases = new Set([
+      "estoque-detalhe-alimento",
+      "estoque-editar-geladeira",
+      "estoque-editar-lista-compras",
+      "estoque-remover-alimento",
+    ]);
+    if (!loading && items.length > 0 && alias && detailAliases.has(alias)) {
+      const preferred =
+        alias === "estoque-editar-geladeira"
+          ? items.find((item) => item.location === "Geladeira")
+          : undefined;
+      navigate(
+        `/stock/${(preferred ?? items[0]).id}?alias=${encodeURIComponent(alias)}`,
+        { replace: true },
+      );
+    }
+  }, [items, loading, navigate, searchParams]);
+
+  const handleAddFood = async (data: NewFoodData) => {
+    const current = context ?? (await getInventoryContext());
+    const stockId = current.stocks[0]?.id;
+    if (!stockId)
+      throw new Error("Nenhum estoque ativo está disponível para esta conta.");
+    const product = await createProduct(current.groupId, {
       name: data.name,
-      brand: "Geral",
       category: data.category,
+      storagePlace:
+        data.location === "Geladeira"
+          ? "FRIDGE"
+          : data.location === "Freezer"
+            ? "FREEZER"
+            : "PANTRY",
+      unitPrice: data.unitPrice,
+      unitOfMeasure: data.unitOfMeasure,
+    });
+    await createStockProduct({
+      productId: product.id,
+      stockId,
       quantity: data.quantity,
-      location: data.location,
-      expiration: data.expiration,
-      status: "Dentro do prazo",
-      statusVariant: "success",
-    };
-    setItems((prev) => [newItem, ...prev]);
+      expireDate: data.expiration,
+    });
+    await loadStock(current);
   };
 
   const filteredItems = items.filter((item) => {
@@ -123,27 +210,55 @@ export default function StockPage() {
       item.brand.toLowerCase().includes(search.toLowerCase()) ||
       item.category.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter ? item.status === statusFilter : true;
-    return matchesTab && matchesSearch && matchesStatus;
+    const matchesCategory =
+      categoryFilter === "Todas as categorias" ||
+      item.category === categoryFilter;
+    const matchesExpiration =
+      expirationFilter === "Todas as validades" ||
+      (expirationFilter === "Vencidos" && item.daysUntilExpiration < 0) ||
+      (expirationFilter === "Vence em breve" &&
+        item.daysUntilExpiration >= 0 &&
+        item.daysUntilExpiration <= 7) ||
+      (expirationFilter === "Dentro do prazo" && item.daysUntilExpiration > 7);
+    const matchesQuantity =
+      quantityFilter === "Todas as quantidades" ||
+      (quantityFilter === "Estoque baixo" && item.lowStock) ||
+      (quantityFilter === "Com estoque" && !item.lowStock);
+    return (
+      matchesTab &&
+      matchesSearch &&
+      matchesStatus &&
+      matchesCategory &&
+      matchesExpiration &&
+      matchesQuantity
+    );
   });
+  const stockStats = (["Despensa", "Geladeira", "Freezer"] as const).map(
+    (name, index) => {
+      const count = items.filter((item) => item.location === name).length;
+      return {
+        name,
+        count,
+        color: ["#2552C8", "#6D91EA", "#E1A11B"][index],
+        percentage: items.length ? Math.round((count / items.length) * 100) : 0,
+      };
+    },
+  );
 
   return (
-    <AppLayout activeSection="stock">
+    <>
       <div className="space-y-6">
-        {/* Cabeçalho da Página */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-frigus-navy">
+            <h1 className="font-montserrat font-bold text-2xl md:text-3xl text-frigus-navy dark:text-white">
               Estoque da casa
             </h1>
-            <p className="text-gray-500 text-sm mt-1 font-sans">
+            <p className="text-gray-500 dark:text-neutral-400 text-sm mt-1 font-sans">
               Acompanhe os alimentos disponíveis em cada espaço da casa
             </p>
           </div>
 
           <div className="flex items-center gap-4">
-            <span className="text-xs text-gray-400 hidden md:inline">
-              Atualizado hoje, 09:41
-            </span>
             <button
               type="button"
               onClick={() => setIsAddModalOpen(true)}
@@ -155,64 +270,89 @@ export default function StockPage() {
           </div>
         </div>
 
-        {/* Barra de Filtros e Controles */}
-        <div className="bg-white rounded-3xl p-4 md:p-6 border border-gray-200/80 shadow-xs space-y-4">
+        <div className="bg-white dark:bg-[#1C1E22] rounded-3xl p-4 md:p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs space-y-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            {/* Abas de Localização */}
-            <div className="flex items-center bg-gray-100/80 p-1 rounded-2xl w-full md:w-auto">
-              {(["Todos", "Despensa", "Geladeira", "Freezer"] as const).map((tab) => (
-                <button
-                  key={tab}
-                  type="button"
-                  onClick={() => setActiveTab(tab)}
-                  className={`flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    activeTab === tab
-                      ? "bg-white text-frigus-navy shadow-xs"
-                      : "text-gray-500 hover:text-frigus-navy"
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
+            <div className="flex items-center bg-gray-100/80 dark:bg-[#252A32] p-1 rounded-2xl w-full md:w-auto">
+              {(["Todos", "Despensa", "Geladeira", "Freezer"] as const).map(
+                (tab) => (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setActiveTab(tab)}
+                    className={`flex-1 md:flex-none px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      activeTab === tab
+                        ? "bg-white dark:bg-[#1C1E22] text-frigus-navy dark:text-white shadow-xs"
+                        : "text-gray-500 dark:text-neutral-400 hover:text-frigus-navy dark:hover:text-white"
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ),
+              )}
             </div>
 
-            {/* Campo de Busca */}
-            <div className="relative w-full md:w-80">
+            <div className="relative w-full md:w-[236px]">
               <Search
                 size={16}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-400"
               />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar alimento"
-                className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-frigus-primary transition-all placeholder:text-gray-400 bg-gray-50/50"
+                className="w-full pl-9 pr-4 py-2 rounded-xl border border-gray-200 dark:border-[#343941] text-xs focus:outline-hidden focus:border-frigus-primary dark:focus:border-[#5B89F7] transition-all placeholder:text-gray-400 dark:placeholder:text-neutral-500 bg-gray-50/50 dark:bg-[#252A32] text-slate-800 dark:text-white"
               />
             </div>
           </div>
 
-          {/* Filtros rápidos */}
-          <div className="flex items-center justify-between pt-2 border-t border-gray-100 flex-wrap gap-2">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs text-gray-400 font-medium mr-1">Filtrar por:</span>
-              {["Categoria", "Validade", "Quantidade"].map((filter) => (
-                <button
-                  key={filter}
-                  type="button"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer"
-                >
-                  <span>{filter}</span>
-                  <ChevronDown size={14} className="text-gray-400" />
-                </button>
+          <div className="flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-[#343941] flex-wrap">
+            <select
+              aria-label="Filtrar por categoria"
+              value={categoryFilter}
+              onChange={(event) => setCategoryFilter(event.target.value)}
+              className="h-9 rounded-md border border-gray-200 bg-white px-3 text-xs font-medium text-[#536782] dark:border-[#343941] dark:bg-[#252A32] dark:text-neutral-300"
+            >
+              <option>Todas as categorias</option>
+              {[...new Set(items.map((item) => item.category))].map(
+                (category) => (
+                  <option key={category}>{category}</option>
+                ),
+              )}
+            </select>
+            <select
+              aria-label="Filtrar por validade"
+              value={expirationFilter}
+              onChange={(event) => setExpirationFilter(event.target.value)}
+              className="h-9 rounded-md border border-gray-200 bg-white px-3 text-xs font-medium text-[#536782] dark:border-[#343941] dark:bg-[#252A32] dark:text-neutral-300"
+            >
+              {[
+                "Todas as validades",
+                "Vencidos",
+                "Vence em breve",
+                "Dentro do prazo",
+              ].map((option) => (
+                <option key={option}>{option}</option>
               ))}
-            </div>
+            </select>
+            <select
+              aria-label="Filtrar por quantidade"
+              value={quantityFilter}
+              onChange={(event) => setQuantityFilter(event.target.value)}
+              className="h-9 rounded-md border border-gray-200 bg-white px-3 text-xs font-medium text-[#536782] dark:border-[#343941] dark:bg-[#252A32] dark:text-neutral-300"
+            >
+              {["Todas as quantidades", "Estoque baixo", "Com estoque"].map(
+                (option) => (
+                  <option key={option}>{option}</option>
+                ),
+              )}
+            </select>
 
             {statusFilter && (
               <button
                 type="button"
                 onClick={() => setStatusFilter(null)}
-                className="text-xs text-frigus-primary font-bold hover:underline cursor-pointer"
+                className="text-xs text-frigus-primary dark:text-[#5B89F7] font-bold hover:underline cursor-pointer"
               >
                 Limpar filtro de status ({statusFilter})
               </button>
@@ -220,28 +360,26 @@ export default function StockPage() {
           </div>
         </div>
 
-        {/* Layout Principal em 2 Colunas: Tabela (Esquerda) + Resumo & Ações (Direita) */}
         <div className="flex flex-col lg:flex-row items-start gap-6">
-          {/* Tabela de Alimentos */}
-          <div className="flex-1 w-full bg-white rounded-3xl p-6 border border-gray-200/80 shadow-xs min-w-0">
+          <div className="flex-1 w-full bg-white dark:bg-[#1C1E22] rounded-3xl p-6 border border-gray-200/80 dark:border-[#343941] shadow-xs min-w-0">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h3 className="font-montserrat font-bold text-frigus-navy text-base">
+                <h3 className="font-montserrat font-bold text-frigus-navy dark:text-white text-base">
                   Alimentos cadastrados
                 </h3>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-400 dark:text-neutral-400">
                   {filteredItems.length} de {items.length} itens no espaço
                 </p>
               </div>
-              <span className="text-xs font-bold px-3 py-1 bg-[#EAF3FF] text-frigus-primary rounded-xl">
-                128 itens totais
+              <span className="text-xs font-bold px-3 py-1 bg-[#EAF3FF] dark:bg-blue-950/50 text-frigus-primary dark:text-[#A7BCFF] rounded-xl">
+                {items.length} itens totais
               </span>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-sm">
                 <thead>
-                  <tr className="text-[11px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+                  <tr className="text-[11px] font-bold text-gray-400 dark:text-neutral-400 uppercase tracking-wider border-b border-gray-100 dark:border-[#343941]">
                     <th className="py-3 px-4">Alimento</th>
                     <th className="py-3 px-4">Categoria</th>
                     <th className="py-3 px-4">Qtd.</th>
@@ -251,58 +389,99 @@ export default function StockPage() {
                     <th className="py-3 px-4 text-right">Ação</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {filteredItems.length === 0 ? (
+                <tbody className="divide-y divide-gray-50 dark:divide-[#343941]/50">
+                  {loading ? (
+                    Array.from({ length: 5 }, (_, row) => (
+                      <tr key={`loading-${row}`} aria-hidden="true">
+                        <td className="px-4 py-3.5">
+                          <div className="flex items-center gap-3">
+                            <Skeleton width={36} height={36} />
+                            <div className="min-w-32 flex-1">
+                              <Skeleton />
+                              <Skeleton width="65%" height={12} />
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <Skeleton width="70%" />
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <Skeleton width={42} />
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <Skeleton width={70} />
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <Skeleton width={84} />
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <Skeleton width={66} height={22} />
+                        </td>
+                        <td className="px-4 py-3.5">
+                          <Skeleton width={28} />
+                        </td>
+                      </tr>
+                    ))
+                  ) : filteredItems.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-8 text-center text-gray-400 text-xs">
-                        Nenhum alimento encontrado com os filtros atuais.
+                      <td
+                        colSpan={7}
+                        className="py-8 text-center text-gray-400 dark:text-neutral-500 text-xs"
+                      >
+                        {loadError ||
+                          "Seu estoque ainda está vazio. Adicione o primeiro produto para começar."}
                       </td>
                     </tr>
                   ) : (
                     filteredItems.map((item) => (
-                      <tr key={item.id} className="hover:bg-gray-50/70 transition-colors group">
-                        <td className="py-3.5 px-4 font-bold text-frigus-navy">
+                      <tr
+                        key={item.id}
+                        className="hover:bg-gray-50/70 dark:hover:bg-[#252A32] transition-colors group"
+                      >
+                        <td className="py-3.5 px-4 font-bold text-frigus-navy dark:text-white">
                           <div className="flex items-center gap-3">
                             {item.image ? (
                               <img
                                 src={item.image}
                                 alt={item.name}
-                                className="w-9 h-9 rounded-xl object-cover bg-gray-100 border border-gray-100"
+                                className="w-9 h-9 rounded-xl object-cover bg-gray-100 dark:bg-gray-800 border border-gray-100 dark:border-[#343941]"
                               />
                             ) : (
-                              <div className="w-9 h-9 rounded-xl bg-blue-50 text-frigus-primary font-bold flex items-center justify-center text-xs">
+                              <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-frigus-primary dark:text-[#A7BCFF] font-bold flex items-center justify-center text-xs">
                                 {item.name.slice(0, 2).toUpperCase()}
                               </div>
                             )}
                             <div>
-                              <p className="font-bold text-frigus-navy text-sm">
+                              <p className="font-bold text-frigus-navy dark:text-white text-sm">
                                 {item.name}
                               </p>
-                              <p className="text-xs text-gray-400 font-normal">
+                              <p className="text-xs text-gray-400 dark:text-neutral-400 font-normal">
                                 {item.brand}
                               </p>
                             </div>
                           </div>
                         </td>
-                        <td className="py-3.5 px-4 text-gray-500 text-xs font-medium">
+                        <td className="py-3.5 px-4 text-gray-500 dark:text-neutral-300 text-xs font-medium">
                           {item.category}
                         </td>
-                        <td className="py-3.5 px-4 text-frigus-navy text-xs font-bold">
+                        <td className="py-3.5 px-4 text-frigus-navy dark:text-white text-xs font-bold">
                           {item.quantity}
                         </td>
-                        <td className="py-3.5 px-4 text-gray-500 text-xs">
+                        <td className="py-3.5 px-4 text-gray-500 dark:text-neutral-300 text-xs">
                           {item.location}
                         </td>
-                        <td className="py-3.5 px-4 text-gray-500 text-xs">
+                        <td className="py-3.5 px-4 text-gray-500 dark:text-neutral-300 text-xs">
                           {item.expiration}
                         </td>
                         <td className="py-3.5 px-4">
-                          <Badge variant={item.statusVariant}>{item.status}</Badge>
+                          <Badge variant={item.statusVariant}>
+                            {item.status}
+                          </Badge>
                         </td>
                         <td className="py-3.5 px-4 text-right">
                           <Link
                             to={`/stock/${item.id}`}
-                            className="inline-flex items-center justify-center px-3 py-1 rounded-lg text-xs font-bold text-frigus-primary hover:bg-blue-50 transition-colors"
+                            className="inline-flex items-center justify-center px-3 py-1 rounded-lg text-xs font-bold text-frigus-primary dark:text-[#5B89F7] hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors"
                           >
                             Ver
                           </Link>
@@ -315,19 +494,20 @@ export default function StockPage() {
             </div>
           </div>
 
-          {/* Barra Lateral Direita: Resumo do Estoque + Ações Rápidas (Figma 1879:2717 & 1879:2736) */}
           <StockSidebar
-            onFilterExpired={() => setStatusFilter((prev) => (prev === "Vencido" ? null : "Vencido"))}
+            stats={stockStats}
+            onFilterExpired={() =>
+              setStatusFilter((prev) => (prev === "Vencido" ? null : "Vencido"))
+            }
           />
         </div>
       </div>
 
-      {/* Modal Dedicado de Adicionar Alimento (Figma 1879:4634) */}
       <AddFoodModal
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAdd={handleAddFood}
       />
-    </AppLayout>
+    </>
   );
 }

@@ -1,18 +1,43 @@
 import { useState, type FormEvent } from "react";
 import { X } from "lucide-react";
+import { useModalFocus } from "@/hooks/useModalFocus";
+import { useResetModalState } from "@/hooks/useResetModalState";
 
 export type NewFoodData = {
   name: string;
-  category: string;
+  category: "FRUIT" | "VEGETABLE" | "DAIRY" | "GRAIN" | "MEAT" | "BEVERAGE";
   location: "Despensa" | "Geladeira" | "Freezer";
-  quantity: string;
+  quantity: number;
+  unitOfMeasure:
+    | "KILOGRAM"
+    | "GRAM"
+    | "LITER"
+    | "MILLILITER"
+    | "UNIT"
+    | "DOZEN"
+    | "PACKAGE";
+  unitPrice: number;
   expiration: string;
 };
 
 export type AddFoodModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (data: NewFoodData) => void;
+  onAdd: (data: NewFoodData) => Promise<void>;
+};
+
+type AddFoodFormState = Omit<NewFoodData, "quantity" | "unitPrice"> & {
+  quantity: string;
+  unitPrice: string;
+};
+const INITIAL_FORM: AddFoodFormState = {
+  name: "",
+  category: "GRAIN",
+  location: "Despensa",
+  quantity: "1",
+  unitOfMeasure: "UNIT",
+  unitPrice: "",
+  expiration: "",
 };
 
 export default function AddFoodModal({
@@ -20,104 +45,153 @@ export default function AddFoodModal({
   onClose,
   onAdd,
 }: AddFoodModalProps) {
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState("");
-  const [location, setLocation] = useState<"Despensa" | "Geladeira" | "Freezer">("Despensa");
-  const [quantity, setQuantity] = useState("");
-  const [expiration, setExpiration] = useState("");
+  const [form, setForm] = useState<AddFoodFormState>(INITIAL_FORM);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const dialogRef = useModalFocus(isOpen, onClose);
+  useResetModalState(isOpen, () => {
+    setForm({ ...INITIAL_FORM });
+    setError("");
+  });
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!form.name.trim()) {
+      setError("Informe o nome do alimento.");
+      return;
+    }
 
-    onAdd({
-      name,
-      category: category || "Mercearia",
-      location,
-      quantity: quantity || "1 un",
-      expiration: expiration || "Em 7 dias",
-    });
+    if (!form.expiration) {
+      setError("Informe a validade do produto.");
+      return;
+    }
+    if (Number(form.unitPrice) <= 0) {
+      setError("Informe um preço unitário maior que zero.");
+      return;
+    }
+    setSaving(true);
+    setError("");
+    try {
+      await onAdd({
+        ...form,
+        name: form.name.trim(),
+        quantity: Number(form.quantity),
+        unitPrice: Number(form.unitPrice),
+      });
 
-    // Reset and close
-    setName("");
-    setCategory("");
-    setLocation("Despensa");
-    setQuantity("");
-    setExpiration("");
-    onClose();
+      setForm(INITIAL_FORM);
+      onClose();
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Não foi possível salvar o produto.",
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-[#DFE7F2] p-8 relative flex flex-col gap-6">
-        {/* Botão Fechar */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+      <div
+        ref={dialogRef}
+        id="add-food-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="add-food-title"
+        tabIndex={-1}
+        className="bg-white dark:bg-[#1C1E22] rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-[#DFE7F2] dark:border-[#343941] p-8 relative flex flex-col gap-6"
+      >
         <button
           onClick={onClose}
           aria-label="Fechar"
-          className="absolute top-6 right-6 w-9 h-9 rounded-xl flex items-center justify-center text-[#758198] hover:bg-gray-100 hover:text-frigus-navy transition-colors cursor-pointer"
+          className="absolute top-6 right-6 w-9 h-9 rounded-xl flex items-center justify-center text-[#758198] dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-[#252A32] hover:text-frigus-navy dark:hover:text-white transition-colors cursor-pointer"
         >
           <X size={20} />
         </button>
 
-        {/* Cabeçalho */}
         <div className="space-y-1">
-          <h2 className="font-montserrat font-bold text-2xl text-[#131C55]">
+          <h2
+            id="add-food-title"
+            className="font-montserrat font-bold text-2xl text-[#131C55] dark:text-white"
+          >
             Adicionar alimento
           </h2>
-          <p className="text-sm text-[#758198]">
+          <p className="text-sm text-[#758198] dark:text-neutral-400">
             Inclua um alimento no estoque da casa.
           </p>
         </div>
 
-        {/* Formulário */}
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          {/* Nome do alimento */}
           <div>
-            <label className="text-xs font-semibold text-[#131C55] uppercase tracking-wider block mb-2">
+            <label
+              htmlFor="add-food-name"
+              className="text-xs font-semibold text-[#131C55] dark:text-neutral-200 uppercase tracking-wider block mb-2"
+            >
               NOME DO ALIMENTO
             </label>
             <input
               type="text"
               required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              id="add-food-name"
+              maxLength={255}
+              value={form.name}
+              onChange={(e) =>
+                setForm((current) => ({ ...current, name: e.target.value }))
+              }
               placeholder="Informe o nome"
-              className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] border border-[#DFE7F2] text-sm text-[#131C55] placeholder:text-[#758198] focus:outline-hidden focus:border-frigus-primary transition-colors"
+              className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] dark:bg-[#252A32] border border-[#DFE7F2] dark:border-[#343941] text-sm text-[#131C55] dark:text-white placeholder:text-[#758198] dark:placeholder:text-neutral-500 focus:outline-hidden focus:border-frigus-primary transition-colors"
             />
           </div>
 
-          {/* Categoria e Local */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-semibold text-[#131C55] uppercase tracking-wider block mb-2">
+              <label
+                htmlFor="add-food-category"
+                className="text-xs font-semibold text-[#131C55] dark:text-neutral-200 uppercase tracking-wider block mb-2"
+              >
                 CATEGORIA
               </label>
               <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] border border-[#DFE7F2] text-sm text-[#131C55] focus:outline-hidden focus:border-frigus-primary transition-colors"
+                id="add-food-category"
+                value={form.category}
+                onChange={(e) =>
+                  setForm((current) => ({
+                    ...current,
+                    category: e.target.value as NewFoodData["category"],
+                  }))
+                }
+                className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] dark:bg-[#252A32] border border-[#DFE7F2] dark:border-[#343941] text-sm text-[#131C55] dark:text-white focus:outline-hidden focus:border-frigus-primary transition-colors"
               >
-                <option value="">Selecione a categoria</option>
-                <option value="Laticínios">Laticínios</option>
-                <option value="Vegetais">Vegetais</option>
-                <option value="Carnes">Carnes</option>
-                <option value="Frutas">Frutas</option>
-                <option value="Grãos">Grãos</option>
-                <option value="Mercearia">Mercearia</option>
-                <option value="Congelados">Congelados</option>
+                <option value="DAIRY">Laticínios</option>
+                <option value="VEGETABLE">Vegetais</option>
+                <option value="MEAT">Carnes</option>
+                <option value="FRUIT">Frutas</option>
+                <option value="GRAIN">Grãos e mercearia</option>
+                <option value="BEVERAGE">Bebidas</option>
               </select>
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-[#131C55] uppercase tracking-wider block mb-2">
+              <label
+                htmlFor="add-food-location"
+                className="text-xs font-semibold text-[#131C55] dark:text-neutral-200 uppercase tracking-wider block mb-2"
+              >
                 LOCAL
               </label>
               <select
-                value={location}
-                onChange={(e) => setLocation(e.target.value as "Despensa" | "Geladeira" | "Freezer")}
-                className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] border border-[#DFE7F2] text-sm text-[#131C55] focus:outline-hidden focus:border-frigus-primary transition-colors"
+                id="add-food-location"
+                value={form.location}
+                onChange={(e) =>
+                  setForm((current) => ({
+                    ...current,
+                    location: e.target.value as AddFoodFormState["location"],
+                  }))
+                }
+                className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] dark:bg-[#252A32] border border-[#DFE7F2] dark:border-[#343941] text-sm text-[#131C55] dark:text-white focus:outline-hidden focus:border-frigus-primary transition-colors"
               >
                 <option value="Despensa">Despensa</option>
                 <option value="Geladeira">Geladeira</option>
@@ -126,51 +200,124 @@ export default function AddFoodModal({
             </div>
           </div>
 
-          {/* Quantidade e Validade */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-semibold text-[#131C55] uppercase tracking-wider block mb-2">
+              <label
+                htmlFor="add-food-quantity"
+                className="text-xs font-semibold text-[#131C55] dark:text-neutral-200 uppercase tracking-wider block mb-2"
+              >
                 QUANTIDADE
               </label>
-              <input
-                type="text"
-                required
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                placeholder="Informe a quantidade (ex: 2 un, 1 kg)"
-                className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] border border-[#DFE7F2] text-sm text-[#131C55] placeholder:text-[#758198] focus:outline-hidden focus:border-frigus-primary transition-colors"
-              />
+              <div className="flex gap-2">
+                <input
+                  id="add-food-quantity"
+                  type="number"
+                  min="0"
+                  max="2147483647"
+                  step="1"
+                  required
+                  value={form.quantity}
+                  onChange={(e) =>
+                    setForm((current) => ({
+                      ...current,
+                      quantity: e.target.value,
+                    }))
+                  }
+                  className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] dark:bg-[#252A32] border border-[#DFE7F2] dark:border-[#343941] text-sm text-[#131C55] dark:text-white placeholder:text-[#758198] dark:placeholder:text-neutral-500 focus:outline-hidden focus:border-frigus-primary transition-colors"
+                />
+                <label htmlFor="add-food-unit" className="sr-only">
+                  Unidade de medida
+                </label>
+                <select
+                  id="add-food-unit"
+                  value={form.unitOfMeasure}
+                  onChange={(e) =>
+                    setForm((current) => ({
+                      ...current,
+                      unitOfMeasure: e.target
+                        .value as NewFoodData["unitOfMeasure"],
+                    }))
+                  }
+                  className="h-12 rounded-xl border border-[#DFE7F2] bg-[#F5F8FC] px-2 text-xs dark:border-[#343941] dark:bg-[#252A32] dark:text-white"
+                >
+                  <option value="UNIT">un.</option>
+                  <option value="KILOGRAM">kg</option>
+                  <option value="GRAM">g</option>
+                  <option value="LITER">L</option>
+                  <option value="MILLILITER">ml</option>
+                  <option value="DOZEN">dúzia</option>
+                  <option value="PACKAGE">pct.</option>
+                </select>
+              </div>
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-[#131C55] uppercase tracking-wider block mb-2">
+              <label
+                htmlFor="add-food-expiration"
+                className="text-xs font-semibold text-[#131C55] dark:text-neutral-200 uppercase tracking-wider block mb-2"
+              >
                 VALIDADE
               </label>
               <input
-                type="text"
+                id="add-food-expiration"
+                type="date"
                 required
-                value={expiration}
-                onChange={(e) => setExpiration(e.target.value)}
-                placeholder="Informe a validade (ex: 20 out)"
-                className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] border border-[#DFE7F2] text-sm text-[#131C55] placeholder:text-[#758198] focus:outline-hidden focus:border-frigus-primary transition-colors"
+                value={form.expiration}
+                onChange={(e) =>
+                  setForm((current) => ({
+                    ...current,
+                    expiration: e.target.value,
+                  }))
+                }
+                className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] dark:bg-[#252A32] border border-[#DFE7F2] dark:border-[#343941] text-sm text-[#131C55] dark:text-white placeholder:text-[#758198] dark:placeholder:text-neutral-500 focus:outline-hidden focus:border-frigus-primary transition-colors"
               />
             </div>
           </div>
+          <div>
+            <label
+              htmlFor="add-food-unit-price"
+              className="text-xs font-semibold text-[#131C55] dark:text-neutral-200 uppercase tracking-wider block mb-2"
+            >
+              PREÇO UNITÁRIO (R$)
+            </label>
+            <input
+              id="add-food-unit-price"
+              type="number"
+              min="0.01"
+              max="10000000"
+              step="0.01"
+              required
+              value={form.unitPrice}
+              onChange={(e) =>
+                setForm((current) => ({
+                  ...current,
+                  unitPrice: e.target.value,
+                }))
+              }
+              className="w-full h-12 px-4 rounded-xl bg-[#F5F8FC] dark:bg-[#252A32] border border-[#DFE7F2] dark:border-[#343941] text-sm text-[#131C55] dark:text-white"
+            />
+          </div>
+          {error && (
+            <p role="alert" className="text-sm text-red-600">
+              {error}
+            </p>
+          )}
 
-          {/* Ações */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#DFE7F2] mt-2">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#DFE7F2] dark:border-[#343941] mt-2">
             <button
               type="button"
               onClick={onClose}
-              className="h-10 px-6 rounded-xl border border-[#DFE7F2] text-sm font-semibold text-[#131C55] hover:bg-gray-50 transition-colors cursor-pointer"
+              className="h-10 px-6 rounded-xl border border-[#DFE7F2] dark:border-[#343941] text-sm font-semibold text-[#131C55] dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-[#252A32] transition-colors cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="h-10 px-6 rounded-xl bg-[#2552C8] hover:bg-blue-700 text-sm font-semibold text-white shadow-xs transition-colors cursor-pointer"
+              disabled={saving}
+              aria-live="polite"
+              className="h-10 px-6 rounded-xl bg-[#2552C8] hover:bg-blue-700 text-sm font-semibold text-white shadow-xs transition-colors cursor-pointer disabled:opacity-60"
             >
-              Adicionar
+              {saving ? "Salvando…" : "Adicionar"}
             </button>
           </div>
         </form>

@@ -1,4 +1,2 @@
-import type { AuthSlice } from "@/store/auth.slice"
-
-// adicionar mais depois, como preferencias do usuario
+import type { AuthSlice } from "@/store/auth.slice";
 export type Store = AuthSlice;

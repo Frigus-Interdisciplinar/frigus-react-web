@@ -1,46 +1,107 @@
 import { useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import AuthLayout from "@/components/AuthLayout";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Checkbox from "@/components/Checkbox";
-import { register } from "@/services/auth.service";
+import ThemeToggle from "@/components/ThemeToggle";
+import { register, login } from "@/services/auth.service";
+import { useStore } from "@/store/store";
+import type { AccountType } from "@/types/auth.type";
+import { registerSchema } from "@/schemas/auth.schema";
+import { getPlansPath } from "@/utils/plan.util";
+
+type RegistrationFields = {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  birthDate: string;
+  accountType: AccountType;
+  acceptTerms: boolean;
+};
 
 export default function RegisterPage() {
-  const [name, setName] = useState<string>("");
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [confirmPassword, setConfirmPassword] = useState<string>("");
-  const [acceptTerms, setAcceptTerms] = useState<boolean>(false);
+  const [registration, setRegistration] = useState<RegistrationFields>({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    birthDate: "",
+    accountType: "DOMESTIC",
+    acceptTerms: false,
+  });
   const [error, setError] = useState<string>("");
+  const [fieldErrors, setFieldErrors] = useState<
+    Partial<Record<keyof RegistrationFields, string>>
+  >({});
   const [loading, setLoading] = useState<boolean>(false);
+  const navigate = useNavigate();
+  const saveUser = useStore((state) => state.login);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
+    const nextErrors: Partial<Record<keyof RegistrationFields, string>> = {};
 
-    if (!acceptTerms) {
-      setError("Você precisa aceitar os termos de uso para continuar.");
+    const validation = registerSchema.safeParse({
+      name: registration.name,
+      email: registration.email,
+      rawPassword: registration.password,
+      birthDate: registration.birthDate,
+      accountType: registration.accountType,
+    });
+    if (!validation.success) {
+      for (const issue of validation.error.issues) {
+        const field = issue.path[0];
+        if (
+          (field === "name" ||
+            field === "email" ||
+            field === "birthDate" ||
+            field === "accountType") &&
+          !nextErrors[field]
+        ) {
+          nextErrors[field] = issue.message;
+        }
+        if (field === "rawPassword" && !nextErrors.password) {
+          nextErrors.password = issue.message;
+        }
+      }
+    }
+    if (registration.password !== registration.confirmPassword) {
+      nextErrors.confirmPassword = "As senhas não coincidem.";
+    }
+    if (!registration.acceptTerms) {
+      nextErrors.acceptTerms =
+        "Você precisa aceitar os termos de uso para continuar.";
+    }
+    setFieldErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) {
       return;
     }
 
-    if (password !== confirmPassword) {
-      setError("As senhas não coincidem.");
-      return;
-    }
-
+    setLoading(true);
     try {
-      setLoading(true);
-      const res = await register({
-        name,
-        email,
-        rawPassword: password,
-        birthDate: "2000-01-01",
+      const account = await register({
+        name: registration.name,
+        email: registration.email,
+        rawPassword: registration.password,
+        birthDate: registration.birthDate,
+        accountType: registration.accountType,
       });
-      console.log("Register response:", res);
-      window.location.href = "/login";
+      const session = await login({
+        email: account.email,
+        rawPassword: registration.password,
+        rememberMe: true,
+      });
+      saveUser(session.user);
+      navigate(getPlansPath(session.user.accountType), { replace: true });
     } catch (err) {
-      console.error(err);
-      setError("Ocorreu um erro ao criar a conta. Verifique os dados e tente novamente.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Não foi possível criar sua conta. Tente novamente.",
+      );
     } finally {
       setLoading(false);
     }
@@ -51,26 +112,37 @@ export default function RegisterPage() {
       title={"Comece uma rotina\nmais organizada"}
       description="Crie sua conta e personalize o Frigus de acordo com a sua casa, o seu comércio ou a sua empresa."
       cardTitle="Feito para caber na sua vida"
-      cardDescription="Depois do cadastro, você escolhe o tipo de uso e vê apenas os planos certos para você."
+      cardDescription="Escolha o tipo de conta que combina com a sua casa, o seu comércio ou a sua empresa."
     >
-      <div className="rounded-frigus bg-frigus-white shadow-[0_16px_34px_0_rgba(19,28,85,0.10)] w-full max-w-[660px] p-8 sm:p-10 flex flex-col">
+      <div className="absolute top-6 right-6 z-20">
+        <ThemeToggle />
+      </div>
+
+      <div className="rounded-2xl bg-white dark:bg-[#1B1D20] border border-[#C9DEF9] dark:border-[#34383E] shadow-[0_16px_34px_0_rgba(19,28,85,0.08)] dark:shadow-[0_16px_34px_0_rgba(0,0,0,0.4)] w-full max-w-[576px] p-7 sm:p-12 flex flex-col transition-colors">
         <div className="text-left mb-6">
-          <h2 className="font-bold text-frigus-navy text-[28px] sm:text-[32px] leading-tight">
+          <h2 className="font-bold text-frigus-navy dark:text-white text-2xl sm:text-3xl leading-tight font-display">
             Crie sua conta
           </h2>
-          <p className="font-normal text-[#70809F] text-[16px] mt-1">
-            Leva menos de dois minutos para começar.
+          <p className="font-normal text-gray-500 dark:text-gray-400 text-sm mt-1.5">
+            Primeiro, crie sua conta. Em seguida, escolha seu plano.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
           <Input
             id="register-input-name"
             label="Nome completo"
             placeholder="Digite seu nome"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={registration.name}
+            error={fieldErrors.name}
+            onChange={(e) =>
+              setRegistration((current) => ({
+                ...current,
+                name: e.target.value,
+              }))
+            }
             required
+            autoFocus
           />
 
           <Input
@@ -78,18 +150,74 @@ export default function RegisterPage() {
             label="E-mail"
             type="email"
             placeholder="Digite seu e-mail"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={registration.email}
+            maxLength={254}
+            error={fieldErrors.email}
+            onChange={(e) =>
+              setRegistration((current) => ({
+                ...current,
+                email: e.target.value,
+              }))
+            }
             required
           />
+
+          <Input
+            id="register-input-birth-date"
+            label="Data de nascimento"
+            type="date"
+            value={registration.birthDate}
+            error={fieldErrors.birthDate}
+            onChange={(e) =>
+              setRegistration((current) => ({
+                ...current,
+                birthDate: e.target.value,
+              }))
+            }
+            required
+          />
+
+          <label
+            htmlFor="field-pages-auth-register-index-tsx-1"
+            className="flex flex-col gap-1.5 text-sm font-medium text-frigus-navy dark:text-white"
+          >
+            Tipo de conta
+            <select
+              id="field-pages-auth-register-index-tsx-1"
+              value={registration.accountType}
+              onChange={(e) =>
+                setRegistration((current) => ({
+                  ...current,
+                  accountType: e.target.value as AccountType,
+                }))
+              }
+              className="h-11 rounded-lg border border-[#C9DEF9] bg-white px-3 text-sm dark:border-[#343941] dark:bg-[#15171A] dark:text-white"
+            >
+              <option value="DOMESTIC">Doméstico</option>
+              <option value="COMMERCIAL">Comercial</option>
+              <option value="BUSINESS">Empresarial</option>
+            </select>
+          </label>
+          {fieldErrors.accountType && (
+            <p role="alert" className="text-xs text-red-600">
+              {fieldErrors.accountType}
+            </p>
+          )}
 
           <Input
             id="register-input-password"
             label="Senha"
             type="password"
             placeholder="Crie uma senha segura"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={registration.password}
+            maxLength={20}
+            error={fieldErrors.password}
+            onChange={(e) =>
+              setRegistration((current) => ({
+                ...current,
+                password: e.target.value,
+              }))
+            }
             showPasswordToggle
             required
           />
@@ -99,8 +227,15 @@ export default function RegisterPage() {
             label="Confirmar senha"
             type="password"
             placeholder="Digite a senha novamente"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            value={registration.confirmPassword}
+            maxLength={20}
+            error={fieldErrors.confirmPassword}
+            onChange={(e) =>
+              setRegistration((current) => ({
+                ...current,
+                confirmPassword: e.target.value,
+              }))
+            }
             showPasswordToggle
             required
           />
@@ -108,31 +243,37 @@ export default function RegisterPage() {
           <div className="mt-1">
             <Checkbox
               id="register-terms"
-              checked={acceptTerms}
-              onChange={(e) => setAcceptTerms(e.target.checked)}
+              checked={registration.acceptTerms}
+              onChange={(e) =>
+                setRegistration((current) => ({
+                  ...current,
+                  acceptTerms: e.target.checked,
+                }))
+              }
               label={
-                <span className="text-[14px] text-[#70809F] leading-snug">
+                <span className="text-xs text-gray-500 dark:text-gray-400 leading-snug">
                   Li e aceito os{" "}
-                  <a
-                    href="/terms"
-                    className="text-frigus-primary font-medium underline hover:text-frigus-secondary"
-                  >
+                  <span className="text-frigus-primary dark:text-[#A7BCFF] font-medium underline">
                     Termos de uso
-                  </a>{" "}
+                  </span>{" "}
                   e a{" "}
-                  <a
-                    href="/privacy"
-                    className="text-frigus-primary font-medium underline hover:text-frigus-secondary"
-                  >
+                  <span className="text-frigus-primary dark:text-[#A7BCFF] font-medium underline">
                     Política de privacidade.
-                  </a>
+                  </span>
                 </span>
               }
             />
           </div>
+          {fieldErrors.acceptTerms && (
+            <p role="alert" className="text-xs text-red-600">
+              {fieldErrors.acceptTerms}
+            </p>
+          )}
 
           {error && (
-            <p className="text-sm text-red-500 font-medium">{error}</p>
+            <p role="alert" className="text-xs text-red-500 font-medium">
+              {error}
+            </p>
           )}
 
           <div className="mt-2">
@@ -140,20 +281,21 @@ export default function RegisterPage() {
               type="submit"
               variant="primary"
               disabled={loading}
-              className="w-full h-[52px] text-base font-bold shadow-[0_8px_18px_0_rgba(37,82,200,0.2)]"
+              aria-live="polite"
+              className="w-full h-12 text-base font-bold shadow-md shadow-frigus-primary/20"
             >
               {loading ? "Criando conta..." : "Continuar"}
             </Button>
           </div>
 
-          <p className="text-center mt-3 text-[#70809F] text-[15px]">
+          <p className="text-center mt-3 text-gray-500 dark:text-gray-400 text-sm">
             Já tem uma conta?{" "}
-            <a
-              href="/login"
-              className="text-frigus-primary font-bold underline hover:text-frigus-secondary"
+            <Link
+              to="/login"
+              className="inline-flex min-h-11 min-w-11 items-center justify-center text-frigus-primary dark:text-[#A7BCFF] font-bold hover:underline"
             >
               Entrar
-            </a>
+            </Link>
           </p>
         </form>
       </div>
