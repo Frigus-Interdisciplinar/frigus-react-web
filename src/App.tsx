@@ -1,37 +1,62 @@
-import { useEffect, useState } from "react";
-import { api } from "@/utils/api.util";
+import { useEffect } from "react";
+import { BrowserRouter } from "react-router-dom";
+import AppRoutes from "@/routes";
+import { AuthProvider, ThemeProvider } from "@/contexts";
+import { refreshSession } from "@/services/auth.service";
+import { useStore } from "@/store/store";
+import AccessibilityTools from "@/components/AccessibilityTools";
+import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
+import DocumentTitle from "@/components/DocumentTitle";
+import VLibrasWidget from "@/components/VLibrasWidget";
 
-// apenas para teste da funcao, sera removido
+let sessionBootstrap: ReturnType<typeof refreshSession> | null = null;
 
-type Response = {
-  id: number,
-  title: string,
-  price: number,
-  description: string,
-  category: string,
-  image: string,
-  rating: {rate: number, count: number }, 
-}
-
-const App = () => {
-  const [data, setData] = useState<Response[]>([])
+export default function App() {
+  const saveUser = useStore((state) => state.login);
+  const setInitialized = useStore((state) => state.setInitialized);
 
   useEffect(() => {
-    const loadData = async () => {
-      const res = await api<Response[]>("/products", "GET");
-      setData(res);
-    }
-    loadData();
-  })
+    if (useStore.getState().initialized) return;
+    let active = true;
+    sessionBootstrap ??= refreshSession().finally(() => {
+      sessionBootstrap = null;
+    });
+    void sessionBootstrap
+      .then((session) => {
+        if (!active || useStore.getState().initialized) return;
+        if (active && !useStore.getState().initialized) saveUser(session.user);
+      })
+      .catch(() => {
+        if (active && !useStore.getState().initialized)
+          useStore.getState().logout();
+      })
+      .finally(() => {
+        if (active) setInitialized(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [saveUser, setInitialized]);
 
-  return <div className="bg-[#2e2e2e]">
-    <ul>
-      {data && data.map((product) => (
-        <li key={product.id}>{product.title}</li>
-      ))}
-    </ul>
-    
-  </div>;
-};
+  useEffect(() => {
+    const clearExpiredSession = () => useStore.getState().logout();
+    window.addEventListener("frigus:session-expired", clearExpiredSession);
+    return () =>
+      window.removeEventListener("frigus:session-expired", clearExpiredSession);
+  }, []);
 
-export default App;
+  return (
+    <AccessibilityProvider>
+      <VLibrasWidget />
+      <ThemeProvider>
+        <BrowserRouter>
+          <DocumentTitle />
+          <AccessibilityTools />
+          <AuthProvider>
+            <AppRoutes />
+          </AuthProvider>
+        </BrowserRouter>
+      </ThemeProvider>
+    </AccessibilityProvider>
+  );
+}

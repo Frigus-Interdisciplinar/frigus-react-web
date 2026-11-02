@@ -1,0 +1,25 @@
+import { LoaderCircle } from "lucide-react";
+
+interface LoadingSpinnerProps {
+  label?: string;
+  className?: string;
+}
+
+export default function LoadingSpinner({
+  label = "Carregando…",
+  className = "",
+}: LoadingSpinnerProps) {
+  return (
+    <div
+      role="status"
+      aria-label={label}
+      className={`flex min-h-24 items-center justify-center text-frigus-primary dark:text-blue-300 ${className}`}
+    >
+      <LoaderCircle
+        aria-hidden="true"
+        className="size-8 animate-spin motion-reduce:animate-none"
+      />
+      <span className="sr-only">{label}</span>
+    </div>
+  );
+}

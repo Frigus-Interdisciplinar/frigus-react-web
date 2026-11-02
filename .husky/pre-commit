@@ -4,4 +4,4 @@ npm run typecheck --if-present
 npm run build
 npm run lint
 
-rm -rf dist
+rm -rf dist 2>/dev/null || true

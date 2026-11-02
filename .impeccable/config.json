@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "gray-on-color",
+        "value": "*",
+        "files": [
+          "src/pages/Domestic/AiChat/index.tsx"
+        ],
+        "createdAt": "2026-11-02T21:13:32.263Z",
+        "reason": "The suggestion buttons use dark navy text on a near-white surface; the gray-on-color detector is a false positive for this pairing."
+      }
+    ]
+  }
+}

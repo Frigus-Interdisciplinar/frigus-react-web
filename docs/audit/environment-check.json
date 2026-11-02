@@ -1,0 +1,35 @@
+{
+  "trackedEnvExampleOnly": true,
+  "checks": [
+    {
+      "name": "VITE_SUPABASE_URL",
+      "publicBuildVariable": true,
+      "sensitiveName": false,
+      "sensitiveValue": false
+    },
+    {
+      "name": "VITE_API_URL",
+      "publicBuildVariable": true,
+      "sensitiveName": false,
+      "sensitiveValue": false
+    },
+    {
+      "name": "VITE_SUPABASE_PUBLISHABLE_KEY",
+      "publicBuildVariable": true,
+      "sensitiveName": false,
+      "sensitiveValue": false
+    },
+    {
+      "name": "VITE_SUPABASE_STORAGE_BUCKET",
+      "publicBuildVariable": true,
+      "sensitiveName": false,
+      "sensitiveValue": false
+    },
+    {
+      "name": "VITE_SUPABASE_URL",
+      "publicBuildVariable": true,
+      "sensitiveName": false,
+      "sensitiveValue": false
+    }
+  ]
+}
