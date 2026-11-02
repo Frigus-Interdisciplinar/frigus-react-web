@@ -37,6 +37,53 @@
   --card-bg: #1c1e22;
 }
 
+/* Keep shared commercial dialogs readable when the app uses the dark theme. */
+.dark .commercial-modal label {
+  color: #cbd5e1;
+}
+
+.dark .commercial-modal :is(
+    input:not([type="checkbox"]):not([type="radio"]),
+    select,
+    textarea
+  ) {
+  color-scheme: dark;
+  background-color: #252a32;
+  border-color: #454b54;
+  color: #f8fafc;
+}
+
+.dark .commercial-modal :is(input, textarea)::placeholder {
+  color: #9ca3af;
+  opacity: 1;
+}
+
+.dark .commercial-modal select option {
+  background-color: #1c1e22;
+  color: #f8fafc;
+}
+
+.dark .commercial-modal div.rounded-xl.bg-gray-50 {
+  background-color: #252a32;
+}
+
+.dark .commercial-modal div.rounded-xl.bg-gray-50 p:first-child {
+  color: #f8fafc;
+}
+
+.dark .commercial-modal div.rounded-xl.bg-gray-50 p:last-child {
+  color: #a1a1aa;
+}
+
+.dark .commercial-modal button[class~="text-gray-600"] {
+  border-color: #4b5563;
+  color: #cbd5e1;
+}
+
+.dark .commercial-modal button[class~="text-gray-600"]:hover {
+  background-color: #252a32;
+}
+
 @theme {
   --font-sans: "Sarabun", system-ui, -apple-system, sans-serif;
   --font-title: "Montserrat", "Sarabun", sans-serif;

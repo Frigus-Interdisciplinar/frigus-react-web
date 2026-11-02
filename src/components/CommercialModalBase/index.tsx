@@ -23,7 +23,7 @@ export function CommercialModalBase({
         aria-modal="true"
         aria-labelledby="commercial-modal-title"
         tabIndex={-1}
-        className="w-full max-w-[560px] bg-white dark:bg-[#1C1E22] rounded-3xl shadow-2xl border border-gray-100 dark:border-[#343941] overflow-hidden flex flex-col max-h-[90vh]"
+        className="commercial-modal w-full max-w-[560px] bg-white dark:bg-[#1C1E22] rounded-3xl shadow-2xl border border-gray-100 dark:border-[#343941] overflow-hidden flex flex-col max-h-[90vh]"
       >
         <div className="p-6 pb-4 border-b border-gray-100 dark:border-[#343941] flex items-start justify-between">
           <div>
