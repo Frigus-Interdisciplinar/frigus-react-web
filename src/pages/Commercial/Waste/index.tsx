@@ -1,6 +1,5 @@
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useLatestRequest } from "@/hooks/useLatestRequest";
-import { formatUnitOfMeasure } from "@/utils/unit.util";
 import { useCallback, useEffect, useState } from "react";
 import { AlertOctagon } from "lucide-react";
 import { CommercialRegisterWasteModal } from "@/components/CommercialModals";
@@ -82,7 +81,7 @@ export default function CommercialWastePage() {
               <tbody className="divide-y divide-gray-100 dark:divide-[#343941]">
                 {!loading && discards.map((item) => {
                   const product = productById.get(item.stockProductId);
-                  return <tr key={item.id}><td className="py-3 px-2 font-semibold text-[#141C55] dark:text-white">{product?.product?.name ?? `Lote #${item.stockProductId}`}</td><td className="py-3 px-2">{item.quantity} {formatUnitOfMeasure(product?.product?.unitOfMeasure)}</td><td className="py-3 px-2">{item.reason || "Não informado"}</td><td className="py-3 px-2">{new Date(item.date).toLocaleDateString("pt-BR")}</td></tr>;
+                  return <tr key={item.id}><td className="py-3 px-2 font-semibold text-[#141C55] dark:text-white">{product?.product?.name ?? `Lote #${item.stockProductId}`}</td><td className="py-3 px-2">{item.quantity} {product?.product?.unitOfMeasure ?? "un"}</td><td className="py-3 px-2">{item.reason || "Não informado"}</td><td className="py-3 px-2">{new Date(item.date).toLocaleDateString("pt-BR")}</td></tr>;
                 })}
                 {loading && <tr><td colSpan={4} role="status" aria-live="polite" className="py-6 text-center text-gray-500"><LoadingSpinner label="Carregando descartes…" /></td></tr>}
                 {!loading && discards.length === 0 && <tr><td colSpan={4} className="py-6 text-center text-gray-500">Nenhum descarte registrado.</td></tr>}
@@ -91,7 +90,7 @@ export default function CommercialWastePage() {
           </div>
         </section>
       </div>
-      <CommercialRegisterWasteModal isOpen={isWasteModalOpen} onClose={() => setIsWasteModalOpen(false)} products={products.map((item) => ({ id: item.id, name: item.product?.name ?? `Produto #${item.productId}`, quantity: item.quantity, unit: formatUnitOfMeasure(item.product?.unitOfMeasure) }))} onRecord={recordDiscard} />
+      <CommercialRegisterWasteModal isOpen={isWasteModalOpen} onClose={() => setIsWasteModalOpen(false)} products={products.map((item) => ({ id: item.id, name: item.product?.name ?? `Produto #${item.productId}`, quantity: item.quantity, unit: item.product?.unitOfMeasure ?? "un" }))} onRecord={recordDiscard} />
     </>
   );
 }

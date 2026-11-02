@@ -15,10 +15,6 @@ import {
   type ShoppingListPreviewItem,
 } from "@/services/shopping-list.service";
 import { Skeleton } from "@/components/LoadingSkeleton";
-import {
-  formatProductCategory,
-  formatUnitOfMeasure,
-} from "@/utils/unit.util";
 
 export default function DashboardPage() {
   const [summary, setSummary] = useState<StockSummary | null>(null);
@@ -435,7 +431,7 @@ export default function DashboardPage() {
                         <span className="truncate">{item.name}</span>
                       </span>
                       <span className="shrink-0">
-                        {item.quantity} {formatUnitOfMeasure(item.unit)}
+                        {item.quantity} {item.unit.toLowerCase()}
                       </span>
                     </div>
                   ))}
@@ -515,10 +511,10 @@ export default function DashboardPage() {
                           </span>
                         </td>
                         <td className="py-3.5 px-4 text-gray-500 dark:text-neutral-300 text-xs">
-                          {formatProductCategory(item.product?.category ?? item.category)}
+                          {item.product?.category ?? item.category}
                         </td>
                         <td className="py-3.5 px-4 text-gray-500 dark:text-neutral-300 text-xs">
-                          {item.quantity} {formatUnitOfMeasure(item.product?.unitOfMeasure)}
+                          {item.quantity} {item.product?.unitOfMeasure ?? "un"}
                         </td>
                         <td className="py-3.5 px-4 text-gray-500 dark:text-neutral-300 text-xs">
                           {new Date(

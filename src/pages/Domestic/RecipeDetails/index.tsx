@@ -15,7 +15,6 @@ import {
   type Recipe,
 } from "@/services/recipe.service";
 import { Skeleton, SkeletonCard } from "@/components/LoadingSkeleton";
-import { formatUnitOfMeasure } from "@/utils/unit.util";
 
 export default function RecipeDetailsPage() {
   const { id } = useParams<{ id: string }>();
@@ -175,7 +174,7 @@ function RecipeDetailsContent({ id }: { id?: string }) {
                         </span>
                       </div>
                       <span className="text-xs text-gray-500">
-                        {item.quantity ?? ""} {item.unit ? formatUnitOfMeasure(item.unit) : ""}
+                        {item.quantity ?? ""} {item.unit ?? ""}
                       </span>
                     </div>
                   ))}

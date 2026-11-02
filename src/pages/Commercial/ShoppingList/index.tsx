@@ -19,7 +19,6 @@ import type {
   ShoppingListItem as Item,
 } from "@/types/shopping-list.type";
 import type { Product } from "@/services/inventory.service";
-import { formatUnitOfMeasure } from "@/utils/unit.util";
 
 const categories: Record<string, string> = {
   FRUIT: "Frutas",
@@ -31,6 +30,16 @@ const categories: Record<string, string> = {
   CLEANING: "Limpeza",
   PERSONAL_HYGIENE: "Higiene pessoal",
 };
+const units: Record<string, string> = {
+  KILOGRAM: "kg",
+  GRAM: "g",
+  LITER: "L",
+  MILLILITER: "ml",
+  UNIT: "un",
+  DOZEN: "dúzia",
+  PACKAGE: "pct",
+};
+
 export default function CommercialShoppingListPage() {
   const [list, setList] = useState<ShoppingList>();
   const [catalog, setCatalog] = useState<Product[]>([]);
@@ -303,7 +312,7 @@ export default function CommercialShoppingListPage() {
                     <div className="flex items-center gap-4">
                       <span className="text-xs font-semibold">
                         {item.quantity}{" "}
-                        {formatUnitOfMeasure(item.product.unitOfMeasure)}
+                        {units[item.product.unitOfMeasure] ?? "un"}
                       </span>
                       <button
                         type="button"
@@ -334,7 +343,7 @@ export default function CommercialShoppingListPage() {
           id: String(product.id),
           name: product.name,
           category: categories[product.category] ?? product.category,
-          quantity: `1 ${formatUnitOfMeasure(product.unitOfMeasure)}`,
+          quantity: `1 ${units[product.unitOfMeasure] ?? "un"}`,
         }))}
         defaultSelectedIds={[]}
         onConfirm={addItems}

@@ -16,10 +16,6 @@ import {
 } from "@/services/inventory.service";
 import type { CommercialBatchInput } from "@/components/CommercialModals";
 import { safeHttpUrl } from "@/utils/url.util";
-import {
-  formatProductCategory,
-  formatUnitOfMeasure,
-} from "@/utils/unit.util";
 import { useLatestRequest } from "@/hooks/useLatestRequest";
 
 interface BatchItem {
@@ -99,9 +95,9 @@ export default function CommercialStockPage() {
             supplier: item.product?.brand ?? "—",
             unitPrice: item.product?.unitPrice ?? 0,
             imageUrl: item.product?.imageUrl,
-            category: formatProductCategory(item.product?.category ?? item.category),
+            category: item.product?.category ?? item.category ?? "Outros",
             location: places[item.product?.storagePlace ?? ""] ?? "Depósito",
-            quantity: `${item.quantity} ${formatUnitOfMeasure(item.product?.unitOfMeasure)}`,
+            quantity: `${item.quantity} ${item.product?.unitOfMeasure ?? "un"}`,
             expiration: new Date(
               `${item.expireDate}T00:00:00`,
             ).toLocaleDateString("pt-BR"),

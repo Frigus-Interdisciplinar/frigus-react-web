@@ -17,7 +17,6 @@ import type { ShoppingListSuggestion } from "@/types/shopping-list.type";
 import type { Product } from "@/services/inventory.service";
 import { Plus, Trash2, Check, Sparkles, Minus } from "lucide-react";
 import { AddItemModal } from "@/components/Modal";
-import { formatUnitOfMeasure } from "@/utils/unit.util";
 
 type ShoppingItem = {
   id: number;
@@ -30,6 +29,15 @@ type ShoppingItem = {
   image?: string;
 };
 
+const units: Record<string, string> = {
+  KILOGRAM: "kg",
+  GRAM: "g",
+  LITER: "L",
+  MILLILITER: "ml",
+  UNIT: "un",
+  DOZEN: "dúzia",
+  PACKAGE: "pct",
+};
 const categories: Record<string, string> = {
   FRUIT: "Frutas",
   VEGETABLE: "Vegetais",
@@ -90,7 +98,7 @@ export default function ShoppingListPage() {
         name: item.product.name,
         category: categories[item.product.category] ?? item.product.category,
         quantity: item.quantity,
-        unit: formatUnitOfMeasure(item.product.unitOfMeasure),
+        unit: units[item.product.unitOfMeasure] ?? "un",
         checked: item.status === "PURCHASED",
       })),
     );
@@ -490,7 +498,7 @@ export default function ShoppingListPage() {
                 {suggestions.map((suggestion) => {
                   const sug = {
                     name: suggestion.product.name,
-                    desc: `${suggestion.reason === "OUT_OF_STOCK" ? "Sem estoque" : "Estoque baixo"} · adicionar ${suggestion.suggestedQuantity} ${formatUnitOfMeasure(suggestion.product.unitOfMeasure)}`,
+                    desc: `${suggestion.reason === "OUT_OF_STOCK" ? "Sem estoque" : "Estoque baixo"} · adicionar ${suggestion.suggestedQuantity} ${units[suggestion.product.unitOfMeasure] ?? "un"}`,
                     letter: suggestion.product.name.charAt(0).toUpperCase(),
                   };
                   return (
@@ -564,7 +572,7 @@ export default function ShoppingListPage() {
           id: String(product.id),
           name: product.name,
           category: categories[product.category] ?? product.category,
-          quantity: `1 ${formatUnitOfMeasure(product.unitOfMeasure)}`,
+          quantity: `1 ${units[product.unitOfMeasure] ?? "un"}`,
         }))}
         defaultSelectedIds={[]}
         onConfirm={addProducts}
