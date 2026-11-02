@@ -6,9 +6,9 @@ import { CommercialModalBase } from "@/components/CommercialModalBase";
 export function CommercialManageAccessModal({
   isOpen,
   onClose,
-  employeeName = "Ana Souza",
-  employeeEmail = "ana@saborecia.com",
-  memberRole = "EDITOR",
+  employeeName,
+  employeeEmail,
+  memberRole,
   onSaveRole,
 }: CommercialManageAccessModalProps) {
   const [role, setRole] = useState<"EDITOR" | "VIEWER">(memberRole);

@@ -11,6 +11,10 @@ import { formatPlanPrice, getPlansPath } from "@/utils/plan.util";
 
 export default function ProfilePage() {
   const user = useStore((state) => state.user);
+  const groupLabel =
+    user?.accountType === "DOMESTIC"
+      ? "Nome da casa"
+      : "Nome do estabelecimento";
   const [groupName, setGroupName] = useState("—");
   const [memberCount, setMemberCount] = useState(1);
   const [itemCount, setItemCount] = useState(0);
@@ -110,7 +114,7 @@ export default function ProfilePage() {
                 Dados pessoais
               </h3>
               <p className="text-xs text-gray-400 dark:text-neutral-400 mt-0.5">
-                Informações usadas na sua conta doméstica.
+                Dados de identificação e contato associados à sua conta.
               </p>
             </div>
 
@@ -147,7 +151,7 @@ export default function ProfilePage() {
             <div className="p-4 rounded-2xl bg-gray-50/60 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941] space-y-1">
               <div className="flex items-center gap-2 text-gray-400 dark:text-neutral-400 text-xs">
                 <Home size={14} />
-                <span>Nome da casa</span>
+                <span>{groupLabel}</span>
               </div>
               <p className="font-bold text-frigus-navy dark:text-white text-sm">{groupName}</p>
             </div>

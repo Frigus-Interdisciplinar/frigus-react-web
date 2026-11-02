@@ -4,6 +4,8 @@ import type { SectionString } from "@/components/AppLayout/Sidebar";
 import CommercialLayout from "@/components/CommercialLayout";
 import type { CommercialSection } from "@/components/CommercialLayout/CommercialSidebar";
 import EnterpriseLayout from "@/components/EnterpriseLayout";
+import LoadingSpinner from "@/components/LoadingSpinner";
+import { useStore } from "@/store/store";
 
 const domesticSections: Record<string, SectionString> = {
   home: "home",
@@ -45,6 +47,43 @@ const enterpriseSections = {
 export default function WorkspaceLayout() {
   const { pathname } = useLocation();
   const [, area, tab] = pathname.split("/");
+  const user = useStore((state) => state.user);
+  const initialized = useStore((state) => state.initialized);
+
+  const sharedWorkspaceLabels: Record<string, string> = {
+    profile: "Perfil",
+    settings: "Configurações",
+    notifications: "Notificações",
+  };
+  const sharedLabel = sharedWorkspaceLabels[area];
+
+  if (sharedLabel && !initialized) {
+    return <LoadingSpinner label="Carregando sua sessão…" className="min-h-screen" />;
+  }
+
+  if (sharedLabel && user?.accountType === "COMMERCIAL") {
+    return (
+      <CommercialLayout
+        activeSection={area as CommercialSection}
+        breadcrumb={`Área comercial    /    ${sharedLabel}`}
+      >
+        <Outlet />
+      </CommercialLayout>
+    );
+  }
+
+  if (sharedLabel && user?.accountType === "BUSINESS") {
+    return (
+      <EnterpriseLayout
+        activeSection={area as "profile" | "settings" | "notifications"}
+        breadcrumb={`Área empresarial    /    ${sharedLabel}`}
+      >
+        <Outlet />
+      </EnterpriseLayout>
+    );
+  }
+
+  if (sharedLabel && !user) return <Outlet />;
 
   if (area === "commercial") {
     const { section, label } =

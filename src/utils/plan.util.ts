@@ -17,6 +17,24 @@ const accountPlans: Record<AccountType, readonly string[]> = {
   COMMERCIAL: ["FREE", "COMMERCIAL"],
   BUSINESS: ["FREE", "ENTERPRISE"],
 };
+const accountReturnPaths: Record<AccountType, readonly string[]> = {
+  DOMESTIC: [
+    "/home",
+    "/stock",
+    "/alerts",
+    "/recipe",
+    "/shopping-list",
+    "/family-members",
+    "/chat",
+    "/chat-ai",
+    "/profile",
+    "/settings",
+    "/notifications",
+    "/plans/domestic",
+  ],
+  COMMERCIAL: ["/commercial", "/plans/commercial"],
+  BUSINESS: ["/enterprise", "/plans/enterprise"],
+};
 const legacyPlanCodes: Record<string, string> = {
   family: "FAMILY",
   "family-plus": "PLUS",
@@ -28,6 +46,24 @@ export const getAccountHome = (accountType: AccountType) =>
   homePaths[accountType];
 export const getPlansPath = (accountType: AccountType) =>
   planPaths[accountType];
+export const getLoginReturnPath = (
+  requested: unknown,
+  accountType: AccountType,
+) => {
+  if (
+    typeof requested === "string" &&
+    requested.startsWith("/") &&
+    !requested.startsWith("//")
+  ) {
+    const pathname = requested.split(/[?#]/, 1)[0];
+    const belongsToAccount = accountReturnPaths[accountType].some(
+      (path) => pathname === path || pathname.startsWith(`${path}/`),
+    );
+    if (belongsToAccount) return requested;
+  }
+
+  return getAccountHome(accountType);
+};
 export const getSessionDestination = (user: AuthUser) =>
   user.planSelectionRequired
     ? user.pendingPlanTransactionId

@@ -20,7 +20,7 @@ export default function InviteMemberModal({
   isOpen,
   onClose,
   onInvite,
-  householdName = "Casa Henrique",
+  householdName,
 }: InviteMemberModalProps) {
   const dialogRef = useModalFocus(isOpen, onClose);
   const [form, setForm] = useState({
@@ -87,7 +87,9 @@ export default function InviteMemberModal({
             Convidar membro
           </h2>
           <p className="text-sm text-[#758198] dark:text-neutral-400">
-            Envie um convite para participar da {householdName}.
+            {householdName
+              ? `Envie um convite para participar de ${householdName}.`
+              : "Envie um convite para participar do grupo."}
           </p>
         </div>
 

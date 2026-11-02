@@ -20,7 +20,7 @@ export default function CommercialTopbar({
       .slice(0, 2)
       .map((part) => part[0])
       .join("")
-      .toUpperCase() ?? "AS";
+      .toUpperCase() ?? "";
 
   return (
     <>
@@ -40,7 +40,6 @@ export default function CommercialTopbar({
             className="relative flex h-9 w-9 items-center justify-center rounded-full border border-[#E1E7F0] text-[#141C55] hover:bg-[#F5F8FC] dark:border-[#343941] dark:text-neutral-200 dark:hover:bg-[#252A32]"
           >
             <Bell size={16} aria-hidden="true" />
-            <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-amber-500 ring-2 ring-white dark:ring-[#1B1D20]" />
           </button>
           <Link
             to="/profile"

@@ -7,15 +7,7 @@ import { EnterpriseModalBase } from "@/components/EnterpriseModalBase";
 export function EnterpriseEditAdModal({
   isOpen,
   onClose,
-  initialData = {
-    name: "Kit brunch artesanal",
-    category: "Congelados",
-    price: "R$ 21,90",
-    startDate: "01/09/2026",
-    endDate: "30/09/2026",
-    description:
-      "Kit congelado com seleção de pães, quiches e acompanhamentos para cafeteria e bistrô.",
-  },
+  initialData,
 }: EnterpriseEditAdModalProps) {
   const [form, setForm] = useState({
     name: initialData.name,
@@ -71,7 +63,7 @@ export function EnterpriseEditAdModal({
               Foto do anúncio
             </p>
             <p className="text-[11px] text-[#64748B] dark:text-neutral-400 mt-0.5">
-              kit-brunch-foto.jpg (1.2 MB)
+              Nenhuma foto carregada
             </p>
             <button
               type="button"

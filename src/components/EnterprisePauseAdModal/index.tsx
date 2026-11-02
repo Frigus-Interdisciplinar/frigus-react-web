@@ -4,10 +4,7 @@ import { EnterpriseModalBase } from "@/components/EnterpriseModalBase";
 export function EnterprisePauseAdModal({
   isOpen,
   onClose,
-  product = {
-    name: "Kit brunch artesanal",
-    category: "Congelados",
-  },
+  product,
 }: EnterprisePauseAdModalProps) {
   return (
     <EnterpriseModalBase

@@ -4,8 +4,8 @@ import { CommercialModalBase } from "@/components/CommercialModalBase";
 export function CommercialResendInviteModal({
   isOpen,
   onClose,
-  name = "Beatriz Costa",
-  email = "beatriz@saborecia.com",
+  name,
+  email,
 }: CommercialResendInviteModalProps) {
   return (
     <CommercialModalBase
@@ -59,36 +59,6 @@ export function CommercialResendInviteModal({
             type="email"
             defaultValue={email}
             className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8]"
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="field-components-commercialresendinvitemodal-index-tsx-3"
-            className="block text-xs font-semibold text-[#141C55] mb-1"
-          >
-            Função
-          </label>
-          <input
-            id="field-components-commercialresendinvitemodal-index-tsx-3"
-            type="text"
-            defaultValue="Operador"
-            readOnly
-            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs bg-gray-50 text-gray-600"
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="field-components-commercialresendinvitemodal-index-tsx-4"
-            className="block text-xs font-semibold text-[#141C55] mb-1"
-          >
-            Unidade
-          </label>
-          <input
-            id="field-components-commercialresendinvitemodal-index-tsx-4"
-            type="text"
-            defaultValue="Sabor & Cia · Centro"
-            readOnly
-            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs bg-gray-50 text-gray-600"
           />
         </div>
       </div>

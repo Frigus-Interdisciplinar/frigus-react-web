@@ -91,7 +91,7 @@ export function EnterpriseCreateAdModal({
             onChange={(e) =>
               setForm((current) => ({ ...current, name: e.target.value }))
             }
-            placeholder="Ex.: Kit brunch artesanal"
+            placeholder="Informe o nome do produto"
             className="w-full px-4 py-2.5 rounded-xl bg-[#F5F8FC] dark:bg-[#252A32] border border-[#E1E7F0] dark:border-[#343941] text-xs font-medium text-[#141C55] dark:text-white focus:outline-hidden focus:border-[#2552C8]"
           />
         </div>

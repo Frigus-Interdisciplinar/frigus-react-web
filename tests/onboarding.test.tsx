@@ -48,8 +48,9 @@ function Location() {
   return <output data-testid="route">{location.pathname}{location.search}</output>;
 }
 
-function renderFlow(path: string) {
-  return render(<MemoryRouter initialEntries={[path]}><AuthProvider><Location /><Routes>
+function renderFlow(path: string, state?: unknown) {
+  const entry = state === undefined ? path : { pathname: path, state };
+  return render(<MemoryRouter initialEntries={[entry]}><AuthProvider><Location /><Routes>
     <Route path="/register" element={<RegisterPage />} />
     <Route path="/login" element={<LoginPage />} />
     <Route path="/choose-profile" element={<AuthGuard allowPlanSelection><ChooseProfilePage /></AuthGuard>} />
@@ -127,6 +128,7 @@ describe("cadastro e login", () => {
     fireEvent.change(screen.getByLabelText("Nome completo"), { target: { value: "Pessoa de teste" } });
     fireEvent.change(screen.getByLabelText("E-mail"), { target: { value: "teste@example.test" } });
     fireEvent.change(screen.getByLabelText("Data de nascimento"), { target: { value: "1990-01-01" } });
+    fireEvent.change(screen.getByLabelText("Tipo de conta"), { target: { value: "COMMERCIAL" } });
     fireEvent.change(screen.getByLabelText("Senha", { exact: true }), { target: { value: "Senha@123" } });
     fireEvent.change(screen.getByLabelText("Confirmar senha"), { target: { value: "Senha@123" } });
     fireEvent.click(screen.getByRole("checkbox", { name: /Li e aceito/ }));
@@ -188,7 +190,20 @@ describe("cadastro e login", () => {
     fireEvent.change(screen.getByLabelText("Senha", { exact: true }), { target: { value: "Senha@123" } });
     fireEvent.click(screen.getByRole("button", { name: "Entrar" }));
     await screen.findByText("Painel doméstico");
-    expect(ensureStarterWorkspace).toHaveBeenCalledWith("DOMESTIC");
+    expect(ensureStarterWorkspace).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["COMMERCIAL", "/commercial"],
+    ["BUSINESS", "/enterprise"],
+  ] as const)("após login, direciona a conta %s à sua área", async (accountType, path) => {
+    useStore.setState({ user: null });
+    vi.mocked(login).mockResolvedValue({ user: { ...activeUser, accountType } });
+    renderFlow("/login", { from: "/profile" });
+    fireEvent.change(screen.getByLabelText("E-mail"), { target: { value: "teste@example.test" } });
+    fireEvent.change(screen.getByLabelText("Senha", { exact: true }), { target: { value: "Senha@123" } });
+    fireEvent.click(screen.getByRole("button", { name: "Entrar" }));
+    await waitFor(() => expect(screen.getByTestId("route").textContent).toBe(path));
   });
 
   it("bloqueia o painel enquanto a conta precisa escolher o plano, inclusive após remontagem", async () => {

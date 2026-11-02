@@ -156,21 +156,6 @@ export function CommercialInviteEmployeeModal({
             <option value="VIEWER">Operador · somente leitura</option>
           </select>
         </div>
-        <div>
-          <label
-            htmlFor="commercial-invite-unit"
-            className="block text-xs font-semibold text-[#141C55] mb-1"
-          >
-            Unidade
-          </label>
-          <input
-            id="commercial-invite-unit"
-            type="text"
-            defaultValue="Sabor & Cia · Centro"
-            readOnly
-            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs bg-gray-50 text-gray-500 cursor-not-allowed"
-          />
-        </div>
       </div>
     </CommercialModalBase>
   );

@@ -41,7 +41,7 @@ export function CommercialRegisterMovementModal({
           <input
             id="field-components-commercialregistermovementmodal-index-tsx-1"
             type="text"
-            defaultValue="Peito de frango · FR-2048"
+            placeholder="Selecione ou informe o produto e o lote"
             className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8]"
           />
         </div>
@@ -54,11 +54,13 @@ export function CommercialRegisterMovementModal({
           </label>
           <select
             id="field-components-commercialregistermovementmodal-index-tsx-2"
-            defaultValue="Saída"
+            defaultValue=""
+            required
             className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8] bg-white"
           >
-            <option>Saída</option>
-            <option>Entrada</option>
+            <option value="" disabled>Selecione o tipo</option>
+            <option value="OUT">Saída</option>
+            <option value="IN">Entrada</option>
           </select>
         </div>
         <div>
@@ -71,7 +73,7 @@ export function CommercialRegisterMovementModal({
           <input
             id="field-components-commercialregistermovementmodal-index-tsx-3"
             type="text"
-            defaultValue="6 kg"
+            placeholder="Informe a quantidade"
             className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8]"
           />
         </div>
@@ -85,7 +87,7 @@ export function CommercialRegisterMovementModal({
           <input
             id="field-components-commercialregistermovementmodal-index-tsx-4"
             type="text"
-            defaultValue="Área de venda"
+            placeholder="Informe o destino"
             className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8]"
           />
         </div>

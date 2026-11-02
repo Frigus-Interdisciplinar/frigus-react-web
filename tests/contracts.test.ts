@@ -54,11 +54,11 @@ describe("Contratos de entrada Web → BFF → Core", () => {
     expect(loginSchema.safeParse({ email: "demo@example.test", rawPassword: "a" }).success).toBe(true);
   });
   it("converte a data do formulário uma vez e aceita o formato do Core", () => {
-    const user = { name: "A", email: "a@example.test", rawPassword: "FrigusDemo2026!", birthDate: "1990-05-15" };
+    const user = { name: "A", email: "a@example.test", rawPassword: "FrigusDemo2026!", birthDate: "1990-05-15", accountType: "COMMERCIAL" as const };
     const parsed = registerSchema.parse(user);
     expect(parsed.birthDate).toBe("15/05/1990");
     expect(registerSchema.parse(parsed).birthDate).toBe("15/05/1990");
-    expect(parsed.accountType).toBe("DOMESTIC");
+    expect(parsed.accountType).toBe("COMMERCIAL");
     expect(registerSchema.safeParse({ ...user, birthDate: "2026-02-30" }).success).toBe(false);
     expect(registerSchema.safeParse({ ...user, birthDate: "2020-01-01" }).success).toBe(false);
   });

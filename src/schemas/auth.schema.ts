@@ -40,9 +40,7 @@ export const registerSchema = z.object({
       return value <= cutoff.toISOString().slice(0, 10);
     }, "A idade mínima é de 16 anos.")
     .transform((value) => value.split("-").reverse().join("/")),
-  accountType: z
-    .enum(["DOMESTIC", "COMMERCIAL", "BUSINESS"])
-    .default("DOMESTIC"),
+  accountType: z.enum(["DOMESTIC", "COMMERCIAL", "BUSINESS"]),
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;

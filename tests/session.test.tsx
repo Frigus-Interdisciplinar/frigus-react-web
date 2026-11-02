@@ -42,18 +42,20 @@ it("não publica sessão após a desmontagem do aplicativo", async () => {
   expect(useStore.getState().user).toBeNull();
 });
 
-it("prepara o espaço ao restaurar uma conta que já teve o plano ativado", async () => {
+it("restaura uma conta ativa sem criar um espaço durante o bootstrap", async () => {
   vi.mocked(refreshSession).mockResolvedValue({ user: { id: "u", name: "A", email: "a@example.test", accountType: "DOMESTIC", planSelectionRequired: false } });
   render(<App />);
   await waitFor(() => expect(useStore.getState().initialized).toBe(true));
-  expect(ensureStarterWorkspace).toHaveBeenCalledWith("DOMESTIC");
+  expect(ensureStarterWorkspace).not.toHaveBeenCalled();
   expect(useStore.getState().user?.id).toBe("u");
 });
 
-it("mantém a autenticação e exibe recuperação se a preparação do espaço falhar", async () => {
+it("mantém a autenticação se o helper de preparação do espaço não estiver disponível", async () => {
   vi.mocked(refreshSession).mockResolvedValue({ user: { id: "u", name: "A", email: "a@example.test", accountType: "DOMESTIC", planSelectionRequired: false } });
   vi.mocked(ensureStarterWorkspace).mockRejectedValue(new Error("indisponível"));
   render(<App />);
-  expect((await screen.findByRole("alert")).textContent).toContain("Não foi possível preparar seu espaço");
+  await waitFor(() => expect(useStore.getState().initialized).toBe(true));
+  expect(screen.queryByRole("alert")).toBeNull();
+  expect(ensureStarterWorkspace).not.toHaveBeenCalled();
   expect(useStore.getState().user?.id).toBe("u");
 });

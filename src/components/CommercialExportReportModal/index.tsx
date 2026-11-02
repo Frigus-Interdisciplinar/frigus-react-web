@@ -38,15 +38,12 @@ export function CommercialExportReportModal({
           >
             Período
           </label>
-          <select
+          <input
             id="field-components-commercialexportreportmodal-index-tsx-1"
-            defaultValue="Agosto 2026"
+            type="month"
+            required
             className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8] bg-white"
-          >
-            <option>Agosto 2026</option>
-            <option>Julho 2026</option>
-            <option>Junho 2026</option>
-          </select>
+          />
         </div>
         <div>
           <label
@@ -57,12 +54,14 @@ export function CommercialExportReportModal({
           </label>
           <select
             id="field-components-commercialexportreportmodal-index-tsx-2"
-            defaultValue="PDF"
+            defaultValue=""
+            required
             className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8] bg-white"
           >
-            <option>PDF</option>
-            <option>Planilha Excel (.xlsx)</option>
-            <option>CSV</option>
+            <option value="" disabled>Selecione o formato</option>
+            <option value="PDF">PDF</option>
+            <option value="XLSX">Planilha Excel (.xlsx)</option>
+            <option value="CSV">CSV</option>
           </select>
         </div>
         <div>
@@ -74,28 +73,15 @@ export function CommercialExportReportModal({
           </label>
           <select
             id="field-components-commercialexportreportmodal-index-tsx-3"
-            defaultValue="Resumo e gráficos"
+            defaultValue=""
+            required
             className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8] bg-white"
           >
-            <option>Resumo e gráficos</option>
-            <option>Detalhamento completo</option>
-            <option>Apenas métricas financeiras</option>
+            <option value="" disabled>Selecione o conteúdo</option>
+            <option value="summary">Resumo e gráficos</option>
+            <option value="full">Detalhamento completo</option>
+            <option value="financial">Apenas métricas financeiras</option>
           </select>
-        </div>
-        <div>
-          <label
-            htmlFor="field-components-commercialexportreportmodal-index-tsx-4"
-            className="block text-xs font-semibold text-[#141C55] mb-1"
-          >
-            Estabelecimento
-          </label>
-          <input
-            id="field-components-commercialexportreportmodal-index-tsx-4"
-            type="text"
-            defaultValue="Sabor & Cia"
-            readOnly
-            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs bg-gray-50 text-gray-500 cursor-not-allowed"
-          />
         </div>
       </div>
     </CommercialModalBase>

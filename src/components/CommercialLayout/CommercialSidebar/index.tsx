@@ -18,7 +18,10 @@ export type CommercialSection =
   | "monthly-report"
   | "waste"
   | "expenses"
-  | "employees";
+  | "employees"
+  | "profile"
+  | "settings"
+  | "notifications";
 
 const navItems = [
   {
