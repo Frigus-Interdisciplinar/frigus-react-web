@@ -23,6 +23,8 @@ export default function Topbar({
   const [isQuickNotificationsOpen, setIsQuickNotificationsOpen] =
     useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const accountButtonRef = useRef<HTMLButtonElement>(null);
   const navigate = useNavigate();
@@ -74,10 +76,22 @@ export default function Topbar({
     };
   }, []);
 
-  const handleLogout = () => {
-    void endSession().catch(() => undefined);
-    clearSession();
-    navigate("/login", { replace: true });
+  const handleLogout = async () => {
+    setLogoutError("");
+    setIsLoggingOut(true);
+    try {
+      await endSession();
+      clearSession();
+      navigate("/login", { replace: true });
+    } catch (reason) {
+      setLogoutError(
+        reason instanceof Error
+          ? reason.message
+          : "Não foi possível sair. Tente novamente.",
+      );
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   return (
@@ -123,6 +137,7 @@ export default function Topbar({
             ref={accountButtonRef}
             type="button"
             onClick={() => {
+              setLogoutError("");
               setIsAccountMenuOpen((open) => !open);
             }}
             aria-label="Menu da conta"
@@ -149,13 +164,19 @@ export default function Topbar({
               >
                 Meu perfil
               </Link>
+              {logoutError && (
+                <p role="alert" className="px-3 py-2 text-xs text-red-600">
+                  {logoutError}
+                </p>
+              )}
               <button
                 type="button"
-                onClick={handleLogout}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-red-700 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-600 dark:text-red-300 dark:hover:bg-red-950/30"
+                onClick={() => void handleLogout()}
+                disabled={isLoggingOut}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-red-700 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-600 disabled:cursor-wait disabled:opacity-60 dark:text-red-300 dark:hover:bg-red-950/30"
               >
                 <LogOut size={16} aria-hidden="true" />
-                Sair da conta
+                {isLoggingOut ? "Saindo…" : "Sair da conta"}
               </button>
             </div>
           )}
