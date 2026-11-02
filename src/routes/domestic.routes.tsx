@@ -19,6 +19,7 @@ const FamilyMembersPage = lazyPage(
 const ChatPage = lazyPage(() => import("@/pages/Domestic/Chat"));
 const AiChatPage = lazyPage(() => import("@/pages/Domestic/AiChat"));
 const ProfilePage = lazyPage(() => import("@/pages/Domestic/Profile"));
+const ProfileEditPage = lazyPage(() => import("@/pages/Domestic/ProfileEdit"));
 const SettingsPage = lazyPage(() => import("@/pages/Domestic/Settings"));
 const NotificationsPage = lazyPage(
   () => import("@/pages/Domestic/Notifications"),
@@ -111,6 +112,14 @@ export const domesticRoutes = (
       element={
         <AuthGuard>
           <ProfilePage />
+        </AuthGuard>
+      }
+    />
+    <Route
+      path="/profile/edit"
+      element={
+        <AuthGuard>
+          <ProfileEditPage />
         </AuthGuard>
       }
     />

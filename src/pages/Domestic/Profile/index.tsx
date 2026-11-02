@@ -57,8 +57,10 @@ export default function ProfilePage() {
         <div className="bg-white dark:bg-[#1C1E22] rounded-3xl p-6 md:p-8 border border-gray-200/80 dark:border-[#343941] shadow-xs space-y-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-5">
-              <div className="w-20 h-20 rounded-full bg-frigus-ice dark:bg-[#252A32] text-frigus-navy dark:text-blue-300 font-montserrat font-bold text-2xl flex items-center justify-center border-4 border-blue-50 dark:border-[#343941] shadow-sm shrink-0">
-                {initials}
+              <div className="w-20 h-20 rounded-full bg-frigus-ice dark:bg-[#252A32] text-frigus-navy dark:text-blue-300 font-montserrat font-bold text-2xl flex items-center justify-center border-4 border-blue-50 dark:border-[#343941] shadow-sm shrink-0 overflow-hidden">
+                {user?.profilePictureUrl ? (
+                  <img src={user.profilePictureUrl} alt="Foto de perfil" className="h-full w-full object-cover" />
+                ) : initials}
               </div>
               <div className="text-center sm:text-left space-y-1">
                 <div className="flex items-center justify-center sm:justify-start gap-2">
@@ -73,7 +75,7 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <Link to="/settings" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#343941] text-xs font-bold text-frigus-navy dark:text-white hover:bg-gray-50 dark:hover:bg-[#252A32] transition-colors shadow-xs cursor-pointer">
+            <Link to="/profile/edit" className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#343941] text-xs font-bold text-frigus-navy dark:text-white hover:bg-gray-50 dark:hover:bg-[#252A32] transition-colors shadow-xs cursor-pointer">
               <Edit size={15} />
               <span>Editar perfil</span>
             </Link>
@@ -118,7 +120,7 @@ export default function ProfilePage() {
               </p>
             </div>
 
-            <Link to="/settings" className="text-xs font-bold text-frigus-primary dark:text-blue-400 hover:underline cursor-pointer">
+            <Link to="/profile/edit" className="text-xs font-bold text-frigus-primary dark:text-blue-400 hover:underline cursor-pointer">
               Editar dados pessoais
             </Link>
           </div>

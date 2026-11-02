@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { User, Lock, AlertOctagon, Check } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
+import { Link } from "react-router-dom";
 import {
   getUserPreferences,
   updateUserPreferences,
@@ -137,9 +138,9 @@ export default function SettingsPage() {
                   </p>
                 </div>
               </div>
-              <button className="px-3.5 py-1.5 rounded-xl border border-gray-200 dark:border-[#343941] bg-white dark:bg-[#1C1E22] text-xs font-bold text-frigus-navy dark:text-white hover:bg-gray-50 dark:hover:bg-[#252A32] transition-colors shadow-2xs cursor-pointer">
+              <Link to="/profile/edit" className="px-3.5 py-1.5 rounded-xl border border-gray-200 dark:border-[#343941] bg-white dark:bg-[#1C1E22] text-xs font-bold text-frigus-navy dark:text-white hover:bg-gray-50 dark:hover:bg-[#252A32] transition-colors shadow-2xs cursor-pointer">
                 Editar
-              </button>
+              </Link>
             </div>
 
             <div className="p-4 rounded-2xl bg-gray-50/70 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941] flex items-center justify-between gap-4">

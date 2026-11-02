@@ -32,8 +32,20 @@ const accountReturnPaths: Record<AccountType, readonly string[]> = {
     "/notifications",
     "/plans/domestic",
   ],
-  COMMERCIAL: ["/commercial", "/plans/commercial"],
-  BUSINESS: ["/enterprise", "/plans/enterprise"],
+  COMMERCIAL: [
+    "/commercial",
+    "/profile",
+    "/settings",
+    "/notifications",
+    "/plans/commercial",
+  ],
+  BUSINESS: [
+    "/enterprise",
+    "/profile",
+    "/settings",
+    "/notifications",
+    "/plans/enterprise",
+  ],
 };
 const legacyPlanCodes: Record<string, string> = {
   family: "FAMILY",
