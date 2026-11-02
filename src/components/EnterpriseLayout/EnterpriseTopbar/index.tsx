@@ -1,6 +1,8 @@
-import { Calendar } from "lucide-react";
+import { useState } from "react";
+import { Bell } from "lucide-react";
 import { Link } from "react-router-dom";
 import ThemeToggle from "@/components/ThemeToggle";
+import { CommercialNotificationsModal } from "@/components/CommercialModals";
 import { useStore } from "@/store/store";
 
 interface EnterpriseTopbarProps {
@@ -11,6 +13,7 @@ interface EnterpriseTopbarProps {
 export default function EnterpriseTopbar({
   breadcrumb = "Área empresarial / Visão geral",
 }: EnterpriseTopbarProps) {
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const user = useStore((state) => state.user);
   const initials =
     user?.name
@@ -20,37 +23,37 @@ export default function EnterpriseTopbar({
       .join("")
       .toUpperCase() ?? "";
   return (
-    <header className="sticky top-0 z-30 flex h-20 items-center justify-between border-b border-[#E1E7F0] bg-white px-6 transition-colors dark:border-[#2A2D31] dark:bg-[#1B1D20] md:px-9">
-      <div>
-        <p className="text-xs font-semibold text-[#64748B] dark:text-neutral-400">
+    <>
+      <header className="sticky top-0 z-30 flex h-20 select-none items-center justify-between border-b border-[#E1E7F0] bg-white px-6 transition-colors dark:border-[#2A2D31] dark:bg-[#1B1D20] md:px-9">
+        <p className="text-[11px] font-medium text-[#64748B] dark:text-neutral-400">
           {breadcrumb}
         </p>
-      </div>
-
-      <div className="flex items-center gap-4">
-        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#F5F8FC] dark:bg-[#1C1E22] border border-[#E1E7F0] dark:border-[#343941] text-xs font-medium text-[#64748B] dark:text-neutral-300">
-          <Calendar size={14} className="text-[#2552C8] dark:text-blue-400" />
-          <span>
-            {new Intl.DateTimeFormat("pt-BR", {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-            }).format(new Date())}
-          </span>
-        </div>
-
-        <ThemeToggle />
-
         <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <button
+            type="button"
+            onClick={() => setIsNotificationsOpen(true)}
+            aria-label="Notificações da operação"
+            aria-expanded={isNotificationsOpen}
+            aria-haspopup="dialog"
+            aria-controls="commercial-modal-dialog"
+            className="relative flex h-9 w-9 items-center justify-center rounded-full border border-[#E1E7F0] text-[#141C55] hover:bg-[#F5F8FC] dark:border-[#343941] dark:text-neutral-200 dark:hover:bg-[#252A32]"
+          >
+            <Bell size={16} aria-hidden="true" />
+          </button>
           <Link
             to="/profile"
-            aria-label="Meu perfil empresarial"
+            aria-label="Meu perfil"
             className="flex h-9 w-9 items-center justify-center rounded-full bg-[#EAF1FF] text-xs font-bold text-[#2552C8] dark:bg-[#252A32] dark:text-blue-300"
           >
             {initials}
           </Link>
         </div>
-      </div>
-    </header>
+      </header>
+      <CommercialNotificationsModal
+        isOpen={isNotificationsOpen}
+        onClose={() => setIsNotificationsOpen(false)}
+      />
+    </>
   );
 }

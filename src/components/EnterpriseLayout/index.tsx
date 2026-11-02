@@ -4,7 +4,15 @@ import EnterpriseTopbar from "./EnterpriseTopbar";
 
 interface EnterpriseLayoutProps {
   children: ReactNode;
-  activeSection?: "overview" | "ads" | "report" | "views" | "audience";
+  activeSection?:
+    | "overview"
+    | "ads"
+    | "report"
+    | "views"
+    | "audience"
+    | "profile"
+    | "settings"
+    | "notifications";
   breadcrumb?: string;
   onOpenCreateAd?: () => void;
 }

@@ -4,11 +4,7 @@ import { EnterpriseModalBase } from "@/components/EnterpriseModalBase";
 export function EnterpriseFinishAdModal({
   isOpen,
   onClose,
-  product = {
-    name: "Wrap de falafel",
-    category: "Padaria",
-    price: "R$ 11,50",
-  },
+  product,
 }: EnterpriseFinishAdModalProps) {
   return (
     <EnterpriseModalBase
@@ -61,7 +57,6 @@ export function EnterpriseFinishAdModal({
                 <input
                   id="enterprise-finish-start"
                   type="date"
-                  defaultValue="2026-10-01"
                   className="mt-1 w-full px-4 py-2.5 rounded-xl bg-[#F5F8FC] dark:bg-[#252A32] border border-[#E1E7F0] dark:border-[#343941] text-xs font-medium text-[#141C55] dark:text-white"
                 />
               </label>
@@ -73,7 +68,6 @@ export function EnterpriseFinishAdModal({
                 <input
                   id="enterprise-finish-end"
                   type="date"
-                  defaultValue="2026-10-31"
                   className="mt-1 w-full px-4 py-2.5 rounded-xl bg-[#F5F8FC] dark:bg-[#252A32] border border-[#E1E7F0] dark:border-[#343941] text-xs font-medium text-[#141C55] dark:text-white"
                 />
               </label>
@@ -85,8 +79,7 @@ export function EnterpriseFinishAdModal({
               Público-alvo sugerido
             </span>
             <p className="text-xs text-[#64748B] dark:text-neutral-400">
-              Vegetarianos, público fitness e cafeterias parceiras na região
-              Sudeste.
+              Nenhum público-alvo foi definido para este anúncio.
             </p>
           </div>
         </div>

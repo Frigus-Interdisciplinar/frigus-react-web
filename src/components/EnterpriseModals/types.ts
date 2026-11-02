@@ -14,7 +14,7 @@ export interface EnterpriseModalVisibilityProps {
 }
 
 export interface EnterpriseEditAdModalProps extends EnterpriseModalVisibilityProps {
-  initialData?: {
+  initialData: {
     name: string;
     category: string;
     price: string;
@@ -25,9 +25,9 @@ export interface EnterpriseEditAdModalProps extends EnterpriseModalVisibilityPro
 }
 
 export interface EnterprisePauseAdModalProps extends EnterpriseModalVisibilityProps {
-  product?: { name: string; category: string };
+  product: { name: string; category: string };
 }
 
 export interface EnterpriseFinishAdModalProps extends EnterpriseModalVisibilityProps {
-  product?: { name: string; category: string; price: string };
+  product: { name: string; category: string; price: string };
 }
