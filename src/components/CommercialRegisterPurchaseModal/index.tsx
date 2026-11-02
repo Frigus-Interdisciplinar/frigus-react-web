@@ -191,37 +191,6 @@ export function CommercialRegisterPurchaseModal({
             className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8]"
           />
         </div>
-        <div>
-          <label
-            htmlFor="field-components-commercialregisterpurchasemodal-index-tsx-1"
-            className="block text-xs font-semibold text-[#141C55] mb-1"
-          >
-            Data da compra
-          </label>
-          <input
-            id="field-components-commercialregisterpurchasemodal-index-tsx-1"
-            type="text"
-            defaultValue="06/09/2026"
-            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8]"
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="field-components-commercialregisterpurchasemodal-index-tsx-2"
-            className="block text-xs font-semibold text-[#141C55] mb-1"
-          >
-            Situação
-          </label>
-          <select
-            id="field-components-commercialregisterpurchasemodal-index-tsx-2"
-            defaultValue="A aprovar"
-            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8] bg-white"
-          >
-            <option>A aprovar</option>
-            <option>Em trânsito</option>
-            <option>Recebido</option>
-          </select>
-        </div>
       </div>
     </CommercialModalBase>
   );

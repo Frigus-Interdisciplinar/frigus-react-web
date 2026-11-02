@@ -3,31 +3,25 @@ import { useResetModalState } from "@/hooks/useResetModalState";
 import type { ModalVisibilityProps } from "@/components/CommercialModals/types";
 import { CommercialModalBase } from "@/components/CommercialModalBase";
 
+type BatchFormData = {
+  product: string;
+  batchCode: string;
+  category: string;
+  location: string;
+  quantity: string;
+  unit: string;
+  expiry: string;
+  unitCost: string;
+};
+
 export function CommercialEditBatchModal({
   isOpen,
   onClose,
-}: ModalVisibilityProps) {
-  const [formData, setFormData] = useState({
-    product: "Peito de frango",
-    batchCode: "FR-2048",
-    category: "Proteínas",
-    location: "Câmara fria",
-    quantity: "32",
-    unit: "Quilograma (kg)",
-    expiry: "18/09/2026",
-    unitCost: "R$ 18,90",
-  });
+  initialData,
+}: ModalVisibilityProps & { initialData: BatchFormData }) {
+  const [formData, setFormData] = useState(initialData);
   useResetModalState(isOpen, () => {
-    setFormData({
-      product: "Peito de frango",
-      batchCode: "FR-2048",
-      category: "Proteínas",
-      location: "Câmara fria",
-      quantity: "32",
-      unit: "Quilograma (kg)",
-      expiry: "18/09/2026",
-      unitCost: "R$ 18,90",
-    });
+    setFormData(initialData);
   });
 
   return (
@@ -35,7 +29,7 @@ export function CommercialEditBatchModal({
       isOpen={isOpen}
       onClose={onClose}
       title="Editar lote"
-      subtitle="Atualize as informações do lote FR-2048."
+      subtitle="Atualize as informações do lote selecionado."
       footer={
         <>
           <button

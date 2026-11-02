@@ -4,8 +4,10 @@ import { CommercialModalBase } from "@/components/CommercialModalBase";
 export function CommercialCompletePurchaseModal({
   isOpen,
   onClose,
-  totalItems = 6,
-  totalAmount = "R$ 1.248,40",
+  totalItems,
+  totalAmount,
+  date,
+  responsible,
 }: CommercialCompletePurchaseModalProps) {
   return (
     <CommercialModalBase
@@ -45,18 +47,18 @@ export function CommercialCompletePurchaseModal({
             {totalAmount}
           </span>
         </div>
-        <div className="flex items-center justify-between py-1 border-b border-gray-200/50">
-          <span className="text-xs text-[#64748B]">Data</span>
-          <span className="text-xs font-semibold text-[#141C55]">
-            06/09/2026
-          </span>
-        </div>
-        <div className="flex items-center justify-between py-1">
-          <span className="text-xs text-[#64748B]">Responsável</span>
-          <span className="text-xs font-semibold text-[#141C55]">
-            Ana Souza
-          </span>
-        </div>
+        {date && (
+          <div className="flex items-center justify-between py-1 border-b border-gray-200/50">
+            <span className="text-xs text-[#64748B]">Data</span>
+            <span className="text-xs font-semibold text-[#141C55]">{date}</span>
+          </div>
+        )}
+        {responsible && (
+          <div className="flex items-center justify-between py-1">
+            <span className="text-xs text-[#64748B]">Responsável</span>
+            <span className="text-xs font-semibold text-[#141C55]">{responsible}</span>
+          </div>
+        )}
       </div>
     </CommercialModalBase>
   );

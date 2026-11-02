@@ -64,10 +64,10 @@ export interface CommercialInviteEmployeeModalProps extends ModalVisibilityProps
 }
 
 export interface CommercialManageAccessModalProps extends ModalVisibilityProps {
-  employeeName?: string;
-  employeeEmail?: string;
-  memberRole?: "EDITOR" | "VIEWER";
-  onSaveRole?: (role: "EDITOR" | "VIEWER") => Promise<void>;
+  employeeName: string;
+  employeeEmail: string;
+  memberRole: "EDITOR" | "VIEWER";
+  onSaveRole: (role: "EDITOR" | "VIEWER") => Promise<void>;
 }
 
 export interface CommercialFilterStockModalProps extends ModalVisibilityProps {
@@ -76,11 +76,13 @@ export interface CommercialFilterStockModalProps extends ModalVisibilityProps {
 }
 
 export interface CommercialCompletePurchaseModalProps extends ModalVisibilityProps {
-  totalItems?: number;
-  totalAmount?: string;
+  totalItems: number;
+  totalAmount: string;
+  date?: string;
+  responsible?: string;
 }
 
 export interface CommercialResendInviteModalProps extends ModalVisibilityProps {
-  name?: string;
-  email?: string;
+  name: string;
+  email: string;
 }
