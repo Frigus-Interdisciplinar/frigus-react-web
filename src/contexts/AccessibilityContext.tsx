@@ -21,6 +21,7 @@ function readPreferences(): AccessibilityPreferences {
           : 100,
       highContrast: parsed.highContrast === true,
       dyslexiaFont: parsed.dyslexiaFont === true,
+      vlibrasEnabled: parsed.vlibrasEnabled === true,
     };
   } catch {
     return DEFAULT_PREFERENCES;
@@ -35,6 +36,7 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
     root.dataset.textScale = String(preferences.textScale);
     root.dataset.highContrast = String(preferences.highContrast);
     root.dataset.dyslexiaFont = String(preferences.dyslexiaFont);
+    root.dataset.vlibrasEnabled = String(preferences.vlibrasEnabled);
 
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(preferences));
@@ -52,6 +54,8 @@ export function AccessibilityProvider({ children }: { children: ReactNode }) {
         setPreferences((current) => ({ ...current, highContrast })),
       setDyslexiaFont: (dyslexiaFont) =>
         setPreferences((current) => ({ ...current, dyslexiaFont })),
+      setVlibrasEnabled: (vlibrasEnabled) =>
+        setPreferences((current) => ({ ...current, vlibrasEnabled })),
       resetAccessibility: () => setPreferences(DEFAULT_PREFERENCES),
     }),
     [preferences],

@@ -14,9 +14,11 @@ export default function AccessibilityTools() {
     textScale,
     highContrast,
     dyslexiaFont,
+    vlibrasEnabled,
     setTextScale,
     setHighContrast,
     setDyslexiaFont,
+    setVlibrasEnabled,
     resetAccessibility,
   } = useAccessibility();
   const closePanel = () => {
@@ -127,6 +129,18 @@ export default function AccessibilityTools() {
               type="checkbox"
               checked={dyslexiaFont}
               onChange={(event) => setDyslexiaFont(event.target.checked)}
+            />
+          </label>
+
+          <label className="a11y-toggle-row">
+            <span>
+              <strong>Tradutor em Libras</strong>
+              <small>Ativa o VLibras do Governo Federal</small>
+            </span>
+            <input
+              type="checkbox"
+              checked={vlibrasEnabled}
+              onChange={(event) => setVlibrasEnabled(event.target.checked)}
             />
           </label>
 

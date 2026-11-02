@@ -7,6 +7,7 @@ import { useStore } from "@/store/store";
 import AccessibilityTools from "@/components/AccessibilityTools";
 import { AccessibilityProvider } from "@/contexts/AccessibilityContext";
 import DocumentTitle from "@/components/DocumentTitle";
+import VLibrasWidget from "@/components/VLibrasWidget";
 
 let sessionBootstrap: ReturnType<typeof refreshSession> | null = null;
 
@@ -46,6 +47,7 @@ export default function App() {
 
   return (
     <AccessibilityProvider>
+      <VLibrasWidget />
       <ThemeProvider>
         <BrowserRouter>
           <DocumentTitle />
