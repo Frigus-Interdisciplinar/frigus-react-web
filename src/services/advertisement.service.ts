@@ -19,6 +19,60 @@ export type {
   AdvertisementStatus,
 } from "@/types/advertisement.type";
 
+export interface AdvertisementAnalyticsCampaign {
+  id: string;
+  name: string;
+  productName: string;
+  category: string;
+  status: AdvertisementStatus;
+  startDate: string | null;
+  endDate: string | null;
+  cumulativeImpressions: number;
+  cumulativeClicks: number;
+  clickThroughRatePercent: number;
+}
+
+export interface MonthlyAdvertisementAnalytics {
+  month: string;
+  metricBasis: string;
+  campaignCount: number;
+  activeCampaignCount: number;
+  cumulativeImpressions: number;
+  cumulativeClicks: number;
+  clickThroughRatePercent: number;
+  campaigns: AdvertisementAnalyticsCampaign[];
+}
+
+export interface AdvertisementAudienceAnalytics {
+  campaignCount: number;
+  activeCampaignCount: number;
+  cumulativeImpressions: number;
+  cumulativeClicks: number;
+  clickThroughRatePercent: number;
+  categories: Array<{
+    category: string;
+    campaignCount: number;
+    cumulativeImpressions: number;
+    cumulativeClicks: number;
+    impressionSharePercent: number;
+  }>;
+  campaigns: AdvertisementAnalyticsCampaign[];
+}
+
+export function getMonthlyAdvertisementAnalytics(month: string, signal?: AbortSignal): Promise<MonthlyAdvertisementAnalytics> {
+  return serviceCall(() => api.get<MonthlyAdvertisementAnalytics>(
+    `/web/core/advertisements/analytics/monthly?month=${encodeURIComponent(month)}`,
+    { signal },
+  ));
+}
+
+export function getAdvertisementAudienceAnalytics(signal?: AbortSignal): Promise<AdvertisementAudienceAnalytics> {
+  return serviceCall(() => api.get<AdvertisementAudienceAnalytics>(
+    "/web/core/advertisements/analytics/audience",
+    { signal },
+  ));
+}
+
 export function listMyAdvertisements(
   signal?: AbortSignal,
 ): Promise<AdvertisementPage> {
