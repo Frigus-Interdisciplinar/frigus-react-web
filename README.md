@@ -57,8 +57,7 @@ flowchart LR
         SERVICES --> API["utils/api.util.ts<br/>Axios + validação Zod"]
     end
 
-    API -->|"VITE_API_URL<br/>cookies de sessão"| PROXY["Nginx / proxy /api<br/>em Docker"]
-    PROXY --> BFF["Frigus BFF<br/>frigus-bff"]
+    API -->|"VITE_API_URL<br/>cookies de sessão"| BFF["Frigus BFF<br/>frigus-bff"]
     BFF --> CORE["Frigus Core API<br/>frigus-core-api"]
     BFF --> SUPA["Supabase<br/>integrações do BFF"]
     CORE -->|"chat com IA"| AI["Frigus AI API<br/>frigus-ai"]
@@ -68,9 +67,8 @@ flowchart LR
 
 1. A página chama uma função de domínio em `src/services/`.
 2. `src/utils/api.util.ts` envia a requisição com Axios, usando `VITE_API_URL` como base e `withCredentials` para enviar cookies.
-3. Em desenvolvimento local com Docker, o Nginx do frontend encaminha `/api/*` ao BFF e remove o prefixo `/api` antes de encaminhar.
-4. O BFF conversa com o Core API e com as integrações configuradas no servidor.
-5. Os serviços validam os dados de entrada e de resposta usando schemas Zod antes de entregá-los às páginas.
+3. O BFF conversa com o Core API e com as integrações configuradas no servidor.
+4. Os serviços validam os dados de entrada e de resposta usando schemas Zod antes de entregá-los às páginas.
 
 Quando uma chamada protegida recebe `401`, a camada HTTP tenta renovar a sessão uma vez por meio de `/web/auth/refresh`. Chamadas simultâneas compartilham a mesma tentativa de renovação; se ela falhar, a sessão local é encerrada.
 
@@ -113,8 +111,6 @@ frigus-react-web/
 │   └── utils/                  # Cliente HTTP, validação, URLs e classes CSS
 ├── tests/                      # Testes de contratos e contratos live opcionais
 ├── .github/workflows/ci.yaml   # CI: npm ci, lint e build
-├── Dockerfile                  # Build multi-stage Node + Nginx
-├── nginx.conf                  # SPA fallback e proxy /api para o BFF
 ├── package.json                # Scripts e dependências diretas
 ├── package-lock.json           # Versões resolvidas para instalação reproduzível
 ├── tsconfig*.json              # Configurações TypeScript por contexto
@@ -197,7 +193,7 @@ As versões abaixo são os intervalos declarados em `package.json`. O `package-l
 
 ### Requisitos
 
-- Node.js `20.19+` ou `22.12+` (a imagem Docker usa Node 22).
+- Node.js `20.19+` ou `22.12+`.
 - npm, incluído na instalação do Node.js.
 - A API do BFF Frigus acessível pelo navegador.
 
@@ -207,15 +203,15 @@ As versões abaixo são os intervalos declarados em `package.json`. O `package-l
 npm ci
 ```
 
-Crie um arquivo `.env` na raiz do frontend. Para apontar diretamente ao BFF local:
+Copie `.env.example` para `.env` na raiz do frontend. Para apontar diretamente ao BFF local, mantenha `VITE_API_URL` assim:
 
 ```env
-VITE_API_URL=http://localhost:3001
+VITE_API_URL=http://localhost:3000
 ```
 
-O `.env.example` usa `http://localhost:3000`, a porta padrão do BFF executado diretamente. Na stack Docker Compose, o build define `VITE_API_URL=/api`; o Nginx encaminha esse caminho ao BFF publicado em `http://localhost:3001`. Como o valor é embutido no build, escolha a URL antes de gerar o bundle.
+O `.env.example` aponta para `http://localhost:3000`, endereço padrão do BFF local. Mantenha essa URL ao executar o BFF diretamente; se configurar outra porta, ajuste `VITE_API_URL`. Como o valor é lido pelo Vite, reinicie o servidor de desenvolvimento depois de alterá-lo.
 
-O botão **Entrar com Google** requer um OAuth Client ID do tipo aplicação Web configurado em `VITE_GOOGLE_CLIENT_ID` no frontend e `GOOGLE_CLIENT_ID` na Core API. Use o mesmo ID nos dois lados e cadastre a origem local do frontend nas origens JavaScript autorizadas do cliente Google. No Docker Compose, preencha `GOOGLE_CLIENT_ID` em `.env.compose`; sem esse valor o botão informa que o login ainda não está configurado.
+O botão **Entrar com Google** requer um OAuth Client ID do tipo aplicação Web configurado em `VITE_GOOGLE_CLIENT_ID` no frontend e `GOOGLE_CLIENT_ID` na Core API. Use o mesmo ID nos dois lados e cadastre `http://localhost:5173` nas origens JavaScript autorizadas do cliente Google. Sem esse valor o botão informa que o login ainda não está configurado.
 
 Inicie o servidor de desenvolvimento:
 
@@ -223,9 +219,7 @@ Inicie o servidor de desenvolvimento:
 npm run dev
 ```
 
-O Vite imprime o endereço local ao iniciar (por padrão, `http://localhost:5173`). Para desenvolver contra a stack completa, use o Docker Compose da pasta pai; o frontend passa a usar `/api` e o Nginx encaminha as chamadas ao BFF.
-
-Consulte [`../docker-compose.yml`](../docker-compose.yml) e [`../.env.compose.example`](../.env.compose.example) para configurar a stack integrada com BFF, Core API, bancos e Frigus AI. O arquivo `.env.compose` contém segredos locais e não deve ser commitado.
+O Vite imprime o endereço local ao iniciar (por padrão, `http://localhost:5173`). Para o fluxo completo, inicie PostgreSQL e Redis localmente, depois a Core API em `http://localhost:8080`, o BFF em `http://localhost:3000` e por fim o frontend. Configure as variáveis e credenciais de cada serviço nos respectivos arquivos `.env`; não versione esses arquivos.
 
 ### Comandos
 
@@ -247,28 +241,11 @@ npm run test
 
 Esse teste importa schemas do repositório `../bff` (caminho `../../bff` a partir do arquivo de teste), portanto o BFF precisa estar ao lado deste diretório para rodar a suíte completa.
 
-`tests/contracts.live.test.ts` contém verificações contra a stack Docker local. Elas ficam desabilitadas por padrão e só rodam com `RUN_STACK_CONTRACTS=1`. Precisam de um BFF/Core API local, Docker e credenciais de uma conta de demonstração local (`FRIGUS_TEST_EMAIL` e `FRIGUS_TEST_PASSWORD`). `FRIGUS_STACK_URL` pode apontar para a URL local da API; por padrão é `http://127.0.0.1:5173/api`. Esse fluxo cria e altera dados de teste no banco local; não aponte-o para produção.
+`tests/contracts.live.test.ts` contém verificações opcionais contra os serviços locais e só roda com `RUN_STACK_CONTRACTS=1`. Inicie BFF, Core API, PostgreSQL e Redis localmente e configure as credenciais de uma conta de demonstração (`FRIGUS_TEST_EMAIL` e `FRIGUS_TEST_PASSWORD`). Para chamar o BFF diretamente, defina `FRIGUS_STACK_URL=http://localhost:3000`. Esse fluxo cria e altera dados no banco local.
 
 ### Verificações automatizadas
 
 O workflow de CI em [`.github/workflows/ci.yaml`](.github/workflows/ci.yaml) instala dependências com `npm ci` e executa `npm run lint` e `npm run build`. A etapa de testes Vitest está definida no workflow, mas atualmente comentada.
-
----
-
-## Build e execução com Docker
-
-O `Dockerfile` usa duas etapas:
-
-1. **Build:** Node 22 Alpine, instalação reproduzível com `npm ci` e execução de `npm run build`.
-2. **Runtime:** Nginx Alpine serve os arquivos estáticos de `dist/`, aplica fallback de SPA para `index.html` e encaminha `/api/` ao serviço `bff:3000`.
-
-Na stack local, o frontend é servido em `http://localhost:5173`. A configuração de `VITE_API_URL` é embutida durante o build, então ajuste-a no argumento de build da imagem, não apenas nas variáveis do container em execução.
-
-Para subir todos os serviços integrados, execute da pasta do repositório principal:
-
-```bash
-docker compose --env-file .env.compose up --build
-```
 
 ---
 
@@ -285,6 +262,5 @@ docker compose --env-file .env.compose up --build
 ## Tecnologias relacionadas
 
 - **BFF:** [`../bff`](../bff/) — API do frontend e ponto de entrada para os serviços de backend.
-- **Core API:** [`../frigus-core-api`](../frigus-core-api/) — regras de negócio e dados principais do Frigus.
+- **Core API:** [`../core-api`](../core-api/) — regras de negócio e dados principais do Frigus.
 - **Assistente:** [`../frigus-ai`](../frigus-ai/) — API do assistente de IA.
-- **Stack local:** [`../docker-compose.yml`](../docker-compose.yml) e [`../.env.compose.example`](../.env.compose.example).
