@@ -28,6 +28,7 @@ import {
 } from "@/services/inventory.service";
 import { useModalFocus } from "@/hooks/useModalFocus";
 import { safeHttpUrl } from "@/utils/url.util";
+import { formatUnitOfMeasure } from "@/utils/unit.util";
 
 const categoryLabels: Record<string, string> = {
   FRUIT: "Frutas",
@@ -62,16 +63,6 @@ const locationValues: Record<FoodItemData["location"], string> = {
   Geladeira: "FRIDGE",
   Freezer: "FREEZER",
 };
-const unitLabels: Record<string, string> = {
-  KILOGRAM: "kg",
-  GRAM: "g",
-  LITER: "L",
-  MILLILITER: "ml",
-  UNIT: "un",
-  DOZEN: "dúzia",
-  PACKAGE: "pct",
-};
-
 function toFoodItem(row: StockProduct): FoodItemData {
   return {
     id: String(row.id),
@@ -82,7 +73,7 @@ function toFoodItem(row: StockProduct): FoodItemData {
       row.category,
     location:
       locationLabels[row.product?.storagePlace ?? "PANTRY"] ?? "Despensa",
-    quantity: `${row.quantity} ${unitLabels[row.product?.unitOfMeasure ?? "UNIT"] ?? "un"}`,
+    quantity: `${row.quantity} ${formatUnitOfMeasure(row.product?.unitOfMeasure)}`,
     expiration: row.expireDate,
   };
 }

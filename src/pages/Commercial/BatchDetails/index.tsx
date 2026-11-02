@@ -11,6 +11,11 @@ import {
   type StockMovement,
   type StockProduct,
 } from "@/services/inventory.service";
+import {
+  formatProductCategory,
+  formatStoragePlace,
+  formatUnitOfMeasure,
+} from "@/utils/unit.util";
 
 export default function CommercialBatchDetailsPage() {
   const { id } = useParams();
@@ -172,7 +177,7 @@ function BatchDetailsContent({ id }: { id?: string }) {
           <section className="space-y-6 rounded-3xl border border-[#e1e7f0] bg-white p-6 shadow-xs dark:border-[#343941] dark:bg-[#1C1E22]">
             <div>
               <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-[#2552C8]">
-                {product?.category ?? item.category}
+                {formatProductCategory(product?.category ?? item.category)}
               </span>
               <h2 className="mt-3 text-xl font-bold text-[#141C55] dark:text-white">
                 {product?.name ?? `Produto #${item.productId}`}
@@ -186,11 +191,11 @@ function BatchDetailsContent({ id }: { id?: string }) {
                 Quantidade disponível
               </span>
               <p className="mt-1 text-3xl font-bold text-[#141C55] dark:text-white">
-                {item.quantity} {product?.unitOfMeasure ?? "un"}
+                {item.quantity} {formatUnitOfMeasure(product?.unitOfMeasure)}
               </p>
               <p className="mt-1 text-xs text-slate-500">
                 Mínimo: {item.minimalQuantity ?? 0}{" "}
-                {product?.unitOfMeasure ?? "un"}
+                {formatUnitOfMeasure(product?.unitOfMeasure)}
               </p>
             </div>
             {editing ? (
@@ -254,7 +259,9 @@ function BatchDetailsContent({ id }: { id?: string }) {
                     Local
                   </span>
                   <p className="mt-1 font-semibold">
-                    {product?.storagePlace ?? "—"}
+                    {product?.storagePlace
+                      ? formatStoragePlace(product.storagePlace, "commercial")
+                      : "—"}
                   </p>
                 </div>
                 <div>
@@ -306,7 +313,7 @@ function BatchDetailsContent({ id }: { id?: string }) {
                       movementQuantity: event.target.value,
                     }))
                   }
-                  placeholder={`Quantidade (${product?.unitOfMeasure ?? "un"})`}
+                  placeholder={`Quantidade (${formatUnitOfMeasure(product?.unitOfMeasure)})`}
                   className="min-w-0 flex-1 rounded-xl border px-3 py-2 text-sm"
                 />
                 <button
@@ -355,7 +362,7 @@ function BatchDetailsContent({ id }: { id?: string }) {
                         className={`text-xs font-bold ${incoming ? "text-emerald-600" : "text-red-600"}`}
                       >
                         {incoming ? "+" : "−"}
-                        {movement.quantity} {product?.unitOfMeasure ?? "un"}
+                        {movement.quantity} {formatUnitOfMeasure(product?.unitOfMeasure)}
                       </span>
                     </div>
                   );

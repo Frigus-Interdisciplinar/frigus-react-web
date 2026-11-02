@@ -8,6 +8,7 @@ import StockSidebar from "@/components/StockSidebar";
 import { Skeleton } from "@/components/LoadingSkeleton";
 import { useLatestRequest } from "@/hooks/useLatestRequest";
 import { safeHttpUrl } from "@/utils/url.util";
+import { formatUnitOfMeasure } from "@/utils/unit.util";
 import {
   createProduct,
   createStockProduct,
@@ -43,15 +44,6 @@ const categoryLabels: Record<string, string> = {
   CLEANING: "Limpeza",
   PERSONAL_HYGIENE: "Higiene pessoal",
 };
-const unitLabels: Record<string, string> = {
-  KILOGRAM: "kg",
-  GRAM: "g",
-  LITER: "L",
-  MILLILITER: "ml",
-  UNIT: "un",
-  DOZEN: "dúzia",
-  PACKAGE: "pct",
-};
 const storageLabels: Record<string, StockItem["location"]> = {
   PANTRY: "Despensa",
   CABINET: "Despensa",
@@ -68,7 +60,7 @@ function mapStockItem(row: StockProduct): StockItem {
     brand: row.product?.brand ?? "",
     category:
       categoryLabels[row.product?.category ?? row.category] ?? row.category,
-    quantity: `${row.quantity} ${unitLabels[row.product?.unitOfMeasure ?? "UNIT"] ?? "un"}`,
+    quantity: `${row.quantity} ${formatUnitOfMeasure(row.product?.unitOfMeasure)}`,
     location:
       storageLabels[row.product?.storagePlace ?? "PANTRY"] ?? "Despensa",
     expiration: new Date(`${row.expireDate}T12:00:00`).toLocaleDateString(
