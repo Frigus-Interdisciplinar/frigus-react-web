@@ -8,7 +8,7 @@ import {
   DollarSign,
   Users,
 } from "lucide-react";
-import frigusLogo from "@/assets/frigus-logo.svg";
+import BrandLogo from "@/components/BrandLogo";
 import { useStore } from "@/store/store";
 
 export type CommercialSection =
@@ -92,8 +92,7 @@ export default function CommercialSidebar({
           to="/commercial/stock"
           className="flex items-center gap-2.5 px-1 pt-2 hover:opacity-90"
         >
-          <img src={frigusLogo} alt="" className="h-8 w-8 object-contain" />
-          <span className="font-display text-lg font-semibold">Frigus</span>
+          <BrandLogo surface="dark" className="h-7 w-auto" />
         </Link>
         <nav
           aria-label="Navegação comercial"

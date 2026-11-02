@@ -3,7 +3,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { Check } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import FrigusLogo from "@/assets/frigus-logo-text.svg";
+import BrandLogo from "@/components/BrandLogo";
 import { useAbortableAsync } from "@/hooks/useAbortableAsync";
 import { useLatestRequest } from "@/hooks/useLatestRequest";
 import { finishPlanSelection, listPlans } from "@/services/plan.service";
@@ -84,7 +84,7 @@ export default function PlanSelection({
     <div className="min-h-screen bg-[#F5F8FC] p-6 text-frigus-navy dark:bg-[#0F172A] dark:text-white sm:p-10">
       <header className="mx-auto flex max-w-6xl items-center justify-between border-b border-[#E1E7F0] pb-6 dark:border-[#343941]">
         <Link to="/" aria-label="Frigus">
-          <img src={FrigusLogo} alt="Frigus" className="h-9 w-auto" />
+          <BrandLogo surface="theme" className="h-9 w-auto" />
         </Link>
         <div className="flex items-center gap-4">
           {user?.planSelectionRequired && (

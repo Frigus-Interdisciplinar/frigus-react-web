@@ -10,7 +10,7 @@ import {
   Settings,
 } from "lucide-react";
 import NavigationItem from "./NavigationItem";
-import frigusLogo from "@/assets/frigus-logo.svg";
+import BrandLogo from "@/components/BrandLogo";
 
 import { type ReactNode } from "react";
 import { useStore } from "@/store/store";
@@ -108,14 +108,7 @@ export default function Sidebar({ activeSection }: SidebarProps) {
           to="/home"
           className="flex items-center gap-2.5 px-1 pt-2 hover:opacity-90 transition-opacity"
         >
-          <img
-            src={frigusLogo}
-            alt="Frigus Logo"
-            className="w-8 h-8 object-contain"
-          />
-          <span className="font-display text-white text-lg tracking-wider font-semibold">
-            Frigus
-          </span>
+          <BrandLogo surface="dark" className="h-7 w-auto" />
         </Link>
 
         <nav className="flex flex-col gap-1">

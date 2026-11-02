@@ -1,7 +1,7 @@
 import { Navigate, useNavigate } from "react-router-dom";
 import { Home, Store, Building2, Check, ArrowRight } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
-import FrigusLogo from "@/assets/frigus-logo-text.svg";
+import BrandLogo from "@/components/BrandLogo";
 import { useState } from "react";
 import type { AccountType } from "@/types/auth.type";
 import { chooseOnboardingAccountType } from "@/services/auth.service";
@@ -41,7 +41,7 @@ export default function ChooseProfilePage() {
     <div className="min-h-screen bg-[#F5F8FC] dark:bg-[#0F172A] flex flex-col justify-between p-6 sm:p-10 transition-colors">
       <header className="max-w-6xl w-full mx-auto flex items-center justify-between pb-6 border-b border-[#E1E7F0] dark:border-[#343941]">
         <div className="flex items-center gap-2">
-          <img src={FrigusLogo} alt="Frigus Logo" className="h-9 w-auto" />
+          <BrandLogo surface="theme" className="h-9 w-auto" />
         </div>
         <div className="flex items-center gap-4">
           <span className="text-xs font-semibold text-frigus-primary dark:text-[#A7BCFF] bg-blue-50 dark:bg-[#1B2A4A] px-3 py-1 rounded-full border border-blue-100 dark:border-blue-900/40">

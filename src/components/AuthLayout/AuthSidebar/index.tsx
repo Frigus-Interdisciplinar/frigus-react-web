@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
 import blueDecorative from "@/assets/blue-decorative.svg";
 import yellowDecorative from "@/assets/yellow-decorative.svg";
-import frigusLogo from "@/assets/frigus-logo.svg";
+import BrandLogo from "@/components/BrandLogo";
 import AuthBenefitCard from "../AuthBenefitCard";
 import { Link } from "react-router-dom";
 
@@ -22,10 +22,7 @@ export default function AuthSidebar({
     <section className="hidden lg:flex flex-col justify-between w-[48vw] max-w-[610px] shrink-0 bg-frigus-navy relative overflow-hidden pl-[clamp(32px,5vw,64px)] pb-[60px] min-h-screen">
       <div>
         <Link to="/login" className="inline-block mt-[54px]">
-          <img src={frigusLogo} alt="" className="w-8 h-8" />
-          <span className="font-display text-frigus-white text-lg font-semibold">
-            Frigus
-          </span>
+          <BrandLogo surface="dark" className="h-7 w-auto" />
         </Link>
 
         <div className="flex flex-col gap-[24px] mt-[90px] max-w-[480px]">
