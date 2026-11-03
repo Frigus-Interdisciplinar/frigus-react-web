@@ -54,7 +54,7 @@ function loadGoogleIdentity(): Promise<GoogleIdentityApi> {
   return googleScriptPromise;
 }
 
-import type { GoogleSignInButtonProps } from "@/types/component-props.type";
+import type { GoogleSignInButtonProps } from "@/types/ui-component-props.type";
 
 export default function GoogleSignInButton({
   disabled = false,

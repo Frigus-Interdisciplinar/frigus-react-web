@@ -1,6 +1,8 @@
 import { z } from "zod";
+import type { CheckoutInput } from "@/types/transaction.type";
+export type { CheckoutInput } from "@/types/transaction.type";
 
-export const checkoutSchema = z
+export const checkoutSchema: z.ZodType<CheckoutInput> = z
   .object({
     acceptTerms: z.literal(true, "Aceite os termos para continuar."),
     planCode: z
@@ -24,5 +26,3 @@ export const checkoutSchema = z
       });
     }
   });
-
-export type CheckoutInput = z.infer<typeof checkoutSchema>;

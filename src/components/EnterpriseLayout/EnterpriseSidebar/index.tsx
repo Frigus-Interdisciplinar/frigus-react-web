@@ -7,17 +7,16 @@ import {
   UsersRound,
 } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
-import { useStore } from "@/store/store";
-import type { EnterpriseSidebarProps } from "@/types/component-props.type";
-export type { EnterpriseSidebarProps } from "@/types/component-props.type";
+import type { EnterpriseSidebarProps } from "@/types/layout-component-props.type";
+export type { EnterpriseSidebarProps } from "@/types/layout-component-props.type";
 
 export default function EnterpriseSidebar({
   activeSection = "overview",
+  userName,
 }: EnterpriseSidebarProps) {
   const location = useLocation();
-  const user = useStore((state) => state.user);
   const initials =
-    user?.name
+    userName
       .split(/\s+/)
       .slice(0, 2)
       .map((part) => part[0])
@@ -114,7 +113,7 @@ export default function EnterpriseSidebar({
         </span>
         <span className="flex min-w-0 flex-col">
           <span className="truncate text-xs font-bold">
-            {user?.name ?? "Minha conta"}
+            {userName || "Minha conta"}
           </span>
           <span className="truncate text-[11px] text-[#C9DEF9]">Anunciante</span>
         </span>

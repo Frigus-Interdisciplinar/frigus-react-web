@@ -2,8 +2,8 @@ import { useState, type FormEvent } from "react";
 import { X } from "lucide-react";
 import { useModalFocus } from "@/hooks/useModalFocus";
 import { useResetModalState } from "@/hooks/useResetModalState";
-import type { AddFoodModalProps, NewFoodData } from "@/types/component-props.type";
-export type { AddFoodModalProps, NewFoodData } from "@/types/component-props.type";
+import type { AddFoodModalProps, NewFoodData } from "@/types/domestic-component-props.type";
+export type { AddFoodModalProps, NewFoodData } from "@/types/domestic-component-props.type";
 
 type AddFoodFormState = Omit<NewFoodData, "quantity" | "unitPrice"> & {
   quantity: string;

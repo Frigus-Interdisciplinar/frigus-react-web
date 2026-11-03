@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ImageIcon } from "lucide-react";
 import { useResetModalState } from "@/hooks/useResetModalState";
-import type { EnterpriseEditAdModalProps } from "@/types/component-props.type";
+import type { EnterpriseEditAdModalProps } from "@/types/enterprise-component-props.type";
 import { EnterpriseModalBase } from "@/components/EnterpriseModalBase";
 
 export function EnterpriseEditAdModal({

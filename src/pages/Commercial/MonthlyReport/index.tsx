@@ -1,8 +1,9 @@
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useEffect, useState } from "react";
 import { Download } from "lucide-react";
-import { getMonthlyExpenseReport } from "@/services/expense.service";
+
 import type { MonthlyReport } from "@/types/commercial.type";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 const thisMonth = new Date().toISOString().slice(0, 7);
 const money = (value: number) =>
@@ -12,6 +13,7 @@ const money = (value: number) =>
   });
 
 export default function CommercialMonthlyReportPage() {
+  const apiOperations = useServiceOperations();
   const [month, setMonth] = useState(thisMonth);
   const [report, setReport] = useState<MonthlyReport>();
   const [loadedMonth, setLoadedMonth] = useState("");
@@ -21,7 +23,7 @@ export default function CommercialMonthlyReportPage() {
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
-    void getMonthlyExpenseReport(month, controller.signal)
+    void apiOperations.expenses.getMonthlyExpenseReport(month, controller.signal)
       .then((data) => {
         if (active) {
           setReport(data);
@@ -39,7 +41,7 @@ export default function CommercialMonthlyReportPage() {
       active = false;
       controller.abort();
     };
-  }, [month]);
+  }, [month, apiOperations.expenses]);
 
   const exportCsv = () => {
     if (!report) return;

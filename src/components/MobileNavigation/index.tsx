@@ -3,8 +3,8 @@ import { Link, useLocation } from "react-router-dom";
 import { X, Menu } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
 import { useModalFocus } from "@/hooks/useModalFocus";
-import type { MobileNavigationProps } from "@/types/component-props.type";
-export type { MobileNavigationItem, MobileNavigationProps } from "@/types/component-props.type";
+import type { MobileNavigationProps } from "@/types/layout-component-props.type";
+export type { MobileNavigationItem, MobileNavigationProps } from "@/types/layout-component-props.type";
 
 export default function MobileNavigation({
   label,

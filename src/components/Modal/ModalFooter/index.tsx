@@ -1,6 +1,6 @@
 import { cn } from "@/utils/cn.util";
-import type { ModalFooterProps } from "@/types/component-props.type";
-export type { ModalFooterProps } from "@/types/component-props.type";
+import type { ModalFooterProps } from "@/types/modal-component-props.type";
+export type { ModalFooterProps } from "@/types/modal-component-props.type";
 
 export default function ModalFooter({
   helperText,

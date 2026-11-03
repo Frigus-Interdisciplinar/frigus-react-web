@@ -76,12 +76,17 @@ export default function ProfileEditPage() {
               PNG ou JPG, até 5 MB.
             </p>
             <input
+              id="profile-photo"
               ref={fileInputRef}
               type="file"
               accept="image/png,image/jpeg"
               className="sr-only"
+              aria-label="Selecionar foto de perfil"
               onChange={(event) => handlePhotoChange(event.currentTarget.files?.[0])}
             />
+            <label htmlFor="profile-photo" className="sr-only">
+              Selecionar foto de perfil
+            </label>
             <div className="flex flex-wrap gap-3">
               <button
                 type="button"

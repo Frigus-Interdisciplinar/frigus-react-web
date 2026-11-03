@@ -9,11 +9,9 @@ import {
   ShoppingBag,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import {
-  listMyAdvertisements,
-  type Advertisement,
-} from "@/services/advertisement.service";
+import type { Advertisement } from "@/types/advertisement.type";
 import { safeHttpUrl } from "@/utils/url.util";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 const numberFormat = new Intl.NumberFormat("pt-BR");
 
@@ -27,6 +25,7 @@ function statusLabel(status: Advertisement["status"]) {
 }
 
 export default function EnterpriseOverviewPage() {
+  const apiOperations = useServiceOperations();
   const [ads, setAds] = useState<Advertisement[]>([]);
   const [loadedAt, setLoadedAt] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -35,7 +34,7 @@ export default function EnterpriseOverviewPage() {
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
-    listMyAdvertisements(controller.signal)
+    apiOperations.advertisements.listMyAdvertisements(controller.signal)
       .then((page) => {
         if (active) {
           setAds(page.content ?? []);
@@ -56,8 +55,9 @@ export default function EnterpriseOverviewPage() {
     return () => {
       active = false; controller.abort();
     };
-  }, []);
+  }, [apiOperations.advertisements]);
 
+  // Evita recalcular totais e contagens quando os anúncios não mudam.
   const stats = useMemo(() => {
     const activeAds = ads.filter((ad) => ad.status === "ACTIVE").length;
     const impressions = ads.reduce((total, ad) => total + ad.impressions, 0);

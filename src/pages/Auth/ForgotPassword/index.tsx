@@ -4,9 +4,11 @@ import AuthLayout from "@/components/AuthLayout";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import { Link } from "react-router-dom";
-import { requestPasswordRecovery } from "@/services/auth.service";
+
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 export default function ForgotPasswordPage() {
+  const apiOperations = useServiceOperations();
   const [email, setEmail] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [submitted, setSubmitted] = useState<boolean>(false);
@@ -19,7 +21,7 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     setError("");
     try {
-      await requestPasswordRecovery({ email });
+      await apiOperations.auth.requestPasswordRecovery({ email });
       setSubmitted(true);
     } catch (reason) {
       setError(

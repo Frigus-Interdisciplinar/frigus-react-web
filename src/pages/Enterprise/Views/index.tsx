@@ -1,21 +1,23 @@
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useEffect, useState } from "react";
 import { Eye, MousePointerClick } from "lucide-react";
-import { listMyAdvertisements, type Advertisement } from "@/services/advertisement.service";
+import type { Advertisement } from "@/types/advertisement.type";
 import { safeHttpUrl } from "@/utils/url.util";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 export default function EnterpriseViewsPage() {
+  const apiOperations = useServiceOperations();
   const [ads, setAds] = useState<Advertisement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
-    listMyAdvertisements(controller.signal).then((page) => { if (active) setAds(page.content ?? []); })
+    apiOperations.advertisements.listMyAdvertisements(controller.signal).then((page) => { if (active) setAds(page.content ?? []); })
       .catch((reason: unknown) => { if (active) setError(reason instanceof Error ? reason.message : "Não foi possível carregar as métricas."); })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; controller.abort(); };
-  }, []);
+  }, [apiOperations.advertisements]);
   const impressions = ads.reduce((sum, ad) => sum + ad.impressions, 0);
   const clicks = ads.reduce((sum, ad) => sum + ad.clicks, 0);
   const rate = impressions ? ((clicks / impressions) * 100).toLocaleString("pt-BR", { maximumFractionDigits: 1 }) : "0";

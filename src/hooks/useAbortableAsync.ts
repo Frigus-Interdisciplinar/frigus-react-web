@@ -1,19 +1,27 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export type AsyncState<T> = {
   data: T | undefined;
   loading: boolean;
   error: string;
+  reload: () => void;
 };
 
 export function useAbortableAsync<T>(
   load: (signal: AbortSignal) => Promise<T>,
 ): AsyncState<T> {
-  const [state, setState] = useState<AsyncState<T> & { load?: typeof load }>({
+  const [revision, setRevision] = useState(0);
+  const [state, setState] = useState<
+    Omit<AsyncState<T>, "reload"> & { load?: typeof load }
+  >({
     data: undefined,
     loading: true,
     error: "",
   });
+  const reload = useCallback(() => {
+    setState((current) => ({ ...current, loading: true, error: "" }));
+    setRevision((current) => current + 1);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -40,8 +48,14 @@ export function useAbortableAsync<T>(
       });
 
     return () => controller.abort();
-  }, [load]);
+  }, [load, revision]);
 
-  if (state.load !== load) return { data: undefined, loading: true, error: "" };
-  return { data: state.data, loading: state.loading, error: state.error };
+  if (state.load !== load)
+    return { data: undefined, loading: true, error: "", reload };
+  return {
+    data: state.data,
+    loading: state.loading,
+    error: state.error,
+    reload,
+  };
 }

@@ -9,8 +9,9 @@ import {
   Sparkles,
 } from "lucide-react";
 import Badge from "@/components/Badge";
-import { listRecipes, toggleRecipeFavorite } from "@/services/recipe.service";
+
 import { Skeleton, SkeletonCard } from "@/components/LoadingSkeleton";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 type RecipeCard = {
   id: string;
@@ -25,6 +26,7 @@ type RecipeCard = {
 };
 
 export default function RecipePage() {
+  const apiOperations = useServiceOperations();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState("");
@@ -38,7 +40,7 @@ export default function RecipePage() {
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
-    void listRecipes({ search, favoritesOnly }, controller.signal)
+    void apiOperations.recipes.listRecipes({ search, favoritesOnly }, controller.signal)
       .then(({ recipes: data, suggestionCount: count }) => {
         if (!active) return;
         setRecipes(
@@ -74,11 +76,11 @@ export default function RecipePage() {
       active = false;
       controller.abort();
     };
-  }, [favoritesOnly, navigate, search, searchParams]);
+  }, [favoritesOnly, navigate, search, searchParams, apiOperations.recipes]);
 
   const toggleFavorite = async (recipe: RecipeCard) => {
     try {
-      await toggleRecipeFavorite(Number(recipe.id), recipe.favorite);
+      await apiOperations.recipes.toggleRecipeFavorite(Number(recipe.id), recipe.favorite);
       setRecipes((current) =>
         current.map((item) =>
           item.id === recipe.id ? { ...item, favorite: !item.favorite } : item,
@@ -126,7 +128,11 @@ export default function RecipePage() {
                 size={16}
                 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-400"
               />
+              <label htmlFor="recipe-search" className="sr-only">
+                Buscar receita por nome
+              </label>
               <input
+                id="recipe-search"
                 type="text"
                 value={search}
                 onChange={(e) => {

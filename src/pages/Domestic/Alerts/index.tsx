@@ -8,15 +8,13 @@ import {
   Utensils,
 } from "lucide-react";
 import Badge, { type BadgeVariant } from "@/components/Badge";
-import {
-  getInventoryContext,
-  listStockProducts,
-} from "@/services/inventory.service";
+
 import { Skeleton } from "@/components/LoadingSkeleton";
 import {
   formatStoragePlace,
   formatUnitOfMeasure,
 } from "@/utils/unit.util";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 type AlertItem = {
   id: string;
@@ -29,6 +27,7 @@ type AlertItem = {
 };
 
 export default function AlertsPage() {
+  const apiOperations = useServiceOperations();
   const [filter, setFilter] = useState<
     "Todos" | "Validade" | "Quantidade" | "Vencidos"
   >("Todos");
@@ -39,11 +38,11 @@ export default function AlertsPage() {
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
-    void getInventoryContext(controller.signal)
+    void apiOperations.inventory.getInventoryContext(controller.signal)
       .then(async (context) => {
         const lists = await Promise.all(
           context.stocks.map((stock) =>
-            listStockProducts(stock.id, controller.signal),
+            apiOperations.inventory.listStockProducts(stock.id, controller.signal),
           ),
         );
         const today = new Date();
@@ -102,7 +101,7 @@ export default function AlertsPage() {
       active = false;
       controller.abort();
     };
-  }, []);
+  }, [apiOperations.inventory]);
 
   const filtered = alertItems.filter(
     (item) => filter === "Todos" || item.type === filter,

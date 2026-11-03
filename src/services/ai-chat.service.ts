@@ -3,8 +3,8 @@ import { serviceCall } from "@/utils/service.util";
 import {
   aiChatInputSchema,
   aiChatResponseSchema,
-  type AiChatResponse,
 } from "@/schemas/ai-chat.schema";
+import type { AiChatResponse } from "@/types/ai-chat.type";
 import { validateForm } from "@/utils/validation.util";
 
 export async function sendAiChatMessage(

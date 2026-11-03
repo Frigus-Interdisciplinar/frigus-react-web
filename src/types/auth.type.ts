@@ -1,5 +1,19 @@
 export type AccountType = "DOMESTIC" | "COMMERCIAL" | "BUSINESS";
 
+export interface LoginInput {
+  email: string;
+  rawPassword: string;
+  rememberMe?: boolean;
+}
+
+export interface RegisterInput {
+  name: string;
+  email: string;
+  rawPassword: string;
+  birthDate: string;
+  accountType: AccountType;
+}
+
 export interface AuthUser {
   id: string;
   name: string;

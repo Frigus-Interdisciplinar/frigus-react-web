@@ -1,6 +1,6 @@
 import { cn } from "@/utils/cn.util";
-import type { BadgeProps, BadgeVariant } from "@/types/component-props.type";
-export type { BadgeProps, BadgeVariant } from "@/types/component-props.type";
+import type { BadgeProps, BadgeVariant } from "@/types/ui-component-props.type";
+export type { BadgeProps, BadgeVariant } from "@/types/ui-component-props.type";
 
 const variantStyles: Record<BadgeVariant, string> = {
   success:

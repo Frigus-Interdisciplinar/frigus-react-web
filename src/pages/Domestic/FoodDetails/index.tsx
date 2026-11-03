@@ -18,17 +18,12 @@ import {
 import Badge from "@/components/Badge";
 import { EditFoodModal } from "@/components/Modal";
 import type { FoodItemData } from "@/components/Modal/EditFoodModal";
-import {
-  deleteStockProduct,
-  getStockProduct,
-  listStockProductMovements,
-  updateStockProduct,
-  type StockMovement,
-  type StockProduct,
-} from "@/services/inventory.service";
+import type { StockMovement, StockProduct } from "@/types/inventory.type";
 import { useModalFocus } from "@/hooks/useModalFocus";
 import { safeHttpUrl } from "@/utils/url.util";
 import { formatUnitOfMeasure } from "@/utils/unit.util";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
+import type { FoodDetailsContentProps } from "@/types/domestic-component-props.type";
 
 const categoryLabels: Record<string, string> = {
   FRUIT: "Frutas",
@@ -83,7 +78,8 @@ export default function FoodDetailsPage() {
   return <FoodDetailsContent key={id} id={id} />;
 }
 
-function FoodDetailsContent({ id }: { id?: string }) {
+function FoodDetailsContent({ id }: FoodDetailsContentProps) {
+  const apiOperations = useServiceOperations();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const validId = id !== undefined && /^[1-9]\d*$/.test(id);
@@ -111,13 +107,13 @@ function FoodDetailsContent({ id }: { id?: string }) {
     if (!validId || !id) return;
     let active = true;
     const controller = new AbortController();
-    getStockProduct(Number(id), controller.signal)
+    apiOperations.inventory.getStockProduct(Number(id), controller.signal)
       .then(async (loadedProduct) => {
         if (!active) return;
         setProduct(loadedProduct);
         setFood(toFoodItem(loadedProduct));
         try {
-          const loadedMovements = await listStockProductMovements(
+          const loadedMovements = await apiOperations.inventory.listStockProductMovements(
             Number(id),
             controller.signal,
           );
@@ -145,7 +141,7 @@ function FoodDetailsContent({ id }: { id?: string }) {
       active = false;
       controller.abort();
     };
-  }, [id, validId]);
+  }, [id, validId, apiOperations.inventory]);
 
   const handleSave = async (updated: FoodItemData) => {
     if (!id || !product) return;
@@ -156,7 +152,7 @@ function FoodDetailsContent({ id }: { id?: string }) {
     setSaving(true);
     setActionError("");
     try {
-      const saved = await updateStockProduct(Number(id), {
+      const saved = await apiOperations.inventory.updateStockProduct(Number(id), {
         name: updated.name.trim(),
         category:
           categoryValues[updated.category] ??
@@ -185,7 +181,7 @@ function FoodDetailsContent({ id }: { id?: string }) {
     setSaving(true);
     setActionError("");
     try {
-      await deleteStockProduct(Number(id));
+      await apiOperations.inventory.deleteStockProduct(Number(id));
       navigate("/stock?alias=estoque", { replace: true });
     } catch (error) {
       setActionError(

@@ -1,22 +1,26 @@
 import EnterpriseSidebar from "./EnterpriseSidebar";
 import EnterpriseTopbar from "./EnterpriseTopbar";
-import type { EnterpriseLayoutProps } from "@/types/component-props.type";
-export type { EnterpriseLayoutProps } from "@/types/component-props.type";
+import type { EnterpriseLayoutProps } from "@/types/layout-component-props.type";
+export type { EnterpriseLayoutProps } from "@/types/layout-component-props.type";
 
 export default function EnterpriseLayout({
   children,
   activeSection = "overview",
   breadcrumb,
   onOpenCreateAd,
+  userName,
+  onLogout,
 }: EnterpriseLayoutProps) {
   return (
     <div className="min-h-screen bg-[#F5F8FC] dark:bg-[#111214] text-[#141C55] dark:text-white flex font-plus-jakarta antialiased selection:bg-blue-900 selection:text-white transition-colors">
-      <EnterpriseSidebar activeSection={activeSection} />
+      <EnterpriseSidebar activeSection={activeSection} userName={userName} />
 
       <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
         <EnterpriseTopbar
           breadcrumb={breadcrumb}
           onOpenCreateAd={onOpenCreateAd}
+          userName={userName}
+          onLogout={onLogout}
         />
 
         <main

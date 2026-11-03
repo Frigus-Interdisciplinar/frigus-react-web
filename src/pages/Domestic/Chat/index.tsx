@@ -5,6 +5,7 @@ import { Search, Send, Users } from "lucide-react";
 import { safeHttpUrl } from "@/utils/url.util";
 import { useFamilyChat } from "@/hooks/useFamilyChat";
 import { useStore } from "@/store/store";
+import type { ChatContentProps } from "@/types/domestic-component-props.type";
 
 export default function ChatPage() {
   const [searchParams] = useSearchParams();
@@ -12,7 +13,7 @@ export default function ChatPage() {
   return <ChatContent key={alias} alias={alias} />;
 }
 
-function ChatContent({ alias }: { alias: string | null }) {
+function ChatContent({ alias }: ChatContentProps) {
   const currentUserId = useStore((state) => state.user?.id);
   const {
     conversations,
@@ -58,7 +59,11 @@ function ChatContent({ alias }: { alias: string | null }) {
                   size={16}
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-400"
                 />
+                <label htmlFor="family-chat-search" className="sr-only">
+                  Buscar conversa
+                </label>
                 <input
+                  id="family-chat-search"
                   type="text"
                   placeholder="Buscar conversa"
                   aria-label="Buscar conversa"
@@ -310,7 +315,11 @@ function ChatContent({ alias }: { alias: string | null }) {
               onSubmit={handleSendMessage}
               className="flex shrink-0 items-center gap-3 border-t border-gray-100 bg-white p-4 dark:border-[#343941] dark:bg-[#1C1E22]"
             >
+              <label htmlFor="family-chat-message" className="sr-only">
+                Mensagem para a conversa
+              </label>
               <input
+                id="family-chat-message"
                 type="text"
                 aria-label="Mensagem para a conversa"
                 value={inputText}

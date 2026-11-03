@@ -3,8 +3,8 @@ import yellowDecorative from "@/assets/yellow-decorative.svg";
 import BrandLogo from "@/components/BrandLogo";
 import AuthBenefitCard from "../AuthBenefitCard";
 import { Link } from "react-router-dom";
-import type { AuthSidebarProps } from "@/types/component-props.type";
-export type { AuthSidebarProps } from "@/types/component-props.type";
+import type { AuthSidebarProps } from "@/types/auth-component-props.type";
+export type { AuthSidebarProps } from "@/types/auth-component-props.type";
 
 export default function AuthSidebar({
   title,

@@ -5,9 +5,11 @@ import AuthLayout from "@/components/AuthLayout";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import ThemeToggle from "@/components/ThemeToggle";
-import { requestPasswordRecovery } from "@/services/auth.service";
+
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 export default function ForgotPasswordStep1() {
+  const apiOperations = useServiceOperations();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -19,7 +21,7 @@ export default function ForgotPasswordStep1() {
     setError("");
     setLoading(true);
     try {
-      await requestPasswordRecovery({ email: email.trim() });
+      await apiOperations.auth.requestPasswordRecovery({ email: email.trim() });
       navigate("/recover-password/step-2", { state: { email } });
     } catch (err) {
       setError(

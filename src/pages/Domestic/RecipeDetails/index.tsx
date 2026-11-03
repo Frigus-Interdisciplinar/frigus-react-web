@@ -9,29 +9,28 @@ import {
 } from "lucide-react";
 import Badge from "@/components/Badge";
 import { useAbortableAsync } from "@/hooks/useAbortableAsync";
-import {
-  getRecipe,
-  toggleRecipeFavorite,
-  type Recipe,
-} from "@/services/recipe.service";
+import type { Recipe } from "@/types/recipe.type";
 import { Skeleton, SkeletonCard } from "@/components/LoadingSkeleton";
 import { formatUnitOfMeasure } from "@/utils/unit.util";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
+import type { RecipeDetailsContentProps } from "@/types/domestic-component-props.type";
 
 export default function RecipeDetailsPage() {
   const { id } = useParams<{ id: string }>();
   return <RecipeDetailsContent key={id} id={id} />;
 }
 
-function RecipeDetailsContent({ id }: { id?: string }) {
+function RecipeDetailsContent({ id }: RecipeDetailsContentProps) {
+  const apiOperations = useServiceOperations();
   const [updatedRecipe, setUpdatedRecipe] = useState<Recipe>();
   const validId = id !== undefined && /^[1-9]\d*$/.test(id);
   const loadRecipe = useCallback(
     (signal: AbortSignal) => {
       if (!validId || !id)
         return Promise.reject(new Error("Receita inválida."));
-      return getRecipe(Number(id), signal);
+      return apiOperations.recipes.getRecipe(Number(id), signal);
     },
-    [id, validId],
+    [id, validId, apiOperations.recipes],
   );
   const {
     data: loadedRecipe,
@@ -45,7 +44,7 @@ function RecipeDetailsContent({ id }: { id?: string }) {
   const toggleFavorite = async () => {
     if (!recipe) return;
     try {
-      await toggleRecipeFavorite(recipe.id, recipe.favorite);
+      await apiOperations.recipes.toggleRecipeFavorite(recipe.id, recipe.favorite);
       setUpdatedRecipe({ ...recipe, favorite: !recipe.favorite });
     } catch {
       setActionError("Não foi possível atualizar as favoritas.");

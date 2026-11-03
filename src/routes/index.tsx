@@ -11,7 +11,7 @@ import { domesticRoutes } from "./domestic.routes";
 import { commercialRoutes } from "./commercial.routes";
 import { enterpriseRoutes } from "./enterprise.routes";
 import { paymentRoutes } from "./payment.routes";
-import { useStore } from "@/store/store";
+import { useAuth } from "@/contexts/useAuth";
 import {
   mobileScreenAliases,
   pendingMobileScreenAliases,
@@ -46,8 +46,7 @@ export default function AppRoutes() {
 }
 
 function RootEntry() {
-  const user = useStore((state) => state.user);
-  const initialized = useStore((state) => state.initialized);
+  const { user, initialized } = useAuth();
   const [searchParams] = useSearchParams();
   const alias = searchParams.get("alias");
   const screenPath =

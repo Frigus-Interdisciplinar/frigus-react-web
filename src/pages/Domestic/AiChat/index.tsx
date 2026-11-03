@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Bot, Send, Sparkles, UserRound } from "lucide-react";
-import { getInventoryContext } from "@/services/inventory.service";
-import { sendAiChatMessage } from "@/services/ai-chat.service";
-import type { AiChatResponse } from "@/schemas/ai-chat.schema";
+
+
+import type { AiChatResponse } from "@/types/ai-chat.type";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 type Message = {
   id: number;
@@ -26,6 +27,7 @@ function renderAssistantMessage(content: string) {
 }
 
 export default function AiChatPage() {
+  const apiOperations = useServiceOperations();
   const [stockId, setStockId] = useState<number | null>(null);
   const [sessionId, setSessionId] = useState<string | undefined>();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -39,7 +41,7 @@ export default function AiChatPage() {
 
   useEffect(() => {
     const controller = new AbortController();
-    getInventoryContext(controller.signal)
+    apiOperations.inventory.getInventoryContext(controller.signal)
       .then((context) => {
         if (controller.signal.aborted) return;
         const stock = context.stocks[0];
@@ -64,7 +66,7 @@ export default function AiChatPage() {
       controller.abort();
       sendController.current?.abort();
     };
-  }, []);
+  }, [apiOperations.inventory]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({
@@ -90,7 +92,7 @@ export default function AiChatPage() {
     setSending(true);
     setError("");
     try {
-      const response = await sendAiChatMessage(
+      const response = await apiOperations.aiChat.sendAiChatMessage(
         { message: content, stockId, sessionId },
         controller.signal,
       );

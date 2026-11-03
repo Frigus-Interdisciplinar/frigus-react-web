@@ -1,4 +1,5 @@
 import {
+  Fragment,
   useEffect,
   useState,
   useRef,
@@ -10,12 +11,11 @@ import { ArrowLeft } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import Button from "@/components/Button";
 import ThemeToggle from "@/components/ThemeToggle";
-import {
-  requestPasswordRecovery,
-  verifyPasswordRecoveryCode,
-} from "@/services/auth.service";
+
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 export default function ForgotPasswordStep2() {
+  const apiOperations = useServiceOperations();
   const [digits, setDigits] = useState<string[]>(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
@@ -71,7 +71,7 @@ export default function ForgotPasswordStep2() {
     setLoading(true);
     const code = digits.join("");
     try {
-      await verifyPasswordRecoveryCode({ email: email!, code });
+      await apiOperations.auth.verifyPasswordRecoveryCode({ email: email!, code });
       navigate("/recover-password/step-3", { state: { email, code } });
     } catch (err) {
       setError(
@@ -86,7 +86,7 @@ export default function ForgotPasswordStep2() {
     setResending(true);
     setError("");
     try {
-      await requestPasswordRecovery({ email: email! });
+      await apiOperations.auth.requestPasswordRecovery({ email: email! });
       setResendSuccess(true);
       clearTimeout(resendTimer.current);
       resendTimer.current = setTimeout(() => setResendSuccess(false), 3000);
@@ -134,8 +134,12 @@ export default function ForgotPasswordStep2() {
             onPaste={handlePaste}
           >
             {digits.map((digit, idx) => (
-              <input
-                key={idx}
+              <Fragment key={idx}>
+                <label htmlFor={`recovery-code-${idx}`} className="sr-only">
+                  Dígito {idx + 1} do código de recuperação
+                </label>
+                <input
+                id={`recovery-code-${idx}`}
                 aria-label={`Dígito ${idx + 1} do código de recuperação`}
                 ref={(el) => {
                   inputsRef.current[idx] = el;
@@ -147,7 +151,8 @@ export default function ForgotPasswordStep2() {
                 onChange={(e) => handleChange(idx, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(idx, e)}
                 className="h-12 min-w-0 flex-1 text-center text-xl font-bold text-frigus-navy transition-all duration-150 focus:border-frigus-primary focus:outline-none focus:ring-2 focus:ring-frigus-primary/40 dark:border-[#343941] dark:bg-[#232D42] dark:text-white sm:h-14 sm:w-14 sm:flex-none sm:text-2xl"
-              />
+                />
+              </Fragment>
             ))}
           </div>
 

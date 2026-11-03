@@ -1,6 +1,8 @@
 import { z } from "zod";
+import type { Plan, PlanSubscription } from "@/types/plan.type";
+export type { Plan, PlanSubscription } from "@/types/plan.type";
 
-export const planResponseSchema = z.object({
+export const planResponseSchema: z.ZodType<Plan> = z.object({
   id: z.number().int().positive(),
   planCode: z.string().min(1).max(20),
   name: z.string().min(1),
@@ -28,9 +30,7 @@ export const planResponseSchema = z.object({
 });
 
 export const planCatalogSchema = z.array(planResponseSchema);
-export type Plan = z.infer<typeof planResponseSchema>;
-
-export const planSubscriptionSchema = z.object({
+export const planSubscriptionSchema: z.ZodType<PlanSubscription> = z.object({
   status: z.enum(["TRIAL", "ACTIVE", "CANCELED", "EXPIRED", "DELINQUENT"]),
   plan: z.object({
     planCode: z.string().min(1).max(20),
@@ -50,5 +50,3 @@ export const planSubscriptionSchema = z.object({
       .transform((value) => value ?? null),
   }),
 });
-
-export type PlanSubscription = z.infer<typeof planSubscriptionSchema>;

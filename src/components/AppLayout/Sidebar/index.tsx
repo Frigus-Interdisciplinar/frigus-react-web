@@ -12,9 +12,8 @@ import {
 import NavigationItem from "./NavigationItem";
 import BrandLogo from "@/components/BrandLogo";
 
-import { useStore } from "@/store/store";
-import type { NavItem, SidebarProps } from "@/types/component-props.type";
-export type { NavItem, SectionString, SidebarProps } from "@/types/component-props.type";
+import type { NavItem, SidebarProps } from "@/types/layout-component-props.type";
+export type { NavItem, SectionString, SidebarProps } from "@/types/layout-component-props.type";
 
 const navigationItems: NavItem[] = [
   {
@@ -67,15 +66,18 @@ const navigationItems: NavItem[] = [
   },
 ];
 
-export default function Sidebar({ activeSection }: SidebarProps) {
-  const user = useStore((state) => state.user);
+export default function Sidebar({
+  activeSection,
+  userName,
+  planLabel,
+}: SidebarProps) {
   const initials =
-    user?.name
+    userName
       .split(/\s+/)
       .slice(0, 2)
       .map((part) => part[0])
       .join("")
-      .toUpperCase() ?? "—";
+      .toUpperCase() || "—";
   return (
     <aside className="sticky top-0 z-20 hidden h-screen w-[232px] shrink-0 select-none flex-col justify-between border-r border-transparent bg-sidebar-bg p-3 text-white transition-colors dark:border-white/5 dark:bg-[#171819] lg:flex">
       <div className="flex flex-col gap-6">
@@ -106,12 +108,10 @@ export default function Sidebar({ activeSection }: SidebarProps) {
         </div>
         <div className="flex flex-col overflow-hidden">
           <span className="text-white text-xs font-bold truncate">
-            {user?.name ?? "Minha conta"}
+            {userName || "Minha conta"}
           </span>
           <span className="text-sidebar-muted text-[11px] truncate">
-            {user?.accountType === "DOMESTIC"
-              ? "Plano doméstico"
-              : "Plano Frigus"}
+            {planLabel}
           </span>
         </div>
       </Link>

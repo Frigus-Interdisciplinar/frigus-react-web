@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import { useModalFocus } from "@/hooks/useModalFocus";
-import type { EnterpriseModalBaseProps } from "@/types/component-props.type";
+import type { EnterpriseModalBaseProps } from "@/types/enterprise-component-props.type";
 
 export function EnterpriseModalBase({
   isOpen,

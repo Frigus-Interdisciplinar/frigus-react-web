@@ -4,11 +4,13 @@ import { formatUnitOfMeasure } from "@/utils/unit.util";
 import { useCallback, useEffect, useState } from "react";
 import { AlertOctagon } from "lucide-react";
 import { CommercialRegisterWasteModal } from "@/components/CommercialModals";
-import { getInventoryContext, listStockProducts, type StockProduct } from "@/services/inventory.service";
-import { createDiscard, listDiscards } from "@/services/discard.service";
+import type { StockProduct } from "@/types/inventory.type";
+
 import type { Discard } from "@/types/commercial.type";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 export default function CommercialWastePage() {
+  const apiOperations = useServiceOperations();
   const [isWasteModalOpen, setIsWasteModalOpen] = useState(false);
   const [products, setProducts] = useState<StockProduct[]>([]);
   const [discards, setDiscards] = useState<Discard[]>([]);
@@ -20,10 +22,10 @@ export default function CommercialWastePage() {
   const load = useCallback(async () => {
     const signal = beginRequest();
     try {
-      const context = await getInventoryContext(signal);
+      const context = await apiOperations.inventory.getInventoryContext(signal);
       const [stockProducts, discards] = await Promise.all([
-        Promise.all(context.stocks.map((stock) => listStockProducts(stock.id, signal))),
-        listDiscards(signal),
+        Promise.all(context.stocks.map((stock) => apiOperations.inventory.listStockProducts(stock.id, signal))),
+        apiOperations.discards.listDiscards(signal),
       ]);
       if (signal.aborted) return;
       setProducts(stockProducts.flat());
@@ -32,12 +34,12 @@ export default function CommercialWastePage() {
     } catch {
       if (!signal.aborted) setError("Não foi possível carregar os descartes registrados.");
     } finally { if (!signal.aborted) setLoading(false); }
-  }, [beginRequest]);
+  }, [beginRequest, apiOperations.discards, apiOperations.inventory]);
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { void load(); }, [load]);
 
   const recordDiscard = async (input: { stockProductId: number; quantity: number; reason: string }) => {
-    await createDiscard(input);
+    await apiOperations.discards.createDiscard(input);
     await load();
     setFeedback("Perda registrada com sucesso.");
   };

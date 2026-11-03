@@ -1,4 +1,4 @@
-import type { EnterpriseFinishAdModalProps } from "@/types/component-props.type";
+import type { EnterpriseFinishAdModalProps } from "@/types/enterprise-component-props.type";
 import { EnterpriseModalBase } from "@/components/EnterpriseModalBase";
 
 export function EnterpriseFinishAdModal({

@@ -3,22 +3,15 @@ import { serviceCall } from "@/utils/service.util";
 import { transactionInputSchema } from "@/schemas/transaction.schema";
 import { validateForm } from "@/utils/validation.util";
 import { transactionResponseSchema } from "@/schemas/api-response.schema";
-
-export type PaymentMethod = "CREDIT_CARD" | "DEBIT_CARD" | "PIX" | "BOLETO";
-
-export interface CheckoutTransactionInput {
-  planCode: string;
-  paymentMethod?: PaymentMethod;
-  fakeCardLast4?: string;
-  fakePixKey?: string;
-}
-
-export interface Transaction {
-  id: string;
-  status: string;
-  amount?: number;
-  planCode?: string;
-}
+import type {
+  CheckoutTransactionInput,
+  Transaction,
+} from "@/types/transaction.type";
+export type {
+  CheckoutTransactionInput,
+  PaymentMethod,
+  Transaction,
+} from "@/types/transaction.type";
 
 export function createCheckoutTransaction(
   input: CheckoutTransactionInput,

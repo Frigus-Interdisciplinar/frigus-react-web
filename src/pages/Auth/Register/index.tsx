@@ -5,11 +5,12 @@ import Input from "@/components/Input";
 import Button from "@/components/Button";
 import Checkbox from "@/components/Checkbox";
 import ThemeToggle from "@/components/ThemeToggle";
-import { register, login } from "@/services/auth.service";
+
 import { useStore } from "@/store/store";
 import type { AccountType } from "@/types/auth.type";
 import { registerSchema } from "@/schemas/auth.schema";
 import { getPlansPath } from "@/utils/plan.util";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 type RegistrationFields = {
   name: string;
@@ -22,6 +23,7 @@ type RegistrationFields = {
 };
 
 export default function RegisterPage() {
+  const apiOperations = useServiceOperations();
   const [registration, setRegistration] = useState<RegistrationFields>({
     name: "",
     email: "",
@@ -82,8 +84,8 @@ export default function RegisterPage() {
 
     setLoading(true);
     try {
-      const account = await register(validation.data);
-      const session = await login({
+      const account = await apiOperations.auth.register(validation.data);
+      const session = await apiOperations.auth.login({
         email: account.email,
         rawPassword: registration.password,
         rememberMe: true,

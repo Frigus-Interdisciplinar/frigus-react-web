@@ -1,6 +1,6 @@
 import blueLogo from "@/assets/frigus-logo-blue.svg";
 import whiteLogo from "@/assets/frigus-logo-white.png";
-import type { BrandLogoProps } from "@/types/component-props.type";
+import type { BrandLogoProps } from "@/types/ui-component-props.type";
 
 export default function BrandLogo({ surface, className = "" }: BrandLogoProps) {
   const blueClasses = surface === "dark" ? "hidden" : surface === "theme" ? "dark:hidden" : "";

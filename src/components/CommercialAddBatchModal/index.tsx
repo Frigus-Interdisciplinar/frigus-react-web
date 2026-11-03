@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useResetModalState } from "@/hooks/useResetModalState";
-import type { CommercialAddBatchModalProps } from "@/types/component-props.type";
+import type { CommercialAddBatchModalProps } from "@/types/commercial-component-props.type";
 import { CommercialModalBase } from "@/components/CommercialModalBase";
 
 export function CommercialAddBatchModal({

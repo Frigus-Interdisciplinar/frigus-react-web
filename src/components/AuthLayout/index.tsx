@@ -1,6 +1,6 @@
 import AuthSidebar from "./AuthSidebar";
-import type { AuthLayoutProps } from "@/types/component-props.type";
-export type { AuthLayoutProps } from "@/types/component-props.type";
+import type { AuthLayoutProps } from "@/types/auth-component-props.type";
+export type { AuthLayoutProps } from "@/types/auth-component-props.type";
 
 export default function AuthLayout({
   title,

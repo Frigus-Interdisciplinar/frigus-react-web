@@ -1,4 +1,4 @@
-import type { CommercialCompletePurchaseModalProps } from "@/types/component-props.type";
+import type { CommercialCompletePurchaseModalProps } from "@/types/commercial-component-props.type";
 import { CommercialModalBase } from "@/components/CommercialModalBase";
 
 export function CommercialCompletePurchaseModal({

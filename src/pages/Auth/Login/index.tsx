@@ -7,15 +7,14 @@ import Checkbox from "@/components/Checkbox";
 import ThemeToggle from "@/components/ThemeToggle";
 import { ShieldCheck } from "lucide-react";
 import GoogleSignInButton from "@/components/GoogleSignInButton";
-import {
-  login,
-  loginWithGoogle,
-} from "@/services/auth.service";
+
 import { useStore } from "@/store/store";
 import { loginSchema } from "@/schemas/auth.schema";
 import { getLoginReturnPath, getSessionDestination } from "@/utils/plan.util";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 export default function LoginPage() {
+  const apiOperations = useServiceOperations();
   const [credentials, setCredentials] = useState({
     email: "",
     rawPassword: "",
@@ -31,7 +30,7 @@ export default function LoginPage() {
   const saveUser = useStore((state) => state.login);
 
   const completeLogin = async (
-    session: Awaited<ReturnType<typeof login>>,
+    session: Awaited<ReturnType<typeof apiOperations.auth.login>>,
     googleLogin = false,
   ) => {
     saveUser(session.user);
@@ -69,7 +68,7 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      await completeLogin(await login(credentials));
+      await completeLogin(await apiOperations.auth.login(credentials));
     } catch (err) {
       setError(
         err instanceof Error
@@ -86,7 +85,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await completeLogin(
-        await loginWithGoogle(idToken, credentials.rememberMe),
+        await apiOperations.auth.loginWithGoogle(idToken, credentials.rememberMe),
         true,
       );
     } catch (err) {

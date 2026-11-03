@@ -60,13 +60,8 @@ function parseShoppingList(input: unknown) {
   });
 }
 
-export type ShoppingListPreviewItem = {
-  id: number;
-  name: string;
-  quantity: number;
-  unit: string;
-  purchased: boolean;
-};
+import type { ShoppingListPreviewItem } from "@/types/shopping-list.type";
+export type { ShoppingListPreviewItem } from "@/types/shopping-list.type";
 
 export async function getShoppingListPreview(
   signal?: AbortSignal,

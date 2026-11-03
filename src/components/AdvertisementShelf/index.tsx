@@ -1,43 +1,17 @@
-import { useEffect, useState } from "react";
 import { ExternalLink } from "lucide-react";
-import {
-  listActiveAdvertisements,
-  recordAdvertisementClick,
-  recordAdvertisementImpression,
-  type Advertisement,
-} from "@/services/advertisement.service";
+import type { AdvertisementShelfProps } from "@/types/advertisement-component-props.type";
+import type { Advertisement } from "@/types/advertisement.type";
 import { safeHttpUrl } from "@/utils/url.util";
 import { Skeleton, SkeletonCard } from "@/components/LoadingSkeleton";
 
-export default function AdvertisementShelf() {
-  const [ads, setAds] = useState<Advertisement[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+export type { AdvertisementShelfProps } from "@/types/advertisement-component-props.type";
 
-  useEffect(() => {
-    let active = true;
-    const controller = new AbortController();
-    listActiveAdvertisements(controller.signal)
-      .then((page) => {
-        if (!active) return;
-        const visibleAds = (page.content ?? []).slice(0, 3);
-        setAds(visibleAds);
-        visibleAds.forEach((ad) => {
-          void recordAdvertisementImpression(ad.id).catch(() => undefined);
-        });
-      })
-      .catch(() => {
-        if (active) setError("Não foi possível carregar os anúncios.");
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
-      controller.abort();
-    };
-  }, []);
-
+export default function AdvertisementShelf({
+  advertisements,
+  loading,
+  error,
+  onOfferClick,
+}: AdvertisementShelfProps) {
   return (
     <section aria-label="Anúncios ativos" className="space-y-3">
       <div>
@@ -71,14 +45,14 @@ export default function AdvertisementShelf() {
           {error}
         </p>
       )}
-      {!loading && !error && !ads.length && (
+      {!loading && !error && !advertisements.length && (
         <p role="status" className="text-sm text-slate-500">
           Nenhum anúncio ativo no momento.
         </p>
       )}
-      {!!ads.length && (
+      {!!advertisements.length && (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {ads.map((ad) => {
+          {advertisements.map((ad: Advertisement) => {
             const imageUrl = safeHttpUrl(ad.imageUrl);
             const destinationUrl = safeHttpUrl(ad.destinationUrl);
             return (
@@ -122,11 +96,7 @@ export default function AdvertisementShelf() {
                       href={destinationUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      onClick={() => {
-                        void recordAdvertisementClick(ad.id).catch(
-                          () => undefined,
-                        );
-                      }}
+                      onClick={() => onOfferClick?.(ad.id)}
                       className="inline-flex items-center gap-1 text-xs font-semibold text-frigus-primary hover:underline"
                     >
                       Ver oferta <ExternalLink size={13} />

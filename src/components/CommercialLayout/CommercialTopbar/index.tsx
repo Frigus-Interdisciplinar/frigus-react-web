@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Bell,
   CalendarClock,
@@ -13,11 +13,10 @@ import {
 } from "lucide-react";
 import { CommercialNotificationsModal } from "@/components/CommercialModals";
 import ThemeToggle from "@/components/ThemeToggle";
-import { useStore } from "@/store/store";
-import { logout as endSession } from "@/services/auth.service";
+
 import MobileNavigation from "@/components/MobileNavigation";
-import type { CommercialTopbarProps } from "@/types/component-props.type";
-export type { CommercialTopbarProps } from "@/types/component-props.type";
+import type { CommercialTopbarProps } from "@/types/layout-component-props.type";
+export type { CommercialTopbarProps } from "@/types/layout-component-props.type";
 
 const mobileNavigationItems = [
   { label: "Estoque", href: "/commercial/stock", icon: Package },
@@ -31,26 +30,20 @@ const mobileNavigationItems = [
 
 export default function CommercialTopbar({
   breadcrumb = "Área comercial    /    Estoque",
+  userName,
+  onLogout,
 }: CommercialTopbarProps) {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const accountButtonRef = useRef<HTMLButtonElement>(null);
-  const user = useStore((state) => state.user);
-  const clearSession = useStore((state) => state.logout);
-  const navigate = useNavigate();
   const initials =
-    user?.name
+    userName
       .split(/\s+/)
       .slice(0, 2)
       .map((part) => part[0])
       .join("")
-      .toUpperCase() ?? "";
-  const handleLogout = () => {
-    void endSession().catch(() => undefined);
-    clearSession();
-    navigate("/login", { replace: true });
-  };
+      .toUpperCase();
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -109,7 +102,7 @@ export default function CommercialTopbar({
               aria-controls={isAccountMenuOpen ? "account-menu" : undefined}
               className="flex h-9 w-9 items-center justify-center rounded-full bg-[#EAF1FF] text-xs font-bold text-[#131C55] transition-all hover:ring-2 hover:ring-[#2552C8]/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2552C8] dark:bg-[#252A32] dark:text-blue-300"
             >
-              {initials || user?.name?.[0]?.toUpperCase() || "—"}
+              {initials || userName[0]?.toUpperCase() || "—"}
             </button>
             {isAccountMenuOpen && (
               <div
@@ -125,7 +118,7 @@ export default function CommercialTopbar({
                 </Link>
                 <button
                   type="button"
-                  onClick={handleLogout}
+                  onClick={onLogout}
                   className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-red-700 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-600 dark:text-red-300 dark:hover:bg-red-950/30"
                 >
                   <LogOut size={16} aria-hidden="true" />

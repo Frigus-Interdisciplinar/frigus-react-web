@@ -9,9 +9,8 @@ import {
   Users,
 } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
-import { useStore } from "@/store/store";
-import type { CommercialSidebarProps } from "@/types/component-props.type";
-export type { CommercialSection, CommercialSidebarProps } from "@/types/component-props.type";
+import type { CommercialSidebarProps } from "@/types/layout-component-props.type";
+export type { CommercialSection, CommercialSidebarProps } from "@/types/layout-component-props.type";
 
 const navItems = [
   {
@@ -60,16 +59,16 @@ const navItems = [
 
 export default function CommercialSidebar({
   activeSection,
+  userName,
 }: CommercialSidebarProps) {
   const location = useLocation();
-  const user = useStore((state) => state.user);
   const initials =
-    user?.name
+    userName
       .split(/\s+/)
       .slice(0, 2)
       .map((part) => part[0])
       .join("")
-      .toUpperCase() ?? "—";
+      .toUpperCase() || "—";
 
   return (
     <aside className="sticky top-0 z-20 hidden h-screen w-[232px] shrink-0 select-none flex-col justify-between overflow-y-auto bg-[#131C55] p-3 text-white transition-colors dark:border-r dark:border-white/5 dark:bg-[#171819] lg:flex">
@@ -112,7 +111,7 @@ export default function CommercialSidebar({
         </span>
         <span className="flex min-w-0 flex-col">
           <span className="truncate text-xs font-bold">
-            {user?.name ?? "Minha conta"}
+            {userName || "Minha conta"}
           </span>
           <span className="truncate text-[11px] text-[#C9DEF9]">Gerente</span>
         </span>
