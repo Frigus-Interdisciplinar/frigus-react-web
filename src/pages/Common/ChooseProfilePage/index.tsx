@@ -4,11 +4,13 @@ import ThemeToggle from "@/components/ThemeToggle";
 import BrandLogo from "@/components/BrandLogo";
 import { useState } from "react";
 import type { AccountType } from "@/types/auth.type";
-import { chooseOnboardingAccountType } from "@/services/auth.service";
+
 import { useStore } from "@/store/store";
 import { getAccountHome, getPlansPath } from "@/utils/plan.util";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 export default function ChooseProfilePage() {
+  const apiOperations = useServiceOperations();
   const navigate = useNavigate();
   const user = useStore((state) => state.user);
   const saveUser = useStore((state) => state.login);
@@ -23,7 +25,7 @@ export default function ChooseProfilePage() {
     setSaving(accountType);
     setError("");
     try {
-      const updatedUser = await chooseOnboardingAccountType(accountType);
+      const updatedUser = await apiOperations.auth.chooseOnboardingAccountType(accountType);
       saveUser(updatedUser);
       navigate(getPlansPath(accountType), { replace: true });
     } catch (reason) {

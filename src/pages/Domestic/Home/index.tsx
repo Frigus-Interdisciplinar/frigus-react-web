@@ -2,25 +2,18 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, ArrowRight } from "lucide-react";
 import Badge from "@/components/Badge";
-import {
-  getInventoryContext,
-  getInventorySummary,
-  listStockProducts,
-  type StockProduct,
-  type StockSummary,
-} from "@/services/inventory.service";
+import type { StockProduct, StockSummary } from "@/types/inventory.type";
 import { useStore } from "@/store/store";
-import {
-  getShoppingListPreview,
-  type ShoppingListPreviewItem,
-} from "@/services/shopping-list.service";
+import type { ShoppingListPreviewItem } from "@/types/shopping-list.type";
 import { Skeleton } from "@/components/LoadingSkeleton";
 import {
   formatProductCategory,
   formatUnitOfMeasure,
 } from "@/utils/unit.util";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 export default function DashboardPage() {
+  const apiOperations = useServiceOperations();
   const [summary, setSummary] = useState<StockSummary | null>(null);
   const [summaryError, setSummaryError] = useState("");
   const [summaryLoading, setSummaryLoading] = useState(true);
@@ -36,7 +29,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const controller = new AbortController();
     const { signal } = controller;
-    void getInventorySummary(signal)
+    void apiOperations.inventory.getInventorySummary(signal)
       .then((summary) => {
         if (!signal.aborted) setSummary(summary);
       })
@@ -47,7 +40,7 @@ export default function DashboardPage() {
       .finally(() => {
         if (!signal.aborted) setSummaryLoading(false);
       });
-    void getShoppingListPreview(signal)
+    void apiOperations.shoppingLists.getShoppingListPreview(signal)
       .then((items) => {
         if (!signal.aborted) setShoppingItems(items);
       })
@@ -58,11 +51,11 @@ export default function DashboardPage() {
       .finally(() => {
         if (!signal.aborted) setShoppingLoading(false);
       });
-    void getInventoryContext(signal)
+    void apiOperations.inventory.getInventoryContext(signal)
       .then(async (context) => {
         const stock = context.stocks[0];
         if (!stock || signal.aborted) return;
-        const products = await listStockProducts(stock.id, signal);
+        const products = await apiOperations.inventory.listStockProducts(stock.id, signal);
         if (!signal.aborted) setRecentProducts(products.slice(0, 4));
       })
       .catch(() => {
@@ -73,7 +66,7 @@ export default function DashboardPage() {
         if (!signal.aborted) setRecentLoading(false);
       });
     return () => controller.abort();
-  }, []);
+  }, [apiOperations.inventory, apiOperations.shoppingLists]);
   const nearExpiration = summary?.nearExpiration ?? [];
   const readyPercentage = summary?.itemCount
     ? Math.round(

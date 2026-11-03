@@ -5,7 +5,8 @@ import { UserPlus, Shield } from "lucide-react";
 import Badge from "@/components/Badge";
 import { InviteMemberModal } from "@/components/Modal";
 import type { InviteMemberData } from "@/components/Modal/InviteMemberModal";
-import { inviteGroupMember, listGroups } from "@/services/group.service";
+
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 type Member = {
   id: string;
@@ -20,6 +21,7 @@ type Member = {
 };
 
 export default function FamilyMembersPage() {
+  const apiOperations = useServiceOperations();
   const [searchParams] = useSearchParams();
   const [members, setMembers] = useState<Member[]>([]);
   const [isInviteOpen, setIsInviteOpen] = useState(
@@ -34,7 +36,7 @@ export default function FamilyMembersPage() {
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
-    listGroups(controller.signal)
+    apiOperations.groups.listGroups(controller.signal)
       .then((groups) => {
         if (!active) return;
         const group = groups[0];
@@ -78,13 +80,13 @@ export default function FamilyMembersPage() {
       active = false;
       controller.abort();
     };
-  }, []);
+  }, [apiOperations.groups]);
 
   const handleInvite = async (data: InviteMemberData) => {
     if (!groupId) return;
     setError("");
     try {
-      await inviteGroupMember(groupId, {
+      await apiOperations.groups.inviteGroupMember(groupId, {
         email: data.email,
         name: data.name,
         memberRole: data.role === "Pode editar" ? "EDITOR" : "VIEWER",

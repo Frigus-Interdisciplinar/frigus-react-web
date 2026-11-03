@@ -6,17 +6,18 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import BrandLogo from "@/components/BrandLogo";
 import { useAbortableAsync } from "@/hooks/useAbortableAsync";
 import { useLatestRequest } from "@/hooks/useLatestRequest";
-import { finishPlanSelection, listPlans } from "@/services/plan.service";
-import { createCheckoutTransaction } from "@/services/transaction.service";
+
+
 import { useStore } from "@/store/store";
 import type { AccountType } from "@/types/auth.type";
-import type { Plan } from "@/schemas/plan.schema";
+import type { Plan } from "@/types/plan.type";
 import {
   formatPlanPrice,
   getAccountHome,
   getSessionDestination,
   isPlanAvailableForAccount,
 } from "@/utils/plan.util";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 const accountLabels: Record<AccountType, string> = {
   DOMESTIC: "sua casa",
@@ -29,7 +30,8 @@ export default function PlanSelection({
 }: {
   accountType: AccountType;
 }) {
-  const { data, loading, error: loadError } = useAbortableAsync(listPlans);
+  const apiOperations = useServiceOperations();
+  const { data, loading, error: loadError } = useAbortableAsync(apiOperations.plans.listPlans);
   const plans = (data ?? [])
     .filter(
       (plan) =>
@@ -53,7 +55,7 @@ export default function PlanSelection({
     setActivating(plan.planCode);
     setActionError("");
     try {
-      const transaction = await createCheckoutTransaction(
+      const transaction = await apiOperations.transactions.createCheckoutTransaction(
         { planCode: plan.planCode },
         signal,
       );
@@ -61,7 +63,7 @@ export default function PlanSelection({
         throw new Error(
           "Não foi possível ativar o plano gratuito. Tente novamente.",
         );
-      const updatedUser = await finishPlanSelection(signal);
+      const updatedUser = await apiOperations.plans.finishPlanSelection(signal);
       if (signal.aborted) return;
       saveUser(updatedUser);
       navigate(getAccountHome(updatedUser.accountType), { replace: true });

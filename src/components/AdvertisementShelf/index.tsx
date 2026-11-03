@@ -1,15 +1,12 @@
 import { useEffect, useState } from "react";
 import { ExternalLink } from "lucide-react";
-import {
-  listActiveAdvertisements,
-  recordAdvertisementClick,
-  recordAdvertisementImpression,
-  type Advertisement,
-} from "@/services/advertisement.service";
+import type { Advertisement } from "@/types/advertisement.type";
 import { safeHttpUrl } from "@/utils/url.util";
 import { Skeleton, SkeletonCard } from "@/components/LoadingSkeleton";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 export default function AdvertisementShelf() {
+  const apiOperations = useServiceOperations();
   const [ads, setAds] = useState<Advertisement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -17,13 +14,13 @@ export default function AdvertisementShelf() {
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
-    listActiveAdvertisements(controller.signal)
+    apiOperations.advertisements.listActiveAdvertisements(controller.signal)
       .then((page) => {
         if (!active) return;
         const visibleAds = (page.content ?? []).slice(0, 3);
         setAds(visibleAds);
         visibleAds.forEach((ad) => {
-          void recordAdvertisementImpression(ad.id).catch(() => undefined);
+          void apiOperations.advertisements.recordAdvertisementImpression(ad.id).catch(() => undefined);
         });
       })
       .catch(() => {
@@ -36,7 +33,7 @@ export default function AdvertisementShelf() {
       active = false;
       controller.abort();
     };
-  }, []);
+  }, [apiOperations.advertisements]);
 
   return (
     <section aria-label="Anúncios ativos" className="space-y-3">
@@ -123,7 +120,7 @@ export default function AdvertisementShelf() {
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => {
-                        void recordAdvertisementClick(ad.id).catch(
+                        void apiOperations.advertisements.recordAdvertisementClick(ad.id).catch(
                           () => undefined,
                         );
                       }}

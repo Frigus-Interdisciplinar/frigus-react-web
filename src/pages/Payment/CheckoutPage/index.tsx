@@ -10,9 +10,10 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { useAbortableAsync } from "@/hooks/useAbortableAsync";
 import { useLatestRequest } from "@/hooks/useLatestRequest";
 import { useStore } from "@/store/store";
-import { listPlans } from "@/services/plan.service";
-import { createCheckoutTransaction } from "@/services/transaction.service";
-import { checkoutSchema, type CheckoutInput } from "@/schemas/checkout.schema";
+
+
+import { checkoutSchema } from "@/schemas/checkout.schema";
+import type { CheckoutInput } from "@/types/transaction.type";
 import {
   formatPlanPrice,
   getPlansPath,
@@ -20,6 +21,7 @@ import {
   isPlanAvailableForAccount,
   resolveCheckoutPlanCode,
 } from "@/utils/plan.util";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 const paymentMethods = [
   { value: "card", label: "Cartão", Icon: CreditCard },
@@ -28,6 +30,7 @@ const paymentMethods = [
 ] as const;
 
 export default function CheckoutPage() {
+  const apiOperations = useServiceOperations();
   const [searchParams] = useSearchParams();
   const user = useStore((state) => state.user);
   const saveUser = useStore((state) => state.login);
@@ -36,7 +39,7 @@ export default function CheckoutPage() {
     data: catalog,
     loading: loadingPlans,
     error: catalogError,
-  } = useAbortableAsync(listPlans);
+  } = useAbortableAsync(apiOperations.plans.listPlans);
   const plan = catalog?.find(
     (candidate) =>
       candidate.planCode === planCode &&
@@ -72,7 +75,7 @@ export default function CheckoutPage() {
     const signal = beginRequest();
     setProcessing(true);
     try {
-      const transaction = await createCheckoutTransaction(
+      const transaction = await apiOperations.transactions.createCheckoutTransaction(
         {
           planCode: plan.planCode,
           paymentMethod:
@@ -184,12 +187,14 @@ export default function CheckoutPage() {
                   <div className="grid grid-cols-1 gap-3 pt-3 sm:grid-cols-3">
                     {paymentMethods.map(({ value, label, Icon }) => (
                       <label
+                        htmlFor={`checkout-payment-${value}`}
                         key={value}
                         className={`flex cursor-pointer flex-col items-center gap-2 rounded-xl border p-3 text-sm font-semibold ${checkout.paymentMethod === value ? "border-frigus-primary bg-blue-50 text-frigus-primary dark:bg-blue-950/40 dark:text-[#A7BCFF]" : "border-gray-200 text-text-muted dark:border-gray-700"}`}
                       >
                         <Icon aria-hidden="true" className="size-5" />
                         <span>{label}</span>
                         <input
+                          id={`checkout-payment-${value}`}
                           type="radio"
                           name="payment-method"
                           value={value}

@@ -3,14 +3,12 @@ import { useLatestRequest } from "@/hooks/useLatestRequest";
 import { useCallback, useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { CommercialRegisterPurchaseModal } from "@/components/CommercialModals";
-import {
-  createExpense as submitExpense,
-  getCommercialGroupId,
-  listExpenses,
-} from "@/services/expense.service";
+
 import type { Expense } from "@/types/commercial.type";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 export default function CommercialExpensesPage() {
+  const apiOperations = useServiceOperations();
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
   const [groupId, setGroupId] = useState<string>();
   const [expenses, setExpenses] = useState<Expense[]>([]);
@@ -22,8 +20,8 @@ export default function CommercialExpensesPage() {
   const loadExpenses = useCallback(async () => {
     const signal = beginRequest();
     try {
-      const id = await getCommercialGroupId(signal);
-      const expenses = await listExpenses(id, signal);
+      const id = await apiOperations.expenses.getCommercialGroupId(signal);
+      const expenses = await apiOperations.expenses.listExpenses(id, signal);
       if (signal.aborted) return;
       setGroupId(id);
       setExpenses(expenses);
@@ -33,7 +31,7 @@ export default function CommercialExpensesPage() {
     } finally {
       if (!signal.aborted) setLoading(false);
     }
-  }, [beginRequest]);
+  }, [beginRequest, apiOperations.expenses]);
 
   useEffect(() => {    // eslint-disable-next-line react-hooks/set-state-in-effect
     void loadExpenses();
@@ -47,7 +45,7 @@ export default function CommercialExpensesPage() {
     supplier: string;
   }) => {
     if (!groupId) throw new Error("Grupo comercial indisponível");
-    await submitExpense(groupId, input);
+    await apiOperations.expenses.createExpense(groupId, input);
     await loadExpenses();
     setFeedback("Despesa registrada com sucesso.");
   };

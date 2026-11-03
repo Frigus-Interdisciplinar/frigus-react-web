@@ -1,23 +1,13 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { getInventoryContext } from "@/services/inventory.service";
-import {
-  addShoppingListItem,
-  clearPurchasedShoppingListItems,
-  findOpenShoppingList,
-  getShoppingList,
-  listGroupProducts,
-  listShoppingListSuggestions,
-  removeShoppingListItem,
-  setShoppingListItemQuantity,
-  setShoppingListItemStatus,
-  createShoppingList,
-} from "@/services/shopping-list.service";
+
+
 import type { ShoppingListSuggestion } from "@/types/shopping-list.type";
-import type { Product } from "@/services/inventory.service";
+import type { Product } from "@/types/inventory.type";
 import { Plus, Trash2, Check, Sparkles, Minus } from "lucide-react";
 import { AddItemModal } from "@/components/Modal";
 import { formatUnitOfMeasure } from "@/utils/unit.util";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 type ShoppingItem = {
   id: number;
@@ -42,6 +32,7 @@ const categories: Record<string, string> = {
 };
 
 export default function ShoppingListPage() {
+  const apiOperations = useServiceOperations();
   const [searchParams] = useSearchParams();
   const [items, setItems] = useState<ShoppingItem[]>([]);
   const [activeTab, setActiveTab] = useState<"pendentes" | "comprados">(
@@ -80,8 +71,8 @@ export default function ShoppingListPage() {
     if (nextTab?.id === "domestic-tab-purchased") setActiveTab("comprados");
   };
 
-  const loadList = async (id: string, signal?: AbortSignal) => {
-    const list = await getShoppingList(id, signal);
+  const loadList = useCallback(async (id: string, signal?: AbortSignal) => {
+    const list = await apiOperations.shoppingLists.getShoppingList(id, signal);
     if (signal?.aborted) return;
     setItems(
       list.items.map((item) => ({
@@ -94,19 +85,19 @@ export default function ShoppingListPage() {
         checked: item.status === "PURCHASED",
       })),
     );
-  };
+  }, [apiOperations.shoppingLists]);
 
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
     void (async () => {
       try {
-        const context = await getInventoryContext(controller.signal);
+        const context = await apiOperations.inventory.getInventoryContext(controller.signal);
         const stock = context.stocks[0];
         if (!stock) throw new Error("Crie um estoque para começar sua lista.");
         const open =
-          (await findOpenShoppingList(stock.id, controller.signal)) ??
-          (await createShoppingList(
+          (await apiOperations.shoppingLists.findOpenShoppingList(stock.id, controller.signal)) ??
+          (await apiOperations.shoppingLists.createShoppingList(
             stock.id,
             "Lista de compras",
             controller.signal,
@@ -114,11 +105,11 @@ export default function ShoppingListPage() {
         if (!active) return;
         setListId(open.id);
         await loadList(open.id, controller.signal);
-        const own = await listGroupProducts(context.groupId, controller.signal);
+        const own = await apiOperations.shoppingLists.listGroupProducts(context.groupId, controller.signal);
         if (!active) return;
         setCatalog(own);
         setCatalogReady(true);
-        const suggestions = await listShoppingListSuggestions(
+        const suggestions = await apiOperations.shoppingLists.listShoppingListSuggestions(
           stock.id,
           controller.signal,
         );
@@ -136,14 +127,14 @@ export default function ShoppingListPage() {
       active = false;
       controller.abort();
     };
-  }, []);
+  }, [apiOperations.inventory, apiOperations.shoppingLists, loadList]);
 
   const toggleCheck = async (id: number) => {
     if (!listId) return;
     const item = items.find((entry) => entry.id === id);
     if (!item) return;
     try {
-      await setShoppingListItemStatus(
+      await apiOperations.shoppingLists.setShoppingListItemStatus(
         listId,
         id,
         item.checked ? "PENDING" : "PURCHASED",
@@ -161,7 +152,7 @@ export default function ShoppingListPage() {
   const removeItem = async (id: number) => {
     if (!listId) return;
     try {
-      await removeShoppingListItem(listId, id);
+      await apiOperations.shoppingLists.removeShoppingListItem(listId, id);
       await loadList(listId);
     } catch (reason) {
       setError(
@@ -175,7 +166,7 @@ export default function ShoppingListPage() {
   const clearCompleted = async () => {
     if (!listId) return;
     try {
-      await clearPurchasedShoppingListItems(listId);
+      await apiOperations.shoppingLists.clearPurchasedShoppingListItems(listId);
       await loadList(listId);
     } catch (reason) {
       setError(
@@ -190,7 +181,7 @@ export default function ShoppingListPage() {
     if (!listId) return;
     try {
       for (const value of selectedIds)
-        await addShoppingListItem(listId, Number(value), 1);
+        await apiOperations.shoppingLists.addShoppingListItem(listId, Number(value), 1);
       await loadList(listId);
     } catch (reason) {
       setError(
@@ -205,7 +196,7 @@ export default function ShoppingListPage() {
   const addSuggestion = async (suggestion: ShoppingListSuggestion) => {
     if (!listId) return;
     try {
-      await addShoppingListItem(
+      await apiOperations.shoppingLists.addShoppingListItem(
         listId,
         suggestion.product.id,
         suggestion.suggestedQuantity,
@@ -223,7 +214,7 @@ export default function ShoppingListPage() {
   const changeQuantity = async (item: ShoppingItem, amount: number) => {
     if (!listId || amount < 1) return;
     try {
-      await setShoppingListItemQuantity(listId, item.id, amount);
+      await apiOperations.shoppingLists.setShoppingListItemQuantity(listId, item.id, amount);
       await loadList(listId);
     } catch (reason) {
       setError(
@@ -329,7 +320,11 @@ export default function ShoppingListPage() {
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-end">
+            <label htmlFor="domestic-shopping-category" className="sr-only">
+              Filtrar por categoria
+            </label>
             <select
+              id="domestic-shopping-category"
               aria-label="Filtrar por categoria"
               value={categoryFilter}
               onChange={(event) => setCategoryFilter(event.target.value)}

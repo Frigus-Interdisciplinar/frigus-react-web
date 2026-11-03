@@ -4,13 +4,15 @@ import { useEffect, useState } from "react";
 import { User, Mail, Phone, Home, Shield, Bell, Edit } from "lucide-react";
 import Badge from "@/components/Badge";
 import { useStore } from "@/store/store";
-import { getProfile } from "@/services/profile.service";
-import { getInventorySummary } from "@/services/inventory.service";
-import { listGroups } from "@/services/group.service";
-import { getMySubscription } from "@/services/plan.service";
+
+
+
+
 import { formatPlanPrice, getPlansPath } from "@/utils/plan.util";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 export default function ProfilePage() {
+  const apiOperations = useServiceOperations();
   const user = useStore((state) => state.user);
   const setUser = useStore((state) => state.login);
   const groupLabel =
@@ -20,20 +22,20 @@ export default function ProfilePage() {
   const [groupName, setGroupName] = useState("—");
   const [memberCount, setMemberCount] = useState(1);
   const [itemCount, setItemCount] = useState(0);
-  const [subscription, setSubscription] = useState<Awaited<ReturnType<typeof getMySubscription>> | null>(null);
+  const [subscription, setSubscription] = useState<Awaited<ReturnType<typeof apiOperations.plans.getMySubscription>> | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const initials = user?.name.split(/\s+/).slice(0, 2).map((part) => part[0]).join("").toUpperCase() ?? "";
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
-    void getProfile()
+    void apiOperations.profile.getProfile()
       .then((currentUser) => active && setUser(currentUser))
       .catch(() => {});
     void Promise.all([
-      listGroups(controller.signal),
-      getInventorySummary(controller.signal),
-      getMySubscription(controller.signal),
+      apiOperations.groups.listGroups(controller.signal),
+      apiOperations.inventory.getInventorySummary(controller.signal),
+      apiOperations.plans.getMySubscription(controller.signal),
     ])
       .then(([groups, summary, currentSubscription]) => {
         if (!active) return;
@@ -44,7 +46,7 @@ export default function ProfilePage() {
       .catch((reason: unknown) => active && setLoadError(reason instanceof Error ? reason.message : "Não foi possível carregar os dados do perfil."))
       .finally(() => active && setLoading(false));
     return () => { active = false; controller.abort(); };
-  }, [setUser]);
+  }, [setUser, apiOperations.groups, apiOperations.inventory, apiOperations.plans, apiOperations.profile]);
   return (
     <>
       <div className="space-y-6 max-w-4xl mx-auto">
@@ -172,7 +174,7 @@ export default function ProfilePage() {
             </h3>
 
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941]">
+              <label htmlFor="profile-email-notifications" className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941]">
                 <div className="flex items-center gap-3">
                   <Bell size={16} className="text-frigus-primary dark:text-blue-400" />
                   <div>
@@ -185,13 +187,14 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <input
+                  id="profile-email-notifications"
                   type="checkbox"
                   defaultChecked
                   className="rounded text-frigus-primary focus:ring-frigus-primary"
                 />
-              </div>
+              </label>
 
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941]">
+              <label htmlFor="profile-stock-alerts" className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941]">
                 <div className="flex items-center gap-3">
                   <Shield size={16} className="text-emerald-600 dark:text-emerald-400" />
                   <div>
@@ -204,11 +207,12 @@ export default function ProfilePage() {
                   </div>
                 </div>
                 <input
+                  id="profile-stock-alerts"
                   type="checkbox"
                   defaultChecked
                   className="rounded text-frigus-primary focus:ring-frigus-primary"
                 />
-              </div>
+              </label>
             </div>
           </div>
 

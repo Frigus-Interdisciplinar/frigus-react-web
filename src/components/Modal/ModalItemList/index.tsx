@@ -25,6 +25,7 @@ export default function ModalItemList({
             const isChecked = selectedIds.includes(item.id);
             return (
               <label
+                htmlFor={`suggested-item-${item.id}`}
                 key={item.id}
                 className={cn(
                   "flex items-center justify-between p-3 rounded-2xl border transition-all cursor-pointer select-none",
@@ -35,7 +36,7 @@ export default function ModalItemList({
               >
                 <div className="flex items-center gap-3">
                   <span className="relative flex size-5 items-center justify-center">
-                    <input type="checkbox" checked={isChecked} onChange={() => onToggleSelect(item.id)}
+                    <input id={`suggested-item-${item.id}`} type="checkbox" checked={isChecked} onChange={() => onToggleSelect(item.id)}
                       aria-label={`Selecionar ${item.name}`}
                       className="peer size-5 appearance-none rounded-md border border-gray-400 bg-white checked:border-frigus-primary checked:bg-frigus-primary dark:bg-[#1C1E22] dark:checked:bg-frigus-primary" />
                     <Check aria-hidden="true" size={14} strokeWidth={3} className="pointer-events-none absolute text-white opacity-0 peer-checked:opacity-100" />

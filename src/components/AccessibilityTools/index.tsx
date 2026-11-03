@@ -9,6 +9,7 @@ export default function AccessibilityTools() {
   const { pathname } = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
   const previousPath = useRef(pathname);
   const {
     textScale,
@@ -25,6 +26,13 @@ export default function AccessibilityTools() {
     setIsOpen(false);
     triggerRef.current?.focus();
   };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    panelRef.current
+      ?.querySelector<HTMLElement>("button, input, select, textarea, a[href]")
+      ?.focus();
+  }, [isOpen]);
 
   useEffect(() => {
     if (previousPath.current === pathname) return;
@@ -69,6 +77,7 @@ export default function AccessibilityTools() {
 
       <div className="a11y-tools">
         <section
+          ref={panelRef}
           id="a11y-panel"
           className="a11y-panel"
           aria-labelledby="a11y-panel-title"
@@ -108,36 +117,39 @@ export default function AccessibilityTools() {
             </div>
           </div>
 
-          <label className="a11y-toggle-row">
+          <label htmlFor="a11y-high-contrast" className="a11y-toggle-row">
             <span>
               <strong>Alto contraste</strong>
               <small>Realça textos, links e limites</small>
             </span>
             <input
+              id="a11y-high-contrast"
               type="checkbox"
               checked={highContrast}
               onChange={(event) => setHighContrast(event.target.checked)}
             />
           </label>
 
-          <label className="a11y-toggle-row">
+          <label htmlFor="a11y-dyslexia-font" className="a11y-toggle-row">
             <span>
               <strong>Fonte para dislexia</strong>
               <small>Usa uma família tipográfica mais legível</small>
             </span>
             <input
+              id="a11y-dyslexia-font"
               type="checkbox"
               checked={dyslexiaFont}
               onChange={(event) => setDyslexiaFont(event.target.checked)}
             />
           </label>
 
-          <label className="a11y-toggle-row">
+          <label htmlFor="a11y-vlibras" className="a11y-toggle-row">
             <span>
               <strong>Tradutor em Libras</strong>
               <small>Ativa o VLibras do Governo Federal</small>
             </span>
             <input
+              id="a11y-vlibras"
               type="checkbox"
               checked={vlibrasEnabled}
               onChange={(event) => setVlibrasEnabled(event.target.checked)}

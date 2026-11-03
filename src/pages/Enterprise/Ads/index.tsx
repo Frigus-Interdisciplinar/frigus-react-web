@@ -1,17 +1,10 @@
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Archive, Megaphone, Pencil, Plus, Search } from "lucide-react";
-import {
-  createAdvertisement,
-  listMyAdvertisements,
-  updateAdvertisement,
-  updateAdvertisementStatus,
-  type Advertisement,
-  type AdvertisementInput,
-  type AdvertisementStatus,
-} from "@/services/advertisement.service";
+import type { Advertisement, AdvertisementInput, AdvertisementStatus } from "@/types/advertisement.type";
 import { safeHttpUrl } from "@/utils/url.util";
 import { useLatestRequest } from "@/hooks/useLatestRequest";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 const emptyForm = {
   name: "",
@@ -32,6 +25,7 @@ const statusNames: Record<AdvertisementStatus, string> = {
 };
 
 export default function EnterpriseAdsPage() {
+  const apiOperations = useServiceOperations();
   const [ads, setAds] = useState<Advertisement[]>([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<AdvertisementStatus | "ALL">("ALL");
@@ -46,7 +40,7 @@ export default function EnterpriseAdsPage() {
   const load = useCallback(async () => {
     const signal = beginRequest();
     try {
-      const page = await listMyAdvertisements(signal);
+      const page = await apiOperations.advertisements.listMyAdvertisements(signal);
       if (signal.aborted) return;
       setAds(page.content);
       setError("");
@@ -60,13 +54,14 @@ export default function EnterpriseAdsPage() {
     } finally {
       if (!signal.aborted) setLoading(false);
     }
-  }, [beginRequest]);
+  }, [beginRequest, apiOperations.advertisements]);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => void load(), 0);
     return () => window.clearTimeout(timeoutId);
   }, [load]);
 
+  // A filtragem depende apenas dos anúncios e do termo digitado.
   const filtered = useMemo(
     () =>
       ads.filter(
@@ -111,8 +106,8 @@ export default function EnterpriseAdsPage() {
       endDate: form.endDate || undefined,
     };
     try {
-      if (editing) await updateAdvertisement(editing, input);
-      else await createAdvertisement(input);
+      if (editing) await apiOperations.advertisements.updateAdvertisement(editing, input);
+      else await apiOperations.advertisements.createAdvertisement(input);
       setFormOpen(false);
       await load();
     } catch (reason) {
@@ -132,7 +127,7 @@ export default function EnterpriseAdsPage() {
   ) => {
     setError("");
     try {
-      await updateAdvertisementStatus(ad.id, status);
+      await apiOperations.advertisements.updateAdvertisementStatus(ad.id, status);
       await load();
     } catch (reason) {
       setError(
@@ -363,7 +358,11 @@ export default function EnterpriseAdsPage() {
             size={16}
             className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
           />
+          <label htmlFor="enterprise-ads-search" className="sr-only">
+            Buscar anúncio ou categoria
+          </label>
           <input
+            id="enterprise-ads-search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar anúncio ou categoria"

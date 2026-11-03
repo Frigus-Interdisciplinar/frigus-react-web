@@ -40,3 +40,9 @@ export interface GroupInvitation {
   acceptedAt?: string;
   revokedAt?: string;
 }
+
+export interface CommercialTeam {
+  groupId: string;
+  employees: Employee[];
+  invitations: GroupInvitation[];
+}

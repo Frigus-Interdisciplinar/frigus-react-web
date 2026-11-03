@@ -1,14 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import {
-  listNotifications,
-  markAllNotificationsRead,
-  markNotificationRead,
-} from "@/services/notification.service";
-import {
-  getUserPreferences,
-  updateUserPreferences,
-} from "@/services/preferences.service";
+
+
 import type {
   ApiNotification,
   UserPreferences,
@@ -16,6 +9,7 @@ import type {
 import { Clock, ShoppingBasket, TrendingUp, CheckCircle } from "lucide-react";
 import Badge from "@/components/Badge";
 import { SkeletonRows } from "@/components/LoadingSkeleton";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 type NotificationItem = {
   id: string;
@@ -51,6 +45,7 @@ function mapNotification(item: ApiNotification): NotificationItem {
 }
 
 export default function NotificationsPage() {
+  const apiOperations = useServiceOperations();
   const [searchParams] = useSearchParams();
   const emptyPreview = searchParams.get("alias") === "notificacoes-limpa";
   const [filter, setFilter] = useState<
@@ -72,8 +67,8 @@ export default function NotificationsPage() {
     let active = true;
     const controller = new AbortController();
     void Promise.all([
-      emptyPreview ? Promise.resolve([]) : listNotifications(controller.signal),
-      getUserPreferences(controller.signal),
+      emptyPreview ? Promise.resolve([]) : apiOperations.notifications.listNotifications(controller.signal),
+      apiOperations.preferences.getUserPreferences(controller.signal),
     ])
       .then(([items, savedPreferences]) => {
         if (!active) return;
@@ -94,12 +89,12 @@ export default function NotificationsPage() {
       active = false;
       controller.abort();
     };
-  }, [emptyPreview]);
+  }, [emptyPreview, apiOperations.notifications, apiOperations.preferences]);
 
   const savePreferences = async () => {
     setSavingPreferences(true);
     try {
-      await updateUserPreferences(preferences);
+      await apiOperations.preferences.updateUserPreferences(preferences);
       setFeedback("Preferências salvas.");
     } catch (error) {
       setLoadError(
@@ -114,7 +109,7 @@ export default function NotificationsPage() {
 
   const markAllRead = async () => {
     try {
-      await markAllNotificationsRead();
+      await apiOperations.notifications.markAllNotificationsRead();
       setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
     } catch (error) {
       setLoadError(
@@ -127,7 +122,7 @@ export default function NotificationsPage() {
 
   const markRead = async (id: string) => {
     try {
-      await markNotificationRead(id);
+      await apiOperations.notifications.markNotificationRead(id);
       setNotifications((prev) =>
         prev.map((item) =>
           item.id === id ? { ...item, unread: false } : item,

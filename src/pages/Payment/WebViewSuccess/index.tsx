@@ -3,12 +3,9 @@ import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Check, Clock3, X } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import Button from "@/components/Button";
-import {
-  getTransaction,
-  type Transaction,
-} from "@/services/transaction.service";
-import { finishPlanSelection, listPlans } from "@/services/plan.service";
-import { refreshSession } from "@/services/auth.service";
+import type { Transaction } from "@/types/transaction.type";
+
+
 import { useAbortableAsync } from "@/hooks/useAbortableAsync";
 import { useLatestRequest } from "@/hooks/useLatestRequest";
 import { useStore } from "@/store/store";
@@ -17,6 +14,7 @@ import {
   getAccountHome,
   getPlansPath,
 } from "@/utils/plan.util";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 export default function WebViewSuccess() {
   const [searchParams] = useSearchParams();
@@ -24,6 +22,7 @@ export default function WebViewSuccess() {
 }
 
 function TransactionStatusContent() {
+  const apiOperations = useServiceOperations();
   const [searchParams] = useSearchParams();
   const transactionId = searchParams.get("transactionId");
   const navigate = useNavigate();
@@ -35,7 +34,7 @@ function TransactionStatusContent() {
   const [error, setError] = useState(
     transactionId ? "" : "Não encontramos uma transação para acompanhar.",
   );
-  const { data: plans } = useAbortableAsync(listPlans);
+  const { data: plans } = useAbortableAsync(apiOperations.plans.listPlans);
   const beginRequest = useLatestRequest();
 
   useEffect(() => {
@@ -44,7 +43,7 @@ function TransactionStatusContent() {
     let timer: ReturnType<typeof setTimeout> | undefined;
     const refresh = async () => {
       try {
-        const current = await getTransaction(transactionId, controller.signal);
+        const current = await apiOperations.transactions.getTransaction(transactionId, controller.signal);
         if (controller.signal.aborted) return;
         setTransaction(current);
         setLoading(false);
@@ -66,7 +65,7 @@ function TransactionStatusContent() {
       controller.abort();
       clearTimeout(timer);
     };
-  }, [transactionId]);
+  }, [transactionId, apiOperations.transactions]);
 
   const approved = transaction?.status === "APPROVED";
   const rejected =
@@ -83,7 +82,7 @@ function TransactionStatusContent() {
     setEntering(true);
     setError("");
     try {
-      const updatedUser = await finishPlanSelection(signal);
+      const updatedUser = await apiOperations.plans.finishPlanSelection(signal);
       if (signal.aborted) return;
       saveUser(updatedUser);
       const bridge = (
@@ -118,7 +117,7 @@ function TransactionStatusContent() {
     setEntering(true);
     setError("");
     try {
-      const session = await refreshSession(signal);
+      const session = await apiOperations.auth.refreshSession(signal);
       if (signal.aborted) return;
       saveUser(session.user);
       navigate(getPlansPath(session.user.accountType), { replace: true });

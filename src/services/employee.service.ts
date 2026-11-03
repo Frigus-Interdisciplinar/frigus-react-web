@@ -4,7 +4,6 @@ import { validateForm } from "@/utils/validation.util";
 import { employeeInvitationSchema } from "@/schemas/commercial.schema";
 import type {
   CommercialMemberRole,
-  Employee,
   GroupInvitation,
 } from "@/types/commercial.type";
 import {
@@ -14,11 +13,8 @@ import {
 } from "@/schemas/api-response.schema";
 import { z } from "zod";
 
-export interface CommercialTeam {
-  groupId: string;
-  employees: Employee[];
-  invitations: GroupInvitation[];
-}
+import type { CommercialTeam } from "@/types/commercial.type";
+export type { CommercialTeam } from "@/types/commercial.type";
 
 export function getCommercialTeam(
   signal?: AbortSignal,

@@ -36,3 +36,43 @@ export interface AdvertisementPage {
   totalElements: number;
   totalPages: number;
 }
+
+export interface AdvertisementAnalyticsCampaign {
+  id: string;
+  name: string;
+  productName: string;
+  category: string;
+  status: AdvertisementStatus;
+  startDate: string | null;
+  endDate: string | null;
+  cumulativeImpressions: number;
+  cumulativeClicks: number;
+  clickThroughRatePercent: number;
+}
+
+export interface MonthlyAdvertisementAnalytics {
+  month: string;
+  metricBasis: string;
+  campaignCount: number;
+  activeCampaignCount: number;
+  cumulativeImpressions: number;
+  cumulativeClicks: number;
+  clickThroughRatePercent: number;
+  campaigns: AdvertisementAnalyticsCampaign[];
+}
+
+export interface AdvertisementAudienceAnalytics {
+  campaignCount: number;
+  activeCampaignCount: number;
+  cumulativeImpressions: number;
+  cumulativeClicks: number;
+  clickThroughRatePercent: number;
+  categories: Array<{
+    category: string;
+    campaignCount: number;
+    cumulativeImpressions: number;
+    cumulativeClicks: number;
+    impressionSharePercent: number;
+  }>;
+  campaigns: AdvertisementAnalyticsCampaign[];
+}

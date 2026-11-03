@@ -1,25 +1,16 @@
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Check, Plus, Trash2 } from "lucide-react";
 import { AddItemModal } from "@/components/Modal";
-import { getInventoryContext } from "@/services/inventory.service";
-import {
-  addShoppingListItem,
-  clearPurchasedShoppingListItems,
-  completeShoppingList,
-  createShoppingList,
-  findOpenShoppingList,
-  getShoppingList,
-  listGroupProducts,
-  removeShoppingListItem,
-  setShoppingListItemStatus,
-} from "@/services/shopping-list.service";
+
+
 import type {
   ShoppingList,
   ShoppingListItem as Item,
 } from "@/types/shopping-list.type";
-import type { Product } from "@/services/inventory.service";
+import type { Product } from "@/types/inventory.type";
 import { formatUnitOfMeasure } from "@/utils/unit.util";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 const categories: Record<string, string> = {
   FRUIT: "Frutas",
@@ -32,6 +23,7 @@ const categories: Record<string, string> = {
   PERSONAL_HYGIENE: "Higiene pessoal",
 };
 export default function CommercialShoppingListPage() {
+  const apiOperations = useServiceOperations();
   const [list, setList] = useState<ShoppingList>();
   const [catalog, setCatalog] = useState<Product[]>([]);
   const [activeTab, setActiveTab] = useState<"PENDING" | "PURCHASED">(
@@ -64,32 +56,32 @@ export default function CommercialShoppingListPage() {
     if (nextTab?.id === "commercial-tab-purchased") setActiveTab("PURCHASED");
   };
 
-  const loadItems = async (id: string, signal?: AbortSignal) => {
-    const list = await getShoppingList(id, signal);
+  const loadItems = useCallback(async (id: string, signal?: AbortSignal) => {
+    const list = await apiOperations.shoppingLists.getShoppingList(id, signal);
     if (!signal?.aborted) setList(list);
-  };
+  }, [apiOperations.shoppingLists]);
 
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
     void (async () => {
       try {
-        const context = await getInventoryContext(controller.signal);
+        const context = await apiOperations.inventory.getInventoryContext(controller.signal);
         const stock = context.stocks[0];
         if (!stock)
           throw new Error(
             "Cadastre um estoque antes de criar uma lista de compras.",
           );
         const open =
-          (await findOpenShoppingList(stock.id, controller.signal)) ??
-          (await createShoppingList(
+          (await apiOperations.shoppingLists.findOpenShoppingList(stock.id, controller.signal)) ??
+          (await apiOperations.shoppingLists.createShoppingList(
             stock.id,
             "Compras do estabelecimento",
             controller.signal,
           ));
         if (!active) return;
         await loadItems(open.id, controller.signal);
-        const catalog = await listGroupProducts(
+        const catalog = await apiOperations.shoppingLists.listGroupProducts(
           context.groupId,
           controller.signal,
         );
@@ -109,12 +101,12 @@ export default function CommercialShoppingListPage() {
       active = false;
       controller.abort();
     };
-  }, []);
+  }, [apiOperations.inventory, apiOperations.shoppingLists, loadItems]);
 
   const changeItem = async (item: Item) => {
     if (!list) return;
     try {
-      await setShoppingListItemStatus(
+      await apiOperations.shoppingLists.setShoppingListItemStatus(
         list.id,
         item.id,
         item.status === "PURCHASED" ? "PENDING" : "PURCHASED",
@@ -128,7 +120,7 @@ export default function CommercialShoppingListPage() {
   const removeItem = async (id: number) => {
     if (!list) return;
     try {
-      await removeShoppingListItem(list.id, id);
+      await apiOperations.shoppingLists.removeShoppingListItem(list.id, id);
       await loadItems(list.id);
     } catch {
       setError("Não foi possível remover este item.");
@@ -138,7 +130,7 @@ export default function CommercialShoppingListPage() {
   const addItems = async (ids: string[]) => {
     if (!list) return;
     try {
-      for (const id of ids) await addShoppingListItem(list.id, Number(id), 1);
+      for (const id of ids) await apiOperations.shoppingLists.addShoppingListItem(list.id, Number(id), 1);
       await loadItems(list.id);
     } catch {
       setError("Não foi possível adicionar os itens selecionados.");
@@ -148,7 +140,7 @@ export default function CommercialShoppingListPage() {
   const clearPurchased = async () => {
     if (!list) return;
     try {
-      await clearPurchasedShoppingListItems(list.id);
+      await apiOperations.shoppingLists.clearPurchasedShoppingListItems(list.id);
       await loadItems(list.id);
     } catch {
       setError("Não foi possível limpar os itens comprados.");
@@ -158,8 +150,8 @@ export default function CommercialShoppingListPage() {
   const completeList = async () => {
     if (!list) return;
     try {
-      await completeShoppingList(list.id);
-      const next = await createShoppingList(
+      await apiOperations.shoppingLists.completeShoppingList(list.id);
+      const next = await apiOperations.shoppingLists.createShoppingList(
         list.stockId,
         "Compras do estabelecimento",
       );

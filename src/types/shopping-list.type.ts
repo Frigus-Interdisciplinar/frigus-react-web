@@ -30,3 +30,11 @@ export interface ShoppingListSuggestion {
   suggestedQuantity: number;
   reason: string;
 }
+
+export type ShoppingListPreviewItem = {
+  id: number;
+  name: string;
+  quantity: number;
+  unit: string;
+  purchased: boolean;
+};

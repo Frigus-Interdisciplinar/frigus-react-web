@@ -6,15 +6,7 @@ import {
   CommercialAddBatchModal,
   CommercialFilterStockModal,
 } from "@/components/CommercialModals";
-import {
-  createProduct,
-  createStock,
-  createStockProduct,
-  getInventoryContext,
-  listStockProducts,
-  updateStockProduct,
-  type StockProduct,
-} from "@/services/inventory.service";
+import type { StockProduct } from "@/types/inventory.type";
 import type { CommercialBatchInput } from "@/components/CommercialModals";
 import { safeHttpUrl } from "@/utils/url.util";
 import {
@@ -22,6 +14,7 @@ import {
   formatUnitOfMeasure,
 } from "@/utils/unit.util";
 import { useLatestRequest } from "@/hooks/useLatestRequest";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 interface BatchItem {
   id: string;
@@ -39,6 +32,7 @@ interface BatchItem {
 }
 
 export default function CommercialStockPage() {
+  const apiOperations = useServiceOperations();
   const [batches, setBatches] = useState<BatchItem[]>([]);
   const [inventory, setInventory] = useState<{
     groupId: string;
@@ -61,7 +55,7 @@ export default function CommercialStockPage() {
   const loadStock = useCallback(async () => {
     const signal = beginRequest();
     try {
-      const context = await getInventoryContext(signal);
+      const context = await apiOperations.inventory.getInventoryContext(signal);
       if (signal.aborted) return;
       setLoadError("");
       setInventory(context);
@@ -70,7 +64,7 @@ export default function CommercialStockPage() {
         setBatches([]);
         return;
       }
-      const products = await listStockProducts(activeStock.id, signal);
+      const products = await apiOperations.inventory.listStockProducts(activeStock.id, signal);
       if (signal.aborted) return;
       setBatches(
         products.map((item: StockProduct) => {
@@ -121,7 +115,7 @@ export default function CommercialStockPage() {
     } finally {
       if (!signal.aborted) setLoading(false);
     }
-  }, [beginRequest]);
+  }, [beginRequest, apiOperations.inventory]);
   useEffect(() => {
     const timeoutId = window.setTimeout(() => void loadStock(), 0);
     return () => window.clearTimeout(timeoutId);
@@ -131,7 +125,7 @@ export default function CommercialStockPage() {
     if (!inventory) throw new Error("Grupo indisponível");
     let targetStock = inventory.stocks[0];
     if (!targetStock) {
-      const created = await createStock(inventory.groupId, "Estoque comercial");
+      const created = await apiOperations.inventory.createStock(inventory.groupId, "Estoque comercial");
       targetStock = created;
       setInventory({ ...inventory, stocks: [created] });
     }
@@ -157,14 +151,14 @@ export default function CommercialStockPage() {
       cx: "PACKAGE",
       pct: "PACKAGE",
     };
-    const product = await createProduct(inventory.groupId, {
+    const product = await apiOperations.inventory.createProduct(inventory.groupId, {
       name: input.product.trim(),
       category: categories[input.category] ?? "GRAIN",
       storagePlace: places[input.location] ?? "PANTRY",
       unitPrice: input.unitCost,
       unitOfMeasure: units[input.unit] ?? "UNIT",
     });
-    await createStockProduct({
+    await apiOperations.inventory.createStockProduct({
       productId: product.id,
       stockId: targetStock.id,
       quantity: input.quantity,
@@ -179,7 +173,7 @@ export default function CommercialStockPage() {
     setDecrementingBatchId(batch.id);
     setLoadError("");
     try {
-      await updateStockProduct(Number(batch.id), { quantity: batch.quantityAmount - 1 });
+      await apiOperations.inventory.updateStockProduct(Number(batch.id), { quantity: batch.quantityAmount - 1 });
       await loadStock();
     } catch (error) {
       setLoadError(error instanceof Error ? error.message : "Não foi possível diminuir a quantidade.");
@@ -383,7 +377,11 @@ export default function CommercialStockPage() {
               size={16}
               className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-400"
             />
+            <label htmlFor="commercial-stock-search" className="sr-only">
+              Buscar produto, lote ou fornecedor
+            </label>
             <input
+              id="commercial-stock-search"
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -412,7 +410,11 @@ export default function CommercialStockPage() {
               />
             </button>
 
+            <label htmlFor="commercial-stock-status" className="sr-only">
+              Filtrar por situação
+            </label>
             <select
+              id="commercial-stock-status"
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
               className="px-3.5 py-2 rounded-xl border border-gray-200 dark:border-[#343941] text-xs font-semibold text-gray-600 dark:text-neutral-300 hover:bg-gray-50 dark:hover:bg-[#252A32] transition-colors bg-white dark:bg-[#252A32] cursor-pointer"

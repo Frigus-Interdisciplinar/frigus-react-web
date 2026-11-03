@@ -5,7 +5,8 @@ import AuthLayout from "@/components/AuthLayout";
 import Input from "@/components/Input";
 import Button from "@/components/Button";
 import ThemeToggle from "@/components/ThemeToggle";
-import { resetPassword } from "@/services/auth.service";
+
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 type State = {
   password: string;
@@ -45,6 +46,7 @@ function reducer(state: State, action: Action): State {
 }
 
 export default function ForgotPasswordStep3() {
+  const apiOperations = useServiceOperations();
   const [state, dispatch] = useReducer(reducer, initialState);
   const { password, confirmPassword, loading, success, error } = state;
   const navigate = useNavigate();
@@ -81,7 +83,7 @@ export default function ForgotPasswordStep3() {
 
     dispatch({ type: "loading" });
     try {
-      await resetPassword({
+      await apiOperations.auth.resetPassword({
         email: recovery!.email!,
         code: recovery!.code!,
         newPassword: password,

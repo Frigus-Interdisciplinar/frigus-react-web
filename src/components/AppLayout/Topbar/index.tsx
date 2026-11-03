@@ -16,10 +16,11 @@ import { Link, useNavigate } from "react-router-dom";
 import QuickNotificationsPopover from "./QuickNotificationsPopover";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useStore } from "@/store/store";
-import { logout as endSession } from "@/services/auth.service";
+
 import type { SectionString, TopbarProps } from "@/types/component-props.type";
 export type { TopbarProps } from "@/types/component-props.type";
 import MobileNavigation from "@/components/MobileNavigation";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 const mobileNavigationItems = [
   { label: "Visão geral", href: "/home", icon: LayoutDashboard },
@@ -38,10 +39,12 @@ export default function Topbar({
   hasNotificationAlert = true,
   activeSection,
 }: TopbarProps) {
+  const apiOperations = useServiceOperations();
   const [isQuickNotificationsOpen, setIsQuickNotificationsOpen] =
     useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement>(null);
+  const accountMenuContentRef = useRef<HTMLDivElement>(null);
   const accountButtonRef = useRef<HTMLButtonElement>(null);
   const navigate = useNavigate();
   const user = useStore((state) => state.user);
@@ -92,8 +95,15 @@ export default function Topbar({
     };
   }, []);
 
+  useEffect(() => {
+    if (!isAccountMenuOpen) return;
+    accountMenuContentRef.current
+      ?.querySelector<HTMLElement>("a[href], button")
+      ?.focus();
+  }, [isAccountMenuOpen]);
+
   const handleLogout = () => {
-    void endSession().catch(() => undefined);
+    void apiOperations.auth.logout().catch(() => undefined);
     clearSession();
     navigate("/login", { replace: true });
   };
@@ -160,6 +170,7 @@ export default function Topbar({
           </button>
           {isAccountMenuOpen && (
             <div
+              ref={accountMenuContentRef}
               id="account-menu"
               className="absolute right-0 top-12 z-50 w-56 rounded-xl border border-gray-200 bg-white p-2 shadow-xl dark:border-[#343941] dark:bg-[#1C1E22]"
             >

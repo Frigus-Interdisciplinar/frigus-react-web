@@ -1,4 +1,4 @@
-import type { LoginInput, RegisterInput } from "@/schemas/auth.schema";
+import type { LoginInput, RegisterInput } from "@/types/auth.type";
 import type {
   LoginResponseDto,
   PasswordRecoveryRequest,

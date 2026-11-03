@@ -9,15 +9,8 @@ import { Skeleton } from "@/components/LoadingSkeleton";
 import { useLatestRequest } from "@/hooks/useLatestRequest";
 import { safeHttpUrl } from "@/utils/url.util";
 import { formatUnitOfMeasure } from "@/utils/unit.util";
-import {
-  createProduct,
-  createStockProduct,
-  getInventoryContext,
-  listStockProducts,
-  updateStockProduct,
-  type AccountInventoryContext,
-  type StockProduct,
-} from "@/services/inventory.service";
+import type { AccountInventoryContext, StockProduct } from "@/types/inventory.type";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 type StockItem = {
   id: number;
@@ -92,6 +85,7 @@ function mapStockItem(row: StockProduct): StockItem {
 }
 
 export default function StockPage() {
+  const apiOperations = useServiceOperations();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [items, setItems] = useState<StockItem[]>([]);
@@ -123,13 +117,13 @@ export default function StockPage() {
     async (activeContext?: AccountInventoryContext) => {
       const signal = beginRequest();
       try {
-        const current = activeContext ?? (await getInventoryContext(signal));
+        const current = activeContext ?? (await apiOperations.inventory.getInventoryContext(signal));
         if (signal.aborted) return;
         setLoadError("");
         setContext(current);
         const stockId = current.stocks[0]?.id;
         const products = stockId
-          ? await listStockProducts(stockId, signal)
+          ? await apiOperations.inventory.listStockProducts(stockId, signal)
           : [];
         if (!signal.aborted) setItems(products.map(mapStockItem));
       } catch (error) {
@@ -143,7 +137,7 @@ export default function StockPage() {
         if (!signal.aborted) setLoading(false);
       }
     },
-    [beginRequest],
+    [beginRequest, apiOperations.inventory],
   );
 
   useEffect(() => {
@@ -172,11 +166,11 @@ export default function StockPage() {
   }, [items, loading, navigate, searchParams]);
 
   const handleAddFood = async (data: NewFoodData) => {
-    const current = context ?? (await getInventoryContext());
+    const current = context ?? (await apiOperations.inventory.getInventoryContext());
     const stockId = current.stocks[0]?.id;
     if (!stockId)
       throw new Error("Nenhum estoque ativo está disponível para esta conta.");
-    const product = await createProduct(current.groupId, {
+    const product = await apiOperations.inventory.createProduct(current.groupId, {
       name: data.name,
       category: data.category,
       storagePlace:
@@ -188,7 +182,7 @@ export default function StockPage() {
       unitPrice: data.unitPrice,
       unitOfMeasure: data.unitOfMeasure,
     });
-    await createStockProduct({
+    await apiOperations.inventory.createStockProduct({
       productId: product.id,
       stockId,
       quantity: data.quantity,
@@ -202,7 +196,7 @@ export default function StockPage() {
     setDecrementingItemId(item.id);
     setLoadError("");
     try {
-      await updateStockProduct(item.id, { quantity: item.amount - 1 });
+      await apiOperations.inventory.updateStockProduct(item.id, { quantity: item.amount - 1 });
       await loadStock(context ?? undefined);
     } catch (error) {
       setLoadError(error instanceof Error ? error.message : "Não foi possível diminuir a quantidade.");
@@ -310,7 +304,11 @@ export default function StockPage() {
                 size={16}
                 className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-neutral-400"
               />
+              <label htmlFor="domestic-stock-search" className="sr-only">
+                Buscar alimento
+              </label>
               <input
+                id="domestic-stock-search"
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -321,7 +319,11 @@ export default function StockPage() {
           </div>
 
           <div className="flex items-center justify-end gap-2 border-t border-gray-100 pt-3 dark:border-[#343941] flex-wrap">
+            <label htmlFor="domestic-stock-category" className="sr-only">
+              Filtrar por categoria
+            </label>
             <select
+              id="domestic-stock-category"
               aria-label="Filtrar por categoria"
               value={categoryFilter}
               onChange={(event) => setCategoryFilter(event.target.value)}
@@ -334,7 +336,11 @@ export default function StockPage() {
                 ),
               )}
             </select>
+            <label htmlFor="domestic-stock-expiration" className="sr-only">
+              Filtrar por validade
+            </label>
             <select
+              id="domestic-stock-expiration"
               aria-label="Filtrar por validade"
               value={expirationFilter}
               onChange={(event) => setExpirationFilter(event.target.value)}
@@ -349,7 +355,11 @@ export default function StockPage() {
                 <option key={option}>{option}</option>
               ))}
             </select>
+            <label htmlFor="domestic-stock-quantity" className="sr-only">
+              Filtrar por quantidade
+            </label>
             <select
+              id="domestic-stock-quantity"
               aria-label="Filtrar por quantidade"
               value={quantityFilter}
               onChange={(event) => setQuantityFilter(event.target.value)}

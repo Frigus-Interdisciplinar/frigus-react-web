@@ -1,4 +1,5 @@
 import { z } from "zod";
+export type { LoginInput, RegisterInput } from "@/types/auth.type";
 
 export const loginSchema = z.object({
   email: z
@@ -46,9 +47,6 @@ export const registerSchema = z.object({
     .transform((value) => value.split("-").reverse().join("/")),
   accountType: z.enum(["DOMESTIC", "COMMERCIAL", "BUSINESS"]),
 });
-
-export type LoginInput = z.infer<typeof loginSchema>;
-export type RegisterInput = z.infer<typeof registerSchema>;
 
 export const passwordRecoverySchema = z.object({
   email: z

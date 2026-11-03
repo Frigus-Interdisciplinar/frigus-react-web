@@ -1,12 +1,14 @@
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useEffect, useState } from "react";
 import { Download, Eye, MousePointerClick, Megaphone } from "lucide-react";
-import { getMonthlyAdvertisementAnalytics, type MonthlyAdvertisementAnalytics } from "@/services/advertisement.service";
+import type { MonthlyAdvertisementAnalytics } from "@/types/advertisement.type";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 const thisMonth = new Date().toISOString().slice(0, 7);
 const number = new Intl.NumberFormat("pt-BR");
 
 export default function EnterpriseReportPage() {
+  const apiOperations = useServiceOperations();
   const [month, setMonth] = useState(thisMonth);
   const [report, setReport] = useState<MonthlyAdvertisementAnalytics | null>(null);
   const [result, setResult] = useState<{ month: string; error?: string }>({ month: "" });
@@ -16,14 +18,14 @@ export default function EnterpriseReportPage() {
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
-    void getMonthlyAdvertisementAnalytics(month, controller.signal)
+    void apiOperations.advertisements.getMonthlyAdvertisementAnalytics(month, controller.signal)
       .then((data) => { if (active) { setReport(data); setResult({ month }); } })
       .catch((reason: unknown) => {
         if (active) setResult({ month, error: reason instanceof Error ? reason.message : "Não foi possível carregar o relatório." });
       })
       ;
     return () => { active = false; controller.abort(); };
-  }, [month]);
+  }, [month, apiOperations.advertisements]);
 
   const campaigns = report?.campaigns ?? [];
   const exportCsv = () => {

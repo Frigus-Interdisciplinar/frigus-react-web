@@ -14,9 +14,10 @@ import {
 import { CommercialNotificationsModal } from "@/components/CommercialModals";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useStore } from "@/store/store";
-import { logout as endSession } from "@/services/auth.service";
+
 import MobileNavigation from "@/components/MobileNavigation";
 import type { CommercialTopbarProps } from "@/types/component-props.type";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 export type { CommercialTopbarProps } from "@/types/component-props.type";
 
 const mobileNavigationItems = [
@@ -32,6 +33,7 @@ const mobileNavigationItems = [
 export default function CommercialTopbar({
   breadcrumb = "Área comercial    /    Estoque",
 }: CommercialTopbarProps) {
+  const apiOperations = useServiceOperations();
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement>(null);
@@ -47,7 +49,7 @@ export default function CommercialTopbar({
       .join("")
       .toUpperCase() ?? "";
   const handleLogout = () => {
-    void endSession().catch(() => undefined);
+    void apiOperations.auth.logout().catch(() => undefined);
     clearSession();
     navigate("/login", { replace: true });
   };

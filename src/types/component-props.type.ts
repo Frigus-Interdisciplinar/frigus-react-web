@@ -3,7 +3,7 @@ import type { LucideIcon } from "lucide-react";
 import type { AccountType } from "@/types/auth.type";
 
 export type InputProps = ComponentProps<"input"> & {
-  label?: string;
+  label: string;
   error?: string;
   helperText?: string;
   showPasswordToggle?: boolean;
@@ -37,7 +37,8 @@ export type BadgeProps = {
 };
 
 export type CheckboxProps = Omit<ComponentProps<"input">, "type"> & {
-  label?: ReactNode;
+  id: string;
+  label: ReactNode;
 };
 
 export type BrandLogoProps = {
@@ -83,6 +84,12 @@ export type AuthGuardProps = {
   accountType?: AccountType;
   allowPlanSelection?: boolean;
 };
+
+export type ProviderProps = { children: ReactNode };
+export type RecipeDetailsContentProps = { id?: string };
+export type ChatContentProps = { alias: string | null };
+export type FoodDetailsContentProps = { id?: string };
+export type BatchDetailsContentProps = { id?: string };
 
 export type AuthLayoutProps = {
   title: ReactNode;

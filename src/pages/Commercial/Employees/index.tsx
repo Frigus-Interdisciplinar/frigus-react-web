@@ -5,15 +5,12 @@ import {
   CommercialInviteEmployeeModal,
   CommercialManageAccessModal,
 } from "@/components/CommercialModals";
-import {
-  getCommercialTeam,
-  inviteCommercialEmployee,
-  listPendingInvitations,
-  updateCommercialMemberRole,
-} from "@/services/employee.service";
+
 import type { Employee, GroupInvitation } from "@/types/commercial.type";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 export default function CommercialEmployeesPage() {
+  const apiOperations = useServiceOperations();
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [isManageModalOpen, setIsManageModalOpen] = useState(false);
   const [groupId, setGroupId] = useState<string>();
@@ -30,7 +27,7 @@ export default function CommercialEmployeesPage() {
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
-    void getCommercialTeam(controller.signal)
+    void apiOperations.employees.getCommercialTeam(controller.signal)
       .then((team) => {
         if (!active) return;
         setGroupId(team.groupId);
@@ -47,7 +44,7 @@ export default function CommercialEmployeesPage() {
       active = false;
       controller.abort();
     };
-  }, []);
+  }, [apiOperations.employees]);
 
   const inviteEmployee = async (data: {
     name: string;
@@ -56,8 +53,8 @@ export default function CommercialEmployeesPage() {
   }) => {
     if (!groupId) throw new Error("Grupo comercial indisponível");
     try {
-      await inviteCommercialEmployee(groupId, data);
-      setInvitations(await listPendingInvitations(groupId));
+      await apiOperations.employees.inviteCommercialEmployee(groupId, data);
+      setInvitations(await apiOperations.employees.listPendingInvitations(groupId));
       setActionMessage({
         type: "success",
         text: "Convite enviado com sucesso.",
@@ -76,7 +73,7 @@ export default function CommercialEmployeesPage() {
 
   const saveRole = async (role: "EDITOR" | "VIEWER") => {
     if (!groupId || !selectedEmployee) throw new Error("Membro indisponível");
-    await updateCommercialMemberRole(groupId, selectedEmployee.userId, role);
+    await apiOperations.employees.updateCommercialMemberRole(groupId, selectedEmployee.userId, role);
     setEmployees((current) =>
       current.map((member) =>
         member.userId === selectedEmployee.userId

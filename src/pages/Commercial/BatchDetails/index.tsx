@@ -3,26 +3,22 @@ import { useLatestRequest } from "@/hooks/useLatestRequest";
 import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ArrowDownLeft, ArrowUpRight, Info } from "lucide-react";
-import {
-  getStockProduct,
-  listStockProductMovements,
-  recordMovement,
-  updateStockProduct,
-  type StockMovement,
-  type StockProduct,
-} from "@/services/inventory.service";
+import type { StockMovement, StockProduct } from "@/types/inventory.type";
 import {
   formatProductCategory,
   formatStoragePlace,
   formatUnitOfMeasure,
 } from "@/utils/unit.util";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
+import type { BatchDetailsContentProps } from "@/types/component-props.type";
 
 export default function CommercialBatchDetailsPage() {
   const { id } = useParams();
   return <BatchDetailsContent key={id} id={id} />;
 }
 
-function BatchDetailsContent({ id }: { id?: string }) {
+function BatchDetailsContent({ id }: BatchDetailsContentProps) {
+  const apiOperations = useServiceOperations();
   const validId =
     id !== undefined &&
     /^[1-9]\d*$/.test(id) &&
@@ -49,8 +45,8 @@ function BatchDetailsContent({ id }: { id?: string }) {
     try {
       const stockProductId = Number(id);
       const [loaded, history] = await Promise.all([
-        getStockProduct(stockProductId, signal),
-        listStockProductMovements(stockProductId, signal),
+        apiOperations.inventory.getStockProduct(stockProductId, signal),
+        apiOperations.inventory.listStockProductMovements(stockProductId, signal),
       ]);
       if (signal.aborted) return;
       setItem(loaded);
@@ -70,7 +66,7 @@ function BatchDetailsContent({ id }: { id?: string }) {
     } finally {
       if (!signal.aborted) setLoading(false);
     }
-  }, [beginRequest, id, validId]);
+  }, [beginRequest, id, validId, apiOperations.inventory]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -82,7 +78,7 @@ function BatchDetailsContent({ id }: { id?: string }) {
     setSaving(true);
     setError("");
     try {
-      await updateStockProduct(item.id, {
+      await apiOperations.inventory.updateStockProduct(item.id, {
         minimalQuantity: Number(form.minimum),
         expireDate: form.expiry,
       });
@@ -105,7 +101,7 @@ function BatchDetailsContent({ id }: { id?: string }) {
     setSaving(true);
     setError("");
     try {
-      await recordMovement(
+      await apiOperations.inventory.recordMovement(
         item.id,
         form.movementType,
         Number(form.movementQuantity),
@@ -288,7 +284,11 @@ function BatchDetailsContent({ id }: { id?: string }) {
             >
               <h3 className="text-sm font-bold">Registrar movimentação</h3>
               <div className="flex gap-2">
+                <label htmlFor="batch-movement-type" className="sr-only">
+                  Tipo de movimentação
+                </label>
                 <select
+                  id="batch-movement-type"
                   value={form.movementType}
                   onChange={(event) =>
                     setForm((current) => ({
@@ -301,7 +301,11 @@ function BatchDetailsContent({ id }: { id?: string }) {
                   <option value="OUT">Saída</option>
                   <option value="IN">Entrada</option>
                 </select>
+                <label htmlFor="batch-movement-quantity" className="sr-only">
+                  Quantidade movimentada
+                </label>
                 <input
+                  id="batch-movement-quantity"
                   aria-label="Quantidade movimentada"
                   type="number"
                   min="0.01"

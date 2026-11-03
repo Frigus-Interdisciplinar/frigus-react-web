@@ -2,13 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { User, Lock, AlertOctagon, Check } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { Link } from "react-router-dom";
-import {
-  getUserPreferences,
-  updateUserPreferences,
-} from "@/services/preferences.service";
+
 import type { UserPreferences } from "@/types/notification.type";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 export default function SettingsPage() {
+  const apiOperations = useServiceOperations();
   const [preferences, setPreferences] = useState<UserPreferences>({
     expirationAlertsEnabled: true,
     lowStockAlertsEnabled: true,
@@ -27,7 +26,7 @@ export default function SettingsPage() {
   const saveController = useRef<AbortController | null>(null);
   useEffect(() => {
     const controller = new AbortController();
-    void getUserPreferences(controller.signal)
+    void apiOperations.preferences.getUserPreferences(controller.signal)
       .then((saved) => {
         if (!controller.signal.aborted) setPreferences(saved);
       })
@@ -47,7 +46,7 @@ export default function SettingsPage() {
       saveController.current?.abort();
       clearTimeout(feedbackTimer.current);
     };
-  }, []);
+  }, [apiOperations.preferences]);
 
   const handleSave = async () => {
     if (loading || saveController.current) return;
@@ -58,7 +57,7 @@ export default function SettingsPage() {
     setSaving(true);
     setError("");
     try {
-      await updateUserPreferences(
+      await apiOperations.preferences.updateUserPreferences(
         { ...preferences, theme: theme === "dark" ? "DARK" : "LIGHT" },
         controller.signal,
       );

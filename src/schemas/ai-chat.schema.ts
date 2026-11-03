@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { optionalText, positiveId, requiredText } from "./common.schema";
+import type { AiChatResponse } from "@/types/ai-chat.type";
+export type { AiChatResponse } from "@/types/ai-chat.type";
 
 export const aiChatInputSchema = z.object({
   message: requiredText("Mensagem", 4000),
@@ -7,7 +9,7 @@ export const aiChatInputSchema = z.object({
   sessionId: optionalText(200),
 });
 
-export const aiChatResponseSchema = z.object({
+export const aiChatResponseSchema: z.ZodType<AiChatResponse> = z.object({
   sessionId: z.string().nullable().optional(),
   chatMessage: z.string().nullable().optional(),
   recipeId: z.number().nullable().optional(),
@@ -17,5 +19,3 @@ export const aiChatResponseSchema = z.object({
   matchedIngredients: z.number().nullable().optional(),
   missingIngredients: z.number().nullable().optional(),
 });
-
-export type AiChatResponse = z.infer<typeof aiChatResponseSchema>;

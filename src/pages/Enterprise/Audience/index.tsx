@@ -1,11 +1,13 @@
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useEffect, useState } from "react";
 import { Eye, MousePointerClick, Megaphone } from "lucide-react";
-import { getAdvertisementAudienceAnalytics, type AdvertisementAudienceAnalytics } from "@/services/advertisement.service";
+import type { AdvertisementAudienceAnalytics } from "@/types/advertisement.type";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 const number = new Intl.NumberFormat("pt-BR");
 
 export default function EnterpriseAudiencePage() {
+  const apiOperations = useServiceOperations();
   const [analytics, setAnalytics] = useState<AdvertisementAudienceAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -13,14 +15,14 @@ export default function EnterpriseAudiencePage() {
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
-    void getAdvertisementAudienceAnalytics(controller.signal)
+    void apiOperations.advertisements.getAdvertisementAudienceAnalytics(controller.signal)
       .then((data) => { if (active) setAnalytics(data); })
       .catch((reason: unknown) => {
         if (active) setError(reason instanceof Error ? reason.message : "Não foi possível carregar os dados de público.");
       })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; controller.abort(); };
-  }, []);
+  }, [apiOperations.advertisements]);
 
   const categories = analytics?.categories ?? [];
   const campaigns = analytics?.campaigns ?? [];

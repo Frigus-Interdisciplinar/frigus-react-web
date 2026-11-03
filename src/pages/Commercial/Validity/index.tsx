@@ -6,14 +6,12 @@ import {
 } from "@/utils/unit.util";
 import { AlertOctagon, AlertCircle } from "lucide-react";
 import { CommercialRegisterWasteModal } from "@/components/CommercialModals";
-import { createDiscard } from "@/services/discard.service";
-import {
-  getInventoryContext,
-  listStockProducts,
-  type StockProduct,
-} from "@/services/inventory.service";
+
+import type { StockProduct } from "@/types/inventory.type";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 export default function CommercialValidityPage() {
+  const apiOperations = useServiceOperations();
   const [isWasteModalOpen, setIsWasteModalOpen] = useState(false);
   const [products, setProducts] = useState<StockProduct[]>([]);
   const [error, setError] = useState("");
@@ -21,10 +19,10 @@ export default function CommercialValidityPage() {
   const loadStock = useCallback(async () => {
     const signal = beginRequest();
     try {
-      const context = await getInventoryContext(signal);
+      const context = await apiOperations.inventory.getInventoryContext(signal);
       const products = (
         await Promise.all(
-          context.stocks.map((stock) => listStockProducts(stock.id, signal)),
+          context.stocks.map((stock) => apiOperations.inventory.listStockProducts(stock.id, signal)),
         )
       ).flat();
       if (signal.aborted) return;
@@ -36,7 +34,7 @@ export default function CommercialValidityPage() {
           "Não foi possível carregar validades e quantidades do estoque.",
         );
     }
-  }, [beginRequest]);
+  }, [beginRequest, apiOperations.inventory]);
   useEffect(() => {
     const timeoutId = window.setTimeout(() => void loadStock(), 0);
     return () => window.clearTimeout(timeoutId);
@@ -89,7 +87,7 @@ export default function CommercialValidityPage() {
     quantity: number;
     reason: string;
   }) => {
-    await createDiscard(input);
+    await apiOperations.discards.createDiscard(input);
     await loadStock();
   };
 
