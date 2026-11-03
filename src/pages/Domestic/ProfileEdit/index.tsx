@@ -7,6 +7,7 @@ import {
   updateProfilePicture,
   getProfile,
 } from "@/services/profile.service";
+import { profileUpdateSchema } from "@/schemas/profile.schema";
 
 const MAX_PHOTO_SIZE_BYTES = 5 * 1024 * 1024;
 const allowedPhotoTypes = ["image/png", "image/jpeg"];
@@ -22,6 +23,7 @@ export default function ProfileEditPage() {
   const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<{ name?: string; birthDate?: string }>({});
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
@@ -67,14 +69,27 @@ export default function ProfileEditPage() {
   const handleSaveProfile = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!user || saving || uploadingPhoto) return;
-    setSaving(true);
     setError("");
     setSaved(false);
+    const validation = profileUpdateSchema.safeParse({
+      name: name.trim(),
+      ...(birthDate ? { birthDate } : {}),
+    });
+    if (!validation.success) {
+      const nextErrors: typeof fieldErrors = {};
+      for (const issue of validation.error.issues) {
+        const field = issue.path[0];
+        if ((field === "name" || field === "birthDate") && !nextErrors[field])
+          nextErrors[field] = issue.message;
+      }
+      setFieldErrors(nextErrors);
+      setError(validation.error.issues[0]?.message ?? "Confira os dados informados.");
+      return;
+    }
+    setFieldErrors({});
+    setSaving(true);
     try {
-      const updatedUser = await updateProfile({
-        name: name.trim(),
-        ...(birthDate.trim() ? { birthDate: birthDate.trim() } : {}),
-      });
+      const updatedUser = await updateProfile(validation.data);
       setUser(updatedUser);
       setName(updatedUser.name);
       setBirthDate(updatedUser.birthDate ?? "");
@@ -202,20 +217,25 @@ export default function ProfileEditPage() {
             required
             minLength={1}
             maxLength={120}
+            aria-invalid={Boolean(fieldErrors.name)}
+            aria-describedby={fieldErrors.name ? "profile-name-error" : undefined}
             value={name}
-            onChange={(event) => { setName(event.currentTarget.value); setSaved(false); }}
+            onChange={(event) => { setName(event.currentTarget.value); setSaved(false); setFieldErrors((current) => ({ ...current, name: undefined })); }}
             className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-frigus-navy outline-none focus:border-frigus-primary focus:ring-2 focus:ring-frigus-primary/15 dark:border-[#343941] dark:bg-[#171819] dark:text-white"
           />
+          {fieldErrors.name && <span id="profile-name-error" className="text-xs text-red-600 dark:text-red-300">{fieldErrors.name}</span>}
         </label>
         <label className="block space-y-2">
           <span className="text-sm font-semibold text-frigus-navy dark:text-white">Data de nascimento</span>
           <input
+            type="date"
+            aria-invalid={Boolean(fieldErrors.birthDate)}
+            aria-describedby={fieldErrors.birthDate ? "profile-birth-date-error" : undefined}
             value={birthDate}
-            onChange={(event) => { setBirthDate(event.currentTarget.value); setSaved(false); }}
-            placeholder="dd/MM/aaaa"
-            inputMode="numeric"
+            onChange={(event) => { setBirthDate(event.currentTarget.value); setSaved(false); setFieldErrors((current) => ({ ...current, birthDate: undefined })); }}
             className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-frigus-navy outline-none focus:border-frigus-primary focus:ring-2 focus:ring-frigus-primary/15 dark:border-[#343941] dark:bg-[#171819] dark:text-white"
           />
+          {fieldErrors.birthDate && <span id="profile-birth-date-error" className="text-xs text-red-600 dark:text-red-300">{fieldErrors.birthDate}</span>}
         </label>
         <label className="block space-y-2">
           <span className="text-sm font-semibold text-frigus-navy dark:text-white">E-mail</span>

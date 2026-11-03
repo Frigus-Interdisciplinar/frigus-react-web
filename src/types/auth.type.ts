@@ -22,3 +22,15 @@ export interface RegisterResponseDto {
   birthDate?: string;
   email: string;
 }
+
+export interface PasswordRecoveryRequest {
+  email: string;
+}
+
+export interface VerifyPasswordRecoveryCodeRequest extends PasswordRecoveryRequest {
+  code: string;
+}
+
+export interface ResetPasswordRequest extends VerifyPasswordRecoveryCodeRequest {
+  newPassword: string;
+}

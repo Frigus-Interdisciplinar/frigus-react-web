@@ -128,6 +128,7 @@ export default function RegisterPage() {
             label="Nome completo"
             placeholder="Digite seu nome"
             value={registration.name}
+            maxLength={120}
             error={fieldErrors.name}
             onChange={(e) =>
               setRegistration((current) => ({

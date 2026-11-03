@@ -1,5 +1,11 @@
 import type { LoginInput, RegisterInput } from "@/schemas/auth.schema";
-import type { LoginResponseDto, RegisterResponseDto } from "@/types/auth.type";
+import type {
+  LoginResponseDto,
+  PasswordRecoveryRequest,
+  RegisterResponseDto,
+  ResetPasswordRequest,
+  VerifyPasswordRecoveryCodeRequest,
+} from "@/types/auth.type";
 import { api } from "@/utils/api.util";
 import { serviceCall } from "@/utils/service.util";
 import {
@@ -16,18 +22,6 @@ import {
   loginResponseSchema,
   registerResponseSchema,
 } from "@/schemas/api-response.schema";
-
-export interface PasswordRecoveryRequest {
-  email: string;
-}
-
-export interface VerifyPasswordRecoveryCodeRequest extends PasswordRecoveryRequest {
-  code: string;
-}
-
-export interface ResetPasswordRequest extends VerifyPasswordRecoveryCodeRequest {
-  newPassword: string;
-}
 
 export function login(data: LoginInput): Promise<LoginResponseDto> {
   const sanitized = validateForm(loginSchema, {
@@ -71,7 +65,7 @@ export function chooseOnboardingAccountType(
 export function register(data: RegisterInput): Promise<RegisterResponseDto> {
   const sanitized = validateForm(registerSchema, {
     ...data,
-    name: sanitizeText(data.name),
+    name: sanitizeText(data.name, 120),
     email: sanitizeText(data.email, 254).toLowerCase(),
   });
   return serviceCall(async () =>
