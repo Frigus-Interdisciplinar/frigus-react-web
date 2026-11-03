@@ -1,16 +1,6 @@
-import { type ReactNode } from "react";
 import { cn } from "@/utils/cn.util";
-
-export type ModalFooterProps = {
-  helperText?: string;
-  cancelLabel?: string;
-  confirmLabel?: string;
-  confirmDisabled?: boolean;
-  onCancel: () => void;
-  onConfirm?: () => void;
-  className?: string;
-  children?: ReactNode;
-};
+import type { ModalFooterProps } from "@/types/component-props.type";
+export type { ModalFooterProps } from "@/types/component-props.type";
 
 export default function ModalFooter({
   helperText,

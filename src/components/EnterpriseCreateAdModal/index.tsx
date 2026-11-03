@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Upload, Calendar } from "lucide-react";
 import { useResetModalState } from "@/hooks/useResetModalState";
-import type { EnterpriseModalVisibilityProps } from "@/components/EnterpriseModals/types";
+import type { EnterpriseModalVisibilityProps } from "@/types/component-props.type";
 import { EnterpriseModalBase } from "@/components/EnterpriseModalBase";
 
 export function EnterpriseCreateAdModal({

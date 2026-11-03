@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import { useModalFocus } from "@/hooks/useModalFocus";
-import type { EnterpriseModalBaseProps } from "@/components/EnterpriseModals/types";
+import type { EnterpriseModalBaseProps } from "@/types/component-props.type";
 
 export function EnterpriseModalBase({
   isOpen,
@@ -15,7 +15,7 @@ export function EnterpriseModalBase({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overscroll-contain p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] sm:items-center">
       <button
         type="button"
         aria-label="Fechar janela"
@@ -30,9 +30,9 @@ export function EnterpriseModalBase({
         aria-modal="true"
         aria-labelledby="enterprise-modal-title"
         tabIndex={-1}
-        className={`relative w-full ${maxWidth} bg-white dark:bg-[#1C1E22] rounded-3xl border border-[#E1E7F0] dark:border-[#343941] shadow-2xl z-10 flex flex-col max-h-[90vh] overflow-hidden text-[#141C55] dark:text-neutral-100 transition-colors`}
+        className={`relative z-10 my-auto flex max-h-[calc(100dvh-2rem)] w-full ${maxWidth} flex-col overflow-hidden rounded-3xl border border-[#E1E7F0] bg-white text-[#141C55] shadow-2xl transition-colors dark:border-[#343941] dark:bg-[#1C1E22] dark:text-neutral-100`}
       >
-        <div className="p-6 border-b border-[#E1E7F0] dark:border-[#343941] flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3 border-b border-[#E1E7F0] p-4 dark:border-[#343941] sm:p-6">
           <div>
             <h3
               id="enterprise-modal-title"
@@ -56,7 +56,7 @@ export function EnterpriseModalBase({
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto space-y-5">{children}</div>
+        <div className="space-y-5 overflow-y-auto p-4 sm:p-6">{children}</div>
 
         {footer && (
           <div className="p-5 border-t border-[#E1E7F0] dark:border-[#343941] bg-[#F5F8FC]/60 dark:bg-[#252A32]/40 flex items-center justify-end gap-3">

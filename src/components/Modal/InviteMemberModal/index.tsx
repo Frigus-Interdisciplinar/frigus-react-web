@@ -2,19 +2,8 @@ import { useState, type FormEvent } from "react";
 import { X } from "lucide-react";
 import { useModalFocus } from "@/hooks/useModalFocus";
 import { useResetModalState } from "@/hooks/useResetModalState";
-
-export type InviteMemberData = {
-  name: string;
-  email: string;
-  role: "Pode editar" | "Visualizar";
-};
-
-export type InviteMemberModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  onInvite: (data: InviteMemberData) => Promise<void>;
-  householdName?: string;
-};
+import type { InviteMemberModalProps } from "@/types/component-props.type";
+export type { InviteMemberData, InviteMemberModalProps } from "@/types/component-props.type";
 
 export default function InviteMemberModal({
   isOpen,

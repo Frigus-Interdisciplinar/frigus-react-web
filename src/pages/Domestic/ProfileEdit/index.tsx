@@ -1,46 +1,25 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 import { ArrowLeft, Camera, Check, User } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useStore } from "@/store/store";
-import {
-  updateProfile,
-  updateProfilePicture,
-  getProfile,
-} from "@/services/profile.service";
-import { profileUpdateSchema } from "@/schemas/profile.schema";
-
-const MAX_PHOTO_SIZE_BYTES = 5 * 1024 * 1024;
-const allowedPhotoTypes = ["image/png", "image/jpeg"];
+import useProfileEditor from "@/hooks/useProfileEditor";
 
 export default function ProfileEditPage() {
-  const user = useStore((state) => state.user);
-  const setUser = useStore((state) => state.login);
+  const {
+    user,
+    personalData,
+    updatePersonalField,
+    photo,
+    previewUrl,
+    saving,
+    uploadingPhoto,
+    error,
+    fieldErrors,
+    saved,
+    handlePhotoChange,
+    savePersonalData,
+    savePhoto,
+  } = useProfileEditor();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [name, setName] = useState(user?.name ?? "");
-  const [birthDate, setBirthDate] = useState(user?.birthDate ?? "");
-  const [photo, setPhoto] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState(user?.profilePictureUrl ?? "");
-  const [saving, setSaving] = useState(false);
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
-  const [error, setError] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<{ name?: string; birthDate?: string }>({});
-  const [saved, setSaved] = useState(false);
-
-  useEffect(() => {
-    let active = true;
-    void getProfile()
-      .then((currentUser) => {
-        if (!active) return;
-        setUser(currentUser);
-        setName(currentUser.name);
-        setBirthDate(currentUser.birthDate ?? "");
-        setPreviewUrl(currentUser.profilePictureUrl ?? "");
-      })
-      .catch(() => {});
-    return () => {
-      active = false;
-    };
-  }, [setUser]);
 
   const initials =
     user?.name
@@ -49,83 +28,6 @@ export default function ProfileEditPage() {
       .map((part) => part[0])
       .join("")
       .toUpperCase() ?? "";
-
-  const handlePhotoChange = (file?: File) => {
-    if (!file) return;
-    if (!allowedPhotoTypes.includes(file.type)) {
-      setError("Escolha uma imagem PNG ou JPG.");
-      return;
-    }
-    if (file.size > MAX_PHOTO_SIZE_BYTES) {
-      setError("A foto deve ter no máximo 5 MB.");
-      return;
-    }
-    setError("");
-    setSaved(false);
-    setPhoto(file);
-    setPreviewUrl(URL.createObjectURL(file));
-  };
-
-  const handleSaveProfile = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!user || saving || uploadingPhoto) return;
-    setError("");
-    setSaved(false);
-    const validation = profileUpdateSchema.safeParse({
-      name: name.trim(),
-      ...(birthDate ? { birthDate } : {}),
-    });
-    if (!validation.success) {
-      const nextErrors: typeof fieldErrors = {};
-      for (const issue of validation.error.issues) {
-        const field = issue.path[0];
-        if ((field === "name" || field === "birthDate") && !nextErrors[field])
-          nextErrors[field] = issue.message;
-      }
-      setFieldErrors(nextErrors);
-      setError(validation.error.issues[0]?.message ?? "Confira os dados informados.");
-      return;
-    }
-    setFieldErrors({});
-    setSaving(true);
-    try {
-      const updatedUser = await updateProfile(validation.data);
-      setUser(updatedUser);
-      setName(updatedUser.name);
-      setBirthDate(updatedUser.birthDate ?? "");
-      setSaved(true);
-    } catch (reason) {
-      setError(
-        reason instanceof Error
-          ? reason.message
-          : "Não foi possível salvar seus dados pessoais.",
-      );
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleSavePhoto = async () => {
-    if (!user || !photo || uploadingPhoto || saving) return;
-    setUploadingPhoto(true);
-    setError("");
-    setSaved(false);
-    try {
-      const updatedUser = await updateProfilePicture(photo);
-      setUser(updatedUser);
-      setPreviewUrl(updatedUser.profilePictureUrl ?? "");
-      setPhoto(null);
-      setSaved(true);
-    } catch (reason) {
-      setError(
-        reason instanceof Error
-          ? reason.message
-          : "Não foi possível atualizar sua foto de perfil.",
-      );
-    } finally {
-      setUploadingPhoto(false);
-    }
-  };
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -192,7 +94,7 @@ export default function ProfileEditPage() {
               {photo && (
                 <button
                   type="button"
-                  onClick={() => void handleSavePhoto()}
+                  onClick={() => void savePhoto()}
                   disabled={uploadingPhoto || saving}
                   className="rounded-xl bg-frigus-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
@@ -205,42 +107,48 @@ export default function ProfileEditPage() {
       </section>
 
       <form
-        onSubmit={(event) => void handleSaveProfile(event)}
+        onSubmit={(event) => {
+          event.preventDefault();
+          void savePersonalData();
+        }}
         className="space-y-6 rounded-3xl border border-gray-200/80 bg-white p-6 shadow-xs dark:border-[#343941] dark:bg-[#1C1E22] md:p-8"
       >
         <h2 className="font-montserrat text-base font-bold text-frigus-navy dark:text-white">
           Dados pessoais
         </h2>
-        <label className="block space-y-2">
+        <label htmlFor="profile-name" className="block space-y-2">
           <span className="text-sm font-semibold text-frigus-navy dark:text-white">Nome completo</span>
           <input
             required
+            id="profile-name"
             minLength={1}
             maxLength={120}
             aria-invalid={Boolean(fieldErrors.name)}
             aria-describedby={fieldErrors.name ? "profile-name-error" : undefined}
-            value={name}
-            onChange={(event) => { setName(event.currentTarget.value); setSaved(false); setFieldErrors((current) => ({ ...current, name: undefined })); }}
+            value={personalData.name}
+            onChange={(event) => updatePersonalField("name", event.currentTarget.value)}
             className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-frigus-navy outline-none focus:border-frigus-primary focus:ring-2 focus:ring-frigus-primary/15 dark:border-[#343941] dark:bg-[#171819] dark:text-white"
           />
           {fieldErrors.name && <span id="profile-name-error" className="text-xs text-red-600 dark:text-red-300">{fieldErrors.name}</span>}
         </label>
-        <label className="block space-y-2">
+        <label htmlFor="profile-birth-date" className="block space-y-2">
           <span className="text-sm font-semibold text-frigus-navy dark:text-white">Data de nascimento</span>
           <input
             type="date"
             aria-invalid={Boolean(fieldErrors.birthDate)}
             aria-describedby={fieldErrors.birthDate ? "profile-birth-date-error" : undefined}
-            value={birthDate}
-            onChange={(event) => { setBirthDate(event.currentTarget.value); setSaved(false); setFieldErrors((current) => ({ ...current, birthDate: undefined })); }}
+            id="profile-birth-date"
+            value={personalData.birthDate}
+            onChange={(event) => updatePersonalField("birthDate", event.currentTarget.value)}
             className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-frigus-navy outline-none focus:border-frigus-primary focus:ring-2 focus:ring-frigus-primary/15 dark:border-[#343941] dark:bg-[#171819] dark:text-white"
           />
           {fieldErrors.birthDate && <span id="profile-birth-date-error" className="text-xs text-red-600 dark:text-red-300">{fieldErrors.birthDate}</span>}
         </label>
-        <label className="block space-y-2">
+        <label htmlFor="profile-email" className="block space-y-2">
           <span className="text-sm font-semibold text-frigus-navy dark:text-white">E-mail</span>
           <input
             type="email"
+            id="profile-email"
             value={user?.email ?? ""}
             readOnly
             className="w-full cursor-not-allowed rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-500 dark:border-[#343941] dark:bg-[#252A32] dark:text-neutral-400"
@@ -256,7 +164,7 @@ export default function ProfileEditPage() {
           </Link>
           <button
             type="submit"
-            disabled={saving || uploadingPhoto || !name.trim()}
+            disabled={saving || uploadingPhoto || !personalData.name.trim()}
             className="rounded-xl bg-frigus-primary px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {saving ? "Salvando…" : "Salvar alterações"}

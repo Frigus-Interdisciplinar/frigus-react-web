@@ -1,20 +1,7 @@
 import { Check } from "lucide-react";
 import { cn } from "@/utils/cn.util";
-
-export type SuggestedItem = {
-  id: string;
-  name: string;
-  category: string;
-  quantity: string;
-};
-
-export type ModalItemListProps = {
-  items: SuggestedItem[];
-  selectedIds: string[];
-  onToggleSelect: (id: string) => void;
-  sectionTitle?: string;
-  emptyMessage?: string;
-};
+import type { ModalItemListProps } from "@/types/component-props.type";
+export type { ModalItemListProps, SuggestedItem } from "@/types/component-props.type";
 
 export default function ModalItemList({
   items,

@@ -7,19 +7,8 @@ import {
   UserCheck,
 } from "lucide-react";
 import { useModalFocus } from "@/hooks/useModalFocus";
-
-export type QuickNotice = {
-  id: string;
-  title: string;
-  description: string;
-  type: "warning" | "stock" | "invite";
-  link?: string;
-};
-
-export type QuickNotificationsPopoverProps = {
-  isOpen: boolean;
-  onClose: () => void;
-};
+import type { QuickNotice, QuickNotificationsPopoverProps } from "@/types/component-props.type";
+export type { QuickNotice, QuickNotificationsPopoverProps } from "@/types/component-props.type";
 
 const notices: QuickNotice[] = [
   {

@@ -1,4 +1,4 @@
-import type { ModalVisibilityProps } from "@/components/CommercialModals/types";
+import type { ModalVisibilityProps } from "@/types/component-props.type";
 import { CommercialModalBase } from "@/components/CommercialModalBase";
 
 export function CommercialRegisterMovementModal({

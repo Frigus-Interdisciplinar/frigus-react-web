@@ -1,20 +1,6 @@
-import { type ReactNode } from "react";
 import { cn } from "@/utils/cn.util";
-
-export type BadgeVariant =
-  | "success"
-  | "warning"
-  | "danger"
-  | "info"
-  | "neutral"
-  | "primary"
-  | "accent";
-
-export type BadgeProps = {
-  variant?: BadgeVariant;
-  className?: string;
-  children: ReactNode;
-};
+import type { BadgeProps, BadgeVariant } from "@/types/component-props.type";
+export type { BadgeProps, BadgeVariant } from "@/types/component-props.type";
 
 const variantStyles: Record<BadgeVariant, string> = {
   success:

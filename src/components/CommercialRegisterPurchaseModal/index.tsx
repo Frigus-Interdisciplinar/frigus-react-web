@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useResetModalState } from "@/hooks/useResetModalState";
-import type { CommercialRegisterPurchaseModalProps } from "@/components/CommercialModals/types";
+import type { CommercialRegisterPurchaseModalProps } from "@/types/component-props.type";
 import { CommercialModalBase } from "@/components/CommercialModalBase";
 
 export function CommercialRegisterPurchaseModal({

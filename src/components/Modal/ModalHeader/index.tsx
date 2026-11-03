@@ -1,15 +1,8 @@
-import { type ReactNode } from "react";
 import { X } from "lucide-react";
 import ModalTitle from "../ModalTitle";
 import { cn } from "@/utils/cn.util";
-
-export type ModalHeaderProps = {
-  title?: string;
-  subtitle?: string;
-  onClose?: () => void;
-  className?: string;
-  children?: ReactNode;
-};
+import type { ModalHeaderProps } from "@/types/component-props.type";
+export type { ModalHeaderProps } from "@/types/component-props.type";
 
 export default function ModalHeader({
   title,

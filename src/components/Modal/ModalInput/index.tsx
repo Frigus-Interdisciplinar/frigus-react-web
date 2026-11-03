@@ -1,10 +1,7 @@
-import { type ComponentProps, type ReactNode } from "react";
 import { Search } from "lucide-react";
 import { cn } from "@/utils/cn.util";
-
-export type ModalInputProps = ComponentProps<"input"> & {
-  icon?: ReactNode;
-};
+import type { ModalInputProps } from "@/types/component-props.type";
+export type { ModalInputProps } from "@/types/component-props.type";
 
 export default function ModalInput({
   icon,
