@@ -67,14 +67,14 @@ export default function ProfilePage() {
                   <img src={user.profilePictureUrl} alt="Foto de perfil" className="h-full w-full object-cover" />
                 ) : initials}
               </div>
-              <div className="text-center sm:text-left space-y-1">
-                <div className="flex items-center justify-center sm:justify-start gap-2">
-                  <h2 className="font-montserrat font-bold text-xl text-frigus-navy dark:text-white">
+              <div className="min-w-0 space-y-1 text-center sm:text-left">
+                <div className="flex min-w-0 flex-wrap items-center justify-center gap-2 sm:justify-start">
+                  <h2 className="max-w-full break-words font-montserrat text-xl font-bold text-frigus-navy dark:text-white">
                     {user?.name}
                   </h2>
                   <Badge variant="success">Conta ativa</Badge>
                 </div>
-                <p className="text-xs text-gray-400 dark:text-neutral-400 font-medium">
+                <p className="break-all text-xs font-medium text-gray-400 dark:text-neutral-400">
                   {user?.email}
                 </p>
               </div>
@@ -86,7 +86,7 @@ export default function ProfilePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 pt-6 border-t border-gray-100 dark:border-[#343941]">
+          <div className="grid grid-cols-1 gap-3 pt-6 border-t border-gray-100 dark:border-[#343941] sm:grid-cols-3 sm:gap-4">
             <div className="text-center sm:text-left p-3 rounded-2xl bg-gray-50 dark:bg-[#252A32] border border-gray-100 dark:border-[#343941]">
               <span className="text-[10px] uppercase font-bold text-gray-400 dark:text-neutral-400 tracking-wider block">
                 Plano

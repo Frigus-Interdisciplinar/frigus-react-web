@@ -8,18 +8,8 @@ import {
 } from "lucide-react";
 import BrandLogo from "@/components/BrandLogo";
 import { useStore } from "@/store/store";
-
-interface EnterpriseSidebarProps {
-  activeSection?:
-    | "overview"
-    | "ads"
-    | "report"
-    | "views"
-    | "audience"
-    | "profile"
-    | "settings"
-    | "notifications";
-}
+import type { EnterpriseSidebarProps } from "@/types/component-props.type";
+export type { EnterpriseSidebarProps } from "@/types/component-props.type";
 
 export default function EnterpriseSidebar({
   activeSection = "overview",
@@ -80,7 +70,7 @@ export default function EnterpriseSidebar({
             : "overview");
 
   return (
-    <aside className="sticky top-0 z-20 flex h-screen w-[232px] shrink-0 select-none flex-col justify-between overflow-y-auto bg-[#131C55] p-3 text-white transition-colors dark:border-r dark:border-white/5 dark:bg-[#171819]">
+    <aside className="sticky top-0 z-20 hidden h-screen w-[232px] shrink-0 select-none flex-col justify-between overflow-y-auto bg-[#131C55] p-3 text-white transition-colors dark:border-r dark:border-white/5 dark:bg-[#171819] lg:flex">
       <div>
         <Link
           to="/enterprise"

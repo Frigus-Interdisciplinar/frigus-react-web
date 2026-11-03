@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useResetModalState } from "@/hooks/useResetModalState";
-import type { ModalVisibilityProps } from "@/components/CommercialModals/types";
+import type { ModalVisibilityProps } from "@/types/component-props.type";
 import { CommercialModalBase } from "@/components/CommercialModalBase";
 
 type BatchFormData = {
@@ -49,8 +49,8 @@ export function CommercialEditBatchModal({
         </>
       }
     >
-      <div className="grid grid-cols-2 gap-4">
-        <div className="col-span-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="col-span-full">
           <label
             htmlFor="field-components-commercialeditbatchmodal-index-tsx-1"
             className="block text-xs font-semibold text-[#141C55] mb-1"
@@ -173,7 +173,7 @@ export function CommercialEditBatchModal({
             className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8]"
           />
         </div>
-        <div className="col-span-2">
+        <div className="col-span-full">
           <label
             htmlFor="field-components-commercialeditbatchmodal-index-tsx-8"
             className="block text-xs font-semibold text-[#141C55] mb-1"

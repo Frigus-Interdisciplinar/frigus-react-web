@@ -146,7 +146,7 @@ export default function ForgotPasswordStep2() {
                 value={digit}
                 onChange={(e) => handleChange(idx, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(idx, e)}
-                className="w-11 h-14 sm:w-14 sm:h-14 text-center text-xl sm:text-2xl font-bold text-frigus-navy dark:text-white bg-white dark:bg-[#232D42] border border-[#D5DEED] dark:border-[#343941] rounded-xl focus:outline-none focus:ring-2 focus:ring-frigus-primary/40 focus:border-frigus-primary transition-all duration-150"
+                className="h-12 min-w-0 flex-1 text-center text-xl font-bold text-frigus-navy transition-all duration-150 focus:border-frigus-primary focus:outline-none focus:ring-2 focus:ring-frigus-primary/40 dark:border-[#343941] dark:bg-[#232D42] dark:text-white sm:h-14 sm:w-14 sm:flex-none sm:text-2xl"
               />
             ))}
           </div>

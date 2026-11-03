@@ -1,12 +1,7 @@
-import { type ReactNode } from "react";
-import CommercialSidebar, { type CommercialSection } from "./CommercialSidebar";
+import CommercialSidebar from "./CommercialSidebar";
 import CommercialTopbar from "./CommercialTopbar";
-
-export interface CommercialLayoutProps {
-  activeSection?: CommercialSection;
-  breadcrumb?: string;
-  children: ReactNode;
-}
+import type { CommercialLayoutProps } from "@/types/component-props.type";
+export type { CommercialLayoutProps } from "@/types/component-props.type";
 
 export default function CommercialLayout({
   activeSection,
@@ -22,7 +17,7 @@ export default function CommercialLayout({
         <main
           id="main-content"
           tabIndex={-1}
-          className="flex-1 p-6 md:p-9 max-w-[1440px] w-full mx-auto space-y-6"
+          className="mx-auto w-full max-w-[1440px] flex-1 space-y-5 p-4 sm:space-y-6 sm:p-6 md:p-9"
         >
           {children}
         </main>

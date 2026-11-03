@@ -1,14 +1,33 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Bell, LogOut } from "lucide-react";
+import {
+  Bell,
+  CalendarClock,
+  DollarSign,
+  FileBarChart2,
+  LogOut,
+  Package,
+  ShoppingBag,
+  Trash2,
+  Users,
+} from "lucide-react";
 import { CommercialNotificationsModal } from "@/components/CommercialModals";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useStore } from "@/store/store";
 import { logout as endSession } from "@/services/auth.service";
+import MobileNavigation from "@/components/MobileNavigation";
+import type { CommercialTopbarProps } from "@/types/component-props.type";
+export type { CommercialTopbarProps } from "@/types/component-props.type";
 
-interface CommercialTopbarProps {
-  breadcrumb?: string;
-}
+const mobileNavigationItems = [
+  { label: "Estoque", href: "/commercial/stock", icon: Package },
+  { label: "Validades", href: "/commercial/validity", icon: CalendarClock },
+  { label: "Lista de compras", href: "/commercial/shopping-list", icon: ShoppingBag },
+  { label: "Relatório mensal", href: "/commercial/monthly-report", icon: FileBarChart2 },
+  { label: "Desperdícios", href: "/commercial/waste", icon: Trash2 },
+  { label: "Gastos e compras", href: "/commercial/expenses", icon: DollarSign },
+  { label: "Funcionários", href: "/commercial/employees", icon: Users },
+];
 
 export default function CommercialTopbar({
   breadcrumb = "Área comercial    /    Estoque",
@@ -60,11 +79,14 @@ export default function CommercialTopbar({
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-20 select-none items-center justify-between border-b border-[#E1E7F0] bg-white px-6 transition-colors dark:border-[#2A2D31] dark:bg-[#1B1D20] md:px-9">
-        <p className="text-[11px] font-medium text-[#64748B] dark:text-neutral-400">
+      <header className="sticky top-0 z-30 flex min-h-16 select-none items-center justify-between gap-2 border-b border-[#E1E7F0] bg-white px-3 py-2 transition-colors dark:border-[#2A2D31] dark:bg-[#1B1D20] sm:min-h-20 sm:gap-4 sm:px-6 md:px-9">
+        <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
+          <MobileNavigation label="Navegação comercial" items={mobileNavigationItems} />
+          <p className="truncate text-[11px] font-medium text-[#64748B] dark:text-neutral-400">
           {breadcrumb}
-        </p>
-        <div className="flex items-center gap-3">
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
           <ThemeToggle />
           <button
             type="button"

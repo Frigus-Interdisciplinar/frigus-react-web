@@ -1,18 +1,36 @@
 import { useState, useEffect, useRef } from "react";
-import { Bell, LogOut, User } from "lucide-react";
+import {
+  Bell,
+  LayoutDashboard,
+  LogOut,
+  Package,
+  ShoppingBasket,
+  Sparkles,
+  Settings,
+  User,
+  UsersRound,
+  Utensils,
+  MessageCircle,
+} from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import QuickNotificationsPopover from "./QuickNotificationsPopover";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useStore } from "@/store/store";
 import { logout as endSession } from "@/services/auth.service";
-import type { SectionString } from "../Sidebar";
+import type { SectionString, TopbarProps } from "@/types/component-props.type";
+export type { TopbarProps } from "@/types/component-props.type";
+import MobileNavigation from "@/components/MobileNavigation";
 
-export type TopbarProps = {
-  title?: string;
-  subtitle?: string;
-  hasNotificationAlert?: boolean;
-  activeSection?: SectionString;
-};
+const mobileNavigationItems = [
+  { label: "Visão geral", href: "/home", icon: LayoutDashboard },
+  { label: "Meu estoque", href: "/stock", icon: Package },
+  { label: "Receitas", href: "/recipe", icon: Utensils },
+  { label: "Compras", href: "/shopping-list", icon: ShoppingBasket },
+  { label: "Família", href: "/family-members", icon: UsersRound },
+  { label: "Chat", href: "/chat", icon: MessageCircle },
+  { label: "Chat IA", href: "/chat-ai", icon: Sparkles },
+  { label: "Configurações", href: "/settings", icon: Settings },
+];
 
 export default function Topbar({
   title,
@@ -81,9 +99,11 @@ export default function Topbar({
   };
 
   return (
-    <header className="h-20 bg-white dark:bg-[#1B1D20] border-b border-gray-200/80 dark:border-[#2A2D31] px-6 md:px-9 flex items-center justify-between sticky top-0 z-30 select-none transition-colors">
-      <div className="flex flex-col gap-0.5 text-[11px] text-[#64748B] dark:text-neutral-400">
-        <p>
+    <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between gap-2 border-b border-gray-200/80 bg-white px-3 py-2 text-[#64748B] transition-colors dark:border-[#2A2D31] dark:bg-[#1B1D20] sm:min-h-20 sm:gap-4 sm:px-6 md:px-9">
+      <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
+        <MobileNavigation label="Navegação doméstica" items={mobileNavigationItems} />
+        <div className="flex min-w-0 flex-col gap-0.5 text-[11px] dark:text-neutral-400">
+        <p className="truncate">
           <span>Área doméstica</span>
           <span className="mx-2">/</span>
           <span>
@@ -92,10 +112,11 @@ export default function Topbar({
               "Frigus"}
           </span>
         </p>
-        {subtitle && <p className="text-[10px]">{subtitle}</p>}
+        {subtitle && <p className="truncate text-[10px]">{subtitle}</p>}
+        </div>
       </div>
 
-      <div className="flex items-center gap-3 relative">
+      <div className="relative flex shrink-0 items-center gap-1.5 sm:gap-3">
         <ThemeToggle />
 
         <button

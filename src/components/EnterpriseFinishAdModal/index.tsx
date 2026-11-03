@@ -1,4 +1,4 @@
-import type { EnterpriseFinishAdModalProps } from "@/components/EnterpriseModals/types";
+import type { EnterpriseFinishAdModalProps } from "@/types/component-props.type";
 import { EnterpriseModalBase } from "@/components/EnterpriseModalBase";
 
 export function EnterpriseFinishAdModal({
@@ -48,7 +48,7 @@ export function EnterpriseFinishAdModal({
 
         <div className="space-y-3">
           <div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <label
                 htmlFor="enterprise-finish-start"
                 className="text-xs font-semibold text-[#141C55] dark:text-white"

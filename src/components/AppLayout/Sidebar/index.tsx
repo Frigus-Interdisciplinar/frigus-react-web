@@ -12,30 +12,9 @@ import {
 import NavigationItem from "./NavigationItem";
 import BrandLogo from "@/components/BrandLogo";
 
-import { type ReactNode } from "react";
 import { useStore } from "@/store/store";
-
-export type SectionString =
-  | "home"
-  | "stock"
-  | "recipe"
-  | "shopping-list"
-  | "family-members"
-  | "chat"
-  | "chat-ai"
-  | "settings"
-  | "alerts"
-  | "profile"
-  | "plans"
-  | "notifications"
-  | undefined;
-
-export type NavItem = {
-  label: string;
-  href: string;
-  icon: ReactNode;
-  section: SectionString;
-};
+import type { NavItem, SidebarProps } from "@/types/component-props.type";
+export type { NavItem, SectionString, SidebarProps } from "@/types/component-props.type";
 
 const navigationItems: NavItem[] = [
   {
@@ -88,10 +67,6 @@ const navigationItems: NavItem[] = [
   },
 ];
 
-export type SidebarProps = {
-  activeSection?: SectionString;
-};
-
 export default function Sidebar({ activeSection }: SidebarProps) {
   const user = useStore((state) => state.user);
   const initials =
@@ -102,7 +77,7 @@ export default function Sidebar({ activeSection }: SidebarProps) {
       .join("")
       .toUpperCase() ?? "—";
   return (
-    <aside className="h-screen sticky top-0 bg-sidebar-bg dark:bg-[#171819] border-r border-transparent dark:border-white/5 w-[232px] p-3 flex flex-col justify-between shrink-0 select-none z-20 transition-colors">
+    <aside className="sticky top-0 z-20 hidden h-screen w-[232px] shrink-0 select-none flex-col justify-between border-r border-transparent bg-sidebar-bg p-3 text-white transition-colors dark:border-white/5 dark:bg-[#171819] lg:flex">
       <div className="flex flex-col gap-6">
         <Link
           to="/home"
