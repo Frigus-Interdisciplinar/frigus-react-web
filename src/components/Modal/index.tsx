@@ -6,22 +6,12 @@ import ModalTitle from "./ModalTitle";
 import ModalInput from "./ModalInput";
 import ModalItemList, { type SuggestedItem } from "./ModalItemList";
 import ModalFooter from "./ModalFooter";
+import type { ModalProps } from "@/types/component-props.type";
 
 export { ModalHeader, ModalTitle, ModalInput, ModalItemList, ModalFooter };
 export type { SuggestedItem };
 
-export type ModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm?: (selectedItems: string[]) => void | Promise<void>;
-  title?: string;
-  subtitle?: string;
-  items?: SuggestedItem[];
-  defaultSelectedIds?: string[];
-  helperText?: string;
-  cancelLabel?: string;
-  confirmLabel?: string;
-};
+export type { ModalProps } from "@/types/component-props.type";
 
 export default function Modal({
   isOpen,
@@ -76,7 +66,7 @@ export default function Modal({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overscroll-contain bg-black/50 p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-xs animate-in fade-in duration-200 sm:items-center">
       <div
         ref={dialogRef}
         id="add-items-dialog"
@@ -84,7 +74,7 @@ export default function Modal({
         aria-modal="true"
         aria-labelledby="add-items-dialog-title"
         tabIndex={-1}
-        className="bg-white dark:bg-[#1C1E22] rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-gray-100 dark:border-[#343941] flex flex-col"
+        className="my-auto flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col overflow-hidden overscroll-contain rounded-3xl border border-gray-100 bg-white shadow-2xl dark:border-[#343941] dark:bg-[#1C1E22]"
       >
         <ModalHeader title={title} subtitle={subtitle} onClose={onClose} />
 

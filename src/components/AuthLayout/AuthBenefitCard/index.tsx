@@ -1,9 +1,5 @@
-import { type ReactNode } from "react";
-
-export interface AuthBenefitCardProps {
-  cardTitle: string;
-  cardDescription: ReactNode;
-}
+import type { AuthBenefitCardProps } from "@/types/component-props.type";
+export type { AuthBenefitCardProps } from "@/types/component-props.type";
 
 export default function AuthBenefitCard({
   cardTitle,

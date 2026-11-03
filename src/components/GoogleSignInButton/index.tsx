@@ -54,11 +54,7 @@ function loadGoogleIdentity(): Promise<GoogleIdentityApi> {
   return googleScriptPromise;
 }
 
-type GoogleSignInButtonProps = {
-  disabled?: boolean;
-  onCredential: (idToken: string) => void;
-  onError: (message: string) => void;
-};
+import type { GoogleSignInButtonProps } from "@/types/component-props.type";
 
 export default function GoogleSignInButton({
   disabled = false,

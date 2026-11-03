@@ -1,10 +1,6 @@
 import { cn } from "@/utils/cn.util";
-
-export type ModalTitleProps = {
-  title: string;
-  subtitle?: string;
-  className?: string;
-};
+import type { ModalTitleProps } from "@/types/component-props.type";
+export type { ModalTitleProps } from "@/types/component-props.type";
 
 export default function ModalTitle({
   title,

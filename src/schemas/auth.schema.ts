@@ -17,7 +17,11 @@ export const googleLoginSchema = z.object({
 });
 
 export const registerSchema = z.object({
-  name: z.string("Nome inválido").trim().min(1, "Informe o nome"),
+  name: z
+    .string("Nome inválido")
+    .trim()
+    .min(1, "Informe o nome")
+    .max(120, "O nome deve ter no máximo 120 caracteres."),
   email: z
     .email("Email inválido")
     .max(254, "E-mail deve ter no máximo 254 caracteres."),

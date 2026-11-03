@@ -1,8 +1,8 @@
 import { Outlet, useLocation } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
-import type { SectionString } from "@/components/AppLayout/Sidebar";
+import type { SectionString } from "@/types/component-props.type";
 import CommercialLayout from "@/components/CommercialLayout";
-import type { CommercialSection } from "@/components/CommercialLayout/CommercialSidebar";
+import type { CommercialSection } from "@/types/component-props.type";
 import EnterpriseLayout from "@/components/EnterpriseLayout";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useStore } from "@/store/store";

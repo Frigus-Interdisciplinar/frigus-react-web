@@ -1,13 +1,8 @@
-import { useId, useState, forwardRef, type ComponentProps } from "react";
+import { useId, useState, forwardRef } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { cn } from "@/utils/cn.util";
-
-export type InputProps = ComponentProps<"input"> & {
-  label?: string;
-  error?: string;
-  helperText?: string;
-  showPasswordToggle?: boolean;
-};
+import type { InputProps } from "@/types/component-props.type";
+export type { InputProps } from "@/types/component-props.type";
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
   (

@@ -1,4 +1,4 @@
-import type { CommercialResendInviteModalProps } from "@/components/CommercialModals/types";
+import type { CommercialResendInviteModalProps } from "@/types/component-props.type";
 import { CommercialModalBase } from "@/components/CommercialModalBase";
 
 export function CommercialResendInviteModal({

@@ -169,7 +169,7 @@ export default function ForgotPasswordStep3() {
               />
 
               {error && (
-                <div className="flex items-center gap-2 text-xs text-red-500 bg-red-50 dark:bg-red-950/30 p-2.5 rounded-lg border border-red-200 dark:border-red-900/40">
+                <div role="alert" className="flex items-center gap-2 text-xs text-red-500 bg-red-50 dark:bg-red-950/30 p-2.5 rounded-lg border border-red-200 dark:border-red-900/40">
                   <ShieldAlert className="size-4 shrink-0" />
                   <span>{error}</span>
                 </div>

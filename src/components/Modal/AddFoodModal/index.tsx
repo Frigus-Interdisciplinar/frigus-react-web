@@ -2,29 +2,8 @@ import { useState, type FormEvent } from "react";
 import { X } from "lucide-react";
 import { useModalFocus } from "@/hooks/useModalFocus";
 import { useResetModalState } from "@/hooks/useResetModalState";
-
-export type NewFoodData = {
-  name: string;
-  category: "FRUIT" | "VEGETABLE" | "DAIRY" | "GRAIN" | "MEAT" | "BEVERAGE";
-  location: "Despensa" | "Geladeira" | "Freezer";
-  quantity: number;
-  unitOfMeasure:
-    | "KILOGRAM"
-    | "GRAM"
-    | "LITER"
-    | "MILLILITER"
-    | "UNIT"
-    | "DOZEN"
-    | "PACKAGE";
-  unitPrice: number;
-  expiration: string;
-};
-
-export type AddFoodModalProps = {
-  isOpen: boolean;
-  onClose: () => void;
-  onAdd: (data: NewFoodData) => Promise<void>;
-};
+import type { AddFoodModalProps, NewFoodData } from "@/types/component-props.type";
+export type { AddFoodModalProps, NewFoodData } from "@/types/component-props.type";
 
 type AddFoodFormState = Omit<NewFoodData, "quantity" | "unitPrice"> & {
   quantity: string;
@@ -95,7 +74,7 @@ export default function AddFoodModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overscroll-contain bg-black/50 p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-xs animate-in fade-in duration-200 sm:items-center">
       <div
         ref={dialogRef}
         id="add-food-dialog"
@@ -103,7 +82,7 @@ export default function AddFoodModal({
         aria-modal="true"
         aria-labelledby="add-food-title"
         tabIndex={-1}
-        className="bg-white dark:bg-[#1C1E22] rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-[#DFE7F2] dark:border-[#343941] p-8 relative flex flex-col gap-6"
+        className="relative my-auto flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col gap-5 overflow-y-auto overscroll-contain rounded-3xl border border-[#DFE7F2] bg-white p-5 shadow-2xl dark:border-[#343941] dark:bg-[#1C1E22] sm:gap-6 sm:p-8"
       >
         <button
           onClick={onClose}

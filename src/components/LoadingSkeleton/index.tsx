@@ -1,13 +1,10 @@
-import type { CSSProperties, ReactNode } from "react";
 import SkeletonBase, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-
-type SkeletonProps = {
-  className?: string;
-  width?: CSSProperties["width"];
-  height?: CSSProperties["height"];
-  circle?: boolean;
-};
+import type {
+  SkeletonCardProps,
+  SkeletonProps,
+  SkeletonRowsProps,
+} from "@/types/component-props.type";
 
 export function Skeleton({
   className,
@@ -35,11 +32,7 @@ export function SkeletonRows({
   rows = 3,
   className = "space-y-4",
   rowClassName = "",
-}: {
-  rows?: number;
-  className?: string;
-  rowClassName?: string;
-}) {
+}: SkeletonRowsProps) {
   return (
     <div role="status" aria-label="Carregando conteúdo" className={className}>
       {Array.from({ length: rows }, (_, index) => (
@@ -59,10 +52,7 @@ export function SkeletonRows({
 export function SkeletonCard({
   children,
   className = "",
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
+}: SkeletonCardProps) {
   return (
     <div role="status" aria-label="Carregando conteúdo" className={className}>
       {children}

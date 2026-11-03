@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Check } from "lucide-react";
 import { useResetModalState } from "@/hooks/useResetModalState";
-import type { CommercialFilterStockModalProps } from "@/components/CommercialModals/types";
+import type { CommercialFilterStockModalProps } from "@/types/component-props.type";
 import { CommercialModalBase } from "@/components/CommercialModalBase";
 
 export function CommercialFilterStockModal({

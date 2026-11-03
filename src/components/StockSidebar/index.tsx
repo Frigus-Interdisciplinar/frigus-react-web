@@ -1,17 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, AlertCircle } from "lucide-react";
-
-export type CategoryStat = {
-  name: string;
-  count: number;
-  color: string;
-  percentage: number;
-};
-
-export type StockSidebarProps = {
-  stats: CategoryStat[];
-  onFilterExpired?: () => void;
-};
+import type { StockSidebarProps } from "@/types/component-props.type";
+export type { CategoryStat, StockSidebarProps } from "@/types/component-props.type";
 
 export default function StockSidebar({
   stats,

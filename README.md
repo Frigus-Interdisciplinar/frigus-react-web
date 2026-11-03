@@ -5,6 +5,8 @@
 Aplicação web do **Frigus** para organizar alimentos, compras, receitas e operações de estabelecimentos.
 Interface construída com React, TypeScript e Vite, integrada ao BFF e às APIs do ecossistema Frigus.
 
+**Acesse o site:** [frigus-web.vercel.app](https://frigus-web.vercel.app)
+
 ![React](https://img.shields.io/badge/React-19-149ECA?style=flat&logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?style=flat&logo=typescript&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=flat&logo=vite&logoColor=white)

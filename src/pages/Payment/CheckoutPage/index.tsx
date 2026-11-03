@@ -181,7 +181,7 @@ export default function CheckoutPage() {
                   <legend className="text-sm font-semibold text-frigus-navy dark:text-white">
                     Forma de pagamento
                   </legend>
-                  <div className="grid grid-cols-3 gap-3 pt-3">
+                  <div className="grid grid-cols-1 gap-3 pt-3 sm:grid-cols-3">
                     {paymentMethods.map(({ value, label, Icon }) => (
                       <label
                         key={value}

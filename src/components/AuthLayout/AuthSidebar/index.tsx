@@ -1,16 +1,10 @@
-import { type ReactNode } from "react";
 import blueDecorative from "@/assets/blue-decorative.svg";
 import yellowDecorative from "@/assets/yellow-decorative.svg";
 import BrandLogo from "@/components/BrandLogo";
 import AuthBenefitCard from "../AuthBenefitCard";
 import { Link } from "react-router-dom";
-
-export interface AuthSidebarProps {
-  title: ReactNode;
-  description: ReactNode;
-  cardTitle: string;
-  cardDescription: ReactNode;
-}
+import type { AuthSidebarProps } from "@/types/component-props.type";
+export type { AuthSidebarProps } from "@/types/component-props.type";
 
 export default function AuthSidebar({
   title,

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useResetModalState } from "@/hooks/useResetModalState";
-import type { CommercialAddBatchModalProps } from "@/components/CommercialModals/types";
+import type { CommercialAddBatchModalProps } from "@/types/component-props.type";
 import { CommercialModalBase } from "@/components/CommercialModalBase";
 
 export function CommercialAddBatchModal({
@@ -110,9 +110,9 @@ export function CommercialAddBatchModal({
         </>
       }
     >
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {error && (
-          <p role="alert" className="col-span-2 text-xs text-red-600">
+          <p role="alert" className="col-span-full text-xs text-red-600">
             {error}
           </p>
         )}
@@ -120,12 +120,12 @@ export function CommercialAddBatchModal({
           <p
             role="status"
             aria-live="polite"
-            className="col-span-2 text-xs text-emerald-700"
+            className="col-span-full text-xs text-emerald-700"
           >
             {success}
           </p>
         )}
-        <div className="col-span-2">
+        <div className="col-span-full">
           <label
             htmlFor="field-components-commercialaddbatchmodal-index-tsx-1"
             className="block text-xs font-semibold text-[#141C55] mb-1"
@@ -255,7 +255,7 @@ export function CommercialAddBatchModal({
             className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-hidden focus:border-[#2552C8]"
           />
         </div>
-        <div className="col-span-2">
+        <div className="col-span-full">
           <label
             htmlFor="field-components-commercialaddbatchmodal-index-tsx-8"
             className="block text-xs font-semibold text-[#141C55] mb-1"

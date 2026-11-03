@@ -1,4 +1,4 @@
-import type { EnterprisePauseAdModalProps } from "@/components/EnterpriseModals/types";
+import type { EnterprisePauseAdModalProps } from "@/types/component-props.type";
 import { EnterpriseModalBase } from "@/components/EnterpriseModalBase";
 
 export function EnterprisePauseAdModal({

@@ -1,13 +1,6 @@
-import { type ReactNode } from "react";
 import AuthSidebar from "./AuthSidebar";
-
-export interface AuthLayoutProps {
-  title: ReactNode;
-  description: ReactNode;
-  cardTitle: string;
-  cardDescription: ReactNode;
-  children: ReactNode;
-}
+import type { AuthLayoutProps } from "@/types/component-props.type";
+export type { AuthLayoutProps } from "@/types/component-props.type";
 
 export default function AuthLayout({
   title,

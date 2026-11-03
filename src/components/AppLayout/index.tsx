@@ -1,13 +1,7 @@
-import { type ReactNode } from "react";
-import Sidebar, { type SectionString } from "./Sidebar";
+import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
-
-export type AppLayoutProps = {
-  activeSection?: SectionString;
-  title?: string;
-  subtitle?: string;
-  children: ReactNode;
-};
+import type { AppLayoutProps } from "@/types/component-props.type";
+export type { AppLayoutProps } from "@/types/component-props.type";
 
 export default function AppLayout({
   activeSection,
@@ -28,7 +22,7 @@ export default function AppLayout({
         <main
           id="main-content"
           tabIndex={-1}
-          className="flex-1 p-6 md:p-9 max-w-[1400px] w-full mx-auto"
+          className="mx-auto w-full max-w-[1400px] flex-1 p-4 sm:p-6 md:p-9"
         >
           {children}
         </main>

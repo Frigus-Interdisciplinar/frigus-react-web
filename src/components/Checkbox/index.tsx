@@ -1,10 +1,7 @@
-import { type ComponentProps, type ReactNode } from "react";
 import { Check } from "lucide-react";
 import { cn } from "@/utils/cn.util";
-
-export type CheckboxProps = Omit<ComponentProps<"input">, "type"> & {
-  label?: ReactNode;
-};
+import type { CheckboxProps } from "@/types/component-props.type";
+export type { CheckboxProps } from "@/types/component-props.type";
 
 export default function Checkbox({
   id,

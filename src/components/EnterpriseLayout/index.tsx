@@ -1,21 +1,7 @@
-import type { ReactNode } from "react";
 import EnterpriseSidebar from "./EnterpriseSidebar";
 import EnterpriseTopbar from "./EnterpriseTopbar";
-
-interface EnterpriseLayoutProps {
-  children: ReactNode;
-  activeSection?:
-    | "overview"
-    | "ads"
-    | "report"
-    | "views"
-    | "audience"
-    | "profile"
-    | "settings"
-    | "notifications";
-  breadcrumb?: string;
-  onOpenCreateAd?: () => void;
-}
+import type { EnterpriseLayoutProps } from "@/types/component-props.type";
+export type { EnterpriseLayoutProps } from "@/types/component-props.type";
 
 export default function EnterpriseLayout({
   children,
@@ -36,7 +22,7 @@ export default function EnterpriseLayout({
         <main
           id="main-content"
           tabIndex={-1}
-          className="p-6 md:p-9 max-w-7xl w-full mx-auto space-y-6 flex-1"
+          className="mx-auto w-full max-w-7xl flex-1 space-y-5 p-4 sm:space-y-6 sm:p-6 md:p-9"
         >
           {children}
         </main>

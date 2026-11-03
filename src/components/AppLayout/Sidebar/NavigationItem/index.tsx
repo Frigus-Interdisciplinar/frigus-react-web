@@ -1,11 +1,7 @@
 import { Link } from "react-router-dom";
-import type { NavItem } from "..";
+import type { NavItemProps } from "@/types/component-props.type";
 import { cn } from "@/utils/cn.util";
-
-export type NavItemProps = {
-  item: NavItem;
-  active: boolean;
-};
+export type { NavItemProps } from "@/types/component-props.type";
 
 export default function NavigationItem({ item, active }: NavItemProps) {
   return (

@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import { useModalFocus } from "@/hooks/useModalFocus";
-import type { BaseModalProps } from "@/components/CommercialModals/types";
+import type { BaseModalProps } from "@/types/component-props.type";
 
 export function CommercialModalBase({
   isOpen,
@@ -15,7 +15,7 @@ export function CommercialModalBase({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0a1128]/50 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overscroll-contain bg-[#0a1128]/50 p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur-xs animate-in fade-in duration-200 sm:items-center">
       <div
         ref={dialogRef}
         role="dialog"
@@ -23,7 +23,7 @@ export function CommercialModalBase({
         aria-modal="true"
         aria-labelledby="commercial-modal-title"
         tabIndex={-1}
-        className="commercial-modal w-full max-w-[560px] bg-white dark:bg-[#1C1E22] rounded-3xl shadow-2xl border border-gray-100 dark:border-[#343941] overflow-hidden flex flex-col max-h-[90vh]"
+        className="commercial-modal my-auto flex max-h-[calc(100dvh-2rem)] w-full max-w-[560px] flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-2xl dark:border-[#343941] dark:bg-[#1C1E22]"
       >
         <div className="p-6 pb-4 border-b border-gray-100 dark:border-[#343941] flex items-start justify-between">
           <div>

@@ -1,15 +1,29 @@
 import { useEffect, useRef, useState } from "react";
-import { Bell, LogOut } from "lucide-react";
+import {
+  Bell,
+  Eye,
+  FileBarChart2,
+  LayoutGrid,
+  LogOut,
+  Megaphone,
+  UsersRound,
+} from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import ThemeToggle from "@/components/ThemeToggle";
 import { CommercialNotificationsModal } from "@/components/CommercialModals";
 import { useStore } from "@/store/store";
 import { logout as endSession } from "@/services/auth.service";
+import MobileNavigation from "@/components/MobileNavigation";
+import type { EnterpriseTopbarProps } from "@/types/component-props.type";
+export type { EnterpriseTopbarProps } from "@/types/component-props.type";
 
-interface EnterpriseTopbarProps {
-  breadcrumb?: string;
-  onOpenCreateAd?: () => void;
-}
+const mobileNavigationItems = [
+  { label: "Visão geral", href: "/enterprise", icon: LayoutGrid },
+  { label: "Produtos anunciados", href: "/enterprise/ads", icon: Megaphone },
+  { label: "Relatório mensal", href: "/enterprise/report", icon: FileBarChart2 },
+  { label: "Visualizações", href: "/enterprise/views", icon: Eye },
+  { label: "Público atingido", href: "/enterprise/audience", icon: UsersRound },
+];
 
 export default function EnterpriseTopbar({
   breadcrumb = "Área empresarial / Visão geral",
@@ -61,11 +75,14 @@ export default function EnterpriseTopbar({
 
   return (
     <>
-      <header className="sticky top-0 z-30 flex h-20 select-none items-center justify-between border-b border-[#E1E7F0] bg-white px-6 transition-colors dark:border-[#2A2D31] dark:bg-[#1B1D20] md:px-9">
-        <p className="text-[11px] font-medium text-[#64748B] dark:text-neutral-400">
+      <header className="sticky top-0 z-30 flex min-h-16 select-none items-center justify-between gap-2 border-b border-[#E1E7F0] bg-white px-3 py-2 transition-colors dark:border-[#2A2D31] dark:bg-[#1B1D20] sm:min-h-20 sm:gap-4 sm:px-6 md:px-9">
+        <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-4">
+          <MobileNavigation label="Navegação empresarial" items={mobileNavigationItems} />
+          <p className="truncate text-[11px] font-medium text-[#64748B] dark:text-neutral-400">
           {breadcrumb}
-        </p>
-        <div className="flex items-center gap-3">
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-3">
           <ThemeToggle />
           <button
             type="button"

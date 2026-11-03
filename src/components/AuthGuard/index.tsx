@@ -1,8 +1,9 @@
-import type { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/useAuth";
 import { useStore } from "@/store/store";
 import type { AccountType } from "@/types/auth.type";
+import type { AuthGuardProps } from "@/types/component-props.type";
+export type { AuthGuardProps } from "@/types/component-props.type";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { getSessionDestination } from "@/utils/plan.util";
 
@@ -11,12 +12,6 @@ const destination: Record<AccountType, string> = {
   COMMERCIAL: "/commercial",
   BUSINESS: "/enterprise",
 };
-
-interface AuthGuardProps {
-  children: ReactNode;
-  accountType?: AccountType;
-  allowPlanSelection?: boolean;
-}
 
 export default function AuthGuard({
   children,
