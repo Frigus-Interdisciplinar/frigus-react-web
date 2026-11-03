@@ -1,5 +1,5 @@
-import type { AuthBenefitCardProps } from "@/types/component-props.type";
-export type { AuthBenefitCardProps } from "@/types/component-props.type";
+import type { AuthBenefitCardProps } from "@/types/auth-component-props.type";
+export type { AuthBenefitCardProps } from "@/types/auth-component-props.type";
 
 export default function AuthBenefitCard({
   cardTitle,

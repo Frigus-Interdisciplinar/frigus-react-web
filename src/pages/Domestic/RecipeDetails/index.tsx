@@ -13,7 +13,7 @@ import type { Recipe } from "@/types/recipe.type";
 import { Skeleton, SkeletonCard } from "@/components/LoadingSkeleton";
 import { formatUnitOfMeasure } from "@/utils/unit.util";
 import { useServiceOperations } from "@/hooks/useServiceOperations";
-import type { RecipeDetailsContentProps } from "@/types/component-props.type";
+import type { RecipeDetailsContentProps } from "@/types/domestic-component-props.type";
 
 export default function RecipeDetailsPage() {
   const { id } = useParams<{ id: string }>();

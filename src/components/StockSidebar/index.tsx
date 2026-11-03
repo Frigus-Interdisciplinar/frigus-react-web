@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, AlertCircle } from "lucide-react";
-import type { StockSidebarProps } from "@/types/component-props.type";
-export type { CategoryStat, StockSidebarProps } from "@/types/component-props.type";
+import type { StockSidebarProps } from "@/types/layout-component-props.type";
+export type { CategoryStat, StockSidebarProps } from "@/types/layout-component-props.type";
 
 export default function StockSidebar({
   stats,

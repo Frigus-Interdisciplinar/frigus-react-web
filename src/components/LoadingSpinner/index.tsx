@@ -1,5 +1,5 @@
 import { LoaderCircle } from "lucide-react";
-import type { LoadingSpinnerProps } from "@/types/component-props.type";
+import type { LoadingSpinnerProps } from "@/types/ui-component-props.type";
 
 export default function LoadingSpinner({
   label = "Carregando…",

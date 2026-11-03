@@ -1,87 +1,24 @@
-import { useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Check } from "lucide-react";
 import ThemeToggle from "@/components/ThemeToggle";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import BrandLogo from "@/components/BrandLogo";
-import { useAbortableAsync } from "@/hooks/useAbortableAsync";
-import { useLatestRequest } from "@/hooks/useLatestRequest";
+import type { PlanSelectionProps } from "@/types/plan-component-props.type";
+import { formatPlanPrice } from "@/utils/plan.util";
 
-
-import { useStore } from "@/store/store";
-import type { AccountType } from "@/types/auth.type";
-import type { Plan } from "@/types/plan.type";
-import {
-  formatPlanPrice,
-  getAccountHome,
-  getSessionDestination,
-  isPlanAvailableForAccount,
-} from "@/utils/plan.util";
-import { useServiceOperations } from "@/hooks/useServiceOperations";
-
-const accountLabels: Record<AccountType, string> = {
-  DOMESTIC: "sua casa",
-  COMMERCIAL: "seu comércio",
-  BUSINESS: "sua empresa",
-};
+export type { PlanSelectionProps } from "@/types/plan-component-props.type";
 
 export default function PlanSelection({
   accountType,
-}: {
-  accountType: AccountType;
-}) {
-  const apiOperations = useServiceOperations();
-  const { data, loading, error: loadError } = useAbortableAsync(apiOperations.plans.listPlans);
-  const plans = (data ?? [])
-    .filter(
-      (plan) =>
-        plan.active && isPlanAvailableForAccount(plan.planCode, accountType),
-    )
-    .sort((a, b) => a.price - b.price);
-  const user = useStore((state) => state.user);
-  const saveUser = useStore((state) => state.login);
-  const [activating, setActivating] = useState<string | null>(null);
-  const [actionError, setActionError] = useState("");
-  const beginRequest = useLatestRequest();
-  const navigate = useNavigate();
-
-  const handleChoosePlan = async (plan: Plan) => {
-    if (activating) return;
-    if (plan.price > 0) {
-      navigate(`/checkout?plan=${encodeURIComponent(plan.planCode)}`);
-      return;
-    }
-    const signal = beginRequest();
-    setActivating(plan.planCode);
-    setActionError("");
-    try {
-      const transaction = await apiOperations.transactions.createCheckoutTransaction(
-        { planCode: plan.planCode },
-        signal,
-      );
-      if (transaction.status !== "APPROVED")
-        throw new Error(
-          "Não foi possível ativar o plano gratuito. Tente novamente.",
-        );
-      const updatedUser = await apiOperations.plans.finishPlanSelection(signal);
-      if (signal.aborted) return;
-      saveUser(updatedUser);
-      navigate(getAccountHome(updatedUser.accountType), { replace: true });
-    } catch (reason) {
-      if (!signal.aborted)
-        setActionError(
-          reason instanceof Error
-            ? reason.message
-            : "Não foi possível escolher o plano.",
-        );
-    } finally {
-      if (!signal.aborted) setActivating(null);
-    }
-  };
-
-  if (user?.planSelectionRequired && user.pendingPlanTransactionId)
-    return <Navigate to={getSessionDestination(user)} replace />;
-
+  planSelectionRequired,
+  plans,
+  loading,
+  loadError,
+  actionError,
+  activating,
+  onRetry,
+  onChoosePlan,
+}: PlanSelectionProps) {
   return (
     <div className="min-h-screen bg-[#F5F8FC] p-6 text-frigus-navy dark:bg-[#0F172A] dark:text-white sm:p-10">
       <header className="mx-auto flex max-w-6xl items-center justify-between border-b border-[#E1E7F0] pb-6 dark:border-[#343941]">
@@ -89,7 +26,7 @@ export default function PlanSelection({
           <BrandLogo surface="theme" className="h-9 w-auto" />
         </Link>
         <div className="flex items-center gap-4">
-          {user?.planSelectionRequired && (
+          {planSelectionRequired && (
             <span className="rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-semibold text-frigus-primary dark:border-blue-900/40 dark:bg-[#1B2A4A] dark:text-[#A7BCFF]">
               Etapa 2 de 2
             </span>
@@ -107,7 +44,7 @@ export default function PlanSelection({
             Escolha o plano para {accountLabels[accountType]}
           </h1>
           <p className="mt-3 text-base text-text-muted">
-            {user?.planSelectionRequired
+            {planSelectionRequired
               ? "Seu cadastro está pronto. Escolha um plano para começar."
               : "Compare os planos disponíveis para sua conta."}
           </p>
@@ -124,7 +61,7 @@ export default function PlanSelection({
             <p>{loadError}</p>
             <button
               type="button"
-              onClick={() => window.location.reload()}
+              onClick={onRetry}
               className="rounded-lg border px-4 py-3 font-semibold"
             >
               Tentar novamente
@@ -172,7 +109,10 @@ export default function PlanSelection({
                 {plan.benefits
                   .filter((benefit) => benefit.enabled)
                   .map((benefit) => (
-                    <li key={benefit.code} className="flex items-start gap-2.5">
+                    <li
+                      key={benefit.code}
+                      className="flex items-start gap-2.5"
+                    >
                       <Check
                         aria-hidden="true"
                         className="mt-0.5 size-4 shrink-0 text-frigus-primary dark:text-[#A7BCFF]"
@@ -189,7 +129,7 @@ export default function PlanSelection({
               <button
                 type="button"
                 disabled={activating !== null}
-                onClick={() => void handleChoosePlan(plan)}
+                onClick={() => onChoosePlan(plan)}
                 className="min-h-12 w-full rounded-xl bg-frigus-primary px-4 py-3 text-sm font-bold text-white transition hover:bg-blue-700 disabled:cursor-wait disabled:opacity-60"
               >
                 {activating === plan.planCode
@@ -205,3 +145,9 @@ export default function PlanSelection({
     </div>
   );
 }
+
+const accountLabels = {
+  DOMESTIC: "sua casa",
+  COMMERCIAL: "seu comércio",
+  BUSINESS: "sua empresa",
+} as const;

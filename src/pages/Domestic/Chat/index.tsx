@@ -5,7 +5,7 @@ import { Search, Send, Users } from "lucide-react";
 import { safeHttpUrl } from "@/utils/url.util";
 import { useFamilyChat } from "@/hooks/useFamilyChat";
 import { useStore } from "@/store/store";
-import type { ChatContentProps } from "@/types/component-props.type";
+import type { ChatContentProps } from "@/types/domestic-component-props.type";
 
 export default function ChatPage() {
   const [searchParams] = useSearchParams();

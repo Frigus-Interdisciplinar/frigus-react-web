@@ -1,14 +1,2 @@
-export type {
-  BaseModalProps,
-  CommercialAddBatchModalProps,
-  CommercialBatchInput,
-  CommercialCompletePurchaseModalProps,
-  CommercialFilterStockModalProps,
-  CommercialInviteEmployeeModalProps,
-  CommercialManageAccessModalProps,
-  CommercialRegisterPurchaseModalProps,
-  CommercialRegisterWasteModalProps,
-  CommercialResendInviteModalProps,
-  CommercialWasteProduct,
-  ModalVisibilityProps,
-} from "@/types/component-props.type";
+export type { BaseModalProps, ModalVisibilityProps } from "@/types/modal-component-props.type";
+export type { CommercialAddBatchModalProps, CommercialBatchInput, CommercialCompletePurchaseModalProps, CommercialFilterStockModalProps, CommercialInviteEmployeeModalProps, CommercialManageAccessModalProps, CommercialRegisterPurchaseModalProps, CommercialRegisterWasteModalProps, CommercialResendInviteModalProps, CommercialWasteProduct } from "@/types/commercial-component-props.type";

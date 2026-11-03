@@ -2,8 +2,8 @@ import { useState, type FormEvent } from "react";
 import { X } from "lucide-react";
 import { useModalFocus } from "@/hooks/useModalFocus";
 import { useResetModalState } from "@/hooks/useResetModalState";
-import type { InviteMemberModalProps } from "@/types/component-props.type";
-export type { InviteMemberData, InviteMemberModalProps } from "@/types/component-props.type";
+import type { InviteMemberModalProps } from "@/types/domestic-component-props.type";
+export type { InviteMemberData, InviteMemberModalProps } from "@/types/domestic-component-props.type";
 
 export default function InviteMemberModal({
   isOpen,

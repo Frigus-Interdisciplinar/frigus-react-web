@@ -6,7 +6,7 @@ import {
   type AccessibilityContextValue,
 } from "@/contexts/accessibility-context";
 import { z } from "zod";
-import type { ProviderProps } from "@/types/component-props.type";
+import type { ProviderProps } from "@/types/provider-component-props.type";
 
 const STORAGE_KEY = "frigus-accessibility-preferences";
 const PREFERENCES_SCHEMA = z.object({

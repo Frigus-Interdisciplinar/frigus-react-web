@@ -1,4 +1,4 @@
-import type { ModalVisibilityProps } from "@/types/component-props.type";
+import type { ModalVisibilityProps } from "@/types/modal-component-props.type";
 import { CommercialModalBase } from "@/components/CommercialModalBase";
 
 export function CommercialExportReportModal({

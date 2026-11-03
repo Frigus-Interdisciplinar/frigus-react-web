@@ -1,11 +1,14 @@
-import { Outlet, useLocation } from "react-router-dom";
+import { useCallback } from "react";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import AppLayout from "@/components/AppLayout";
-import type { SectionString } from "@/types/component-props.type";
+import type { SectionString } from "@/types/layout-component-props.type";
 import CommercialLayout from "@/components/CommercialLayout";
-import type { CommercialSection } from "@/types/component-props.type";
+import type { CommercialSection } from "@/types/layout-component-props.type";
 import EnterpriseLayout from "@/components/EnterpriseLayout";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useStore } from "@/store/store";
+import { useAuth } from "@/contexts/useAuth";
+import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 const domesticSections: Record<string, SectionString> = {
   home: "home",
@@ -46,9 +49,16 @@ const enterpriseSections = {
 // The shell stays mounted while the outlet restores the session, loads a chunk or fetches data.
 export default function WorkspaceLayout() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const [, area, tab] = pathname.split("/");
-  const user = useStore((state) => state.user);
-  const initialized = useStore((state) => state.initialized);
+  const { user, initialized } = useAuth();
+  const clearSession = useStore((state) => state.logout);
+  const apiOperations = useServiceOperations();
+  const handleLogout = useCallback(() => {
+    void apiOperations.auth.logout().catch(() => undefined);
+    clearSession();
+    navigate("/login", { replace: true });
+  }, [apiOperations.auth, clearSession, navigate]);
 
   const sharedWorkspaceLabels: Record<string, string> = {
     profile: "Perfil",
@@ -66,6 +76,8 @@ export default function WorkspaceLayout() {
       <CommercialLayout
         activeSection={area as CommercialSection}
         breadcrumb={`Área comercial    /    ${sharedLabel}`}
+        userName={user?.name ?? ""}
+        onLogout={handleLogout}
       >
         <Outlet />
       </CommercialLayout>
@@ -77,6 +89,8 @@ export default function WorkspaceLayout() {
       <EnterpriseLayout
         activeSection={area as "profile" | "settings" | "notifications"}
         breadcrumb={`Área empresarial    /    ${sharedLabel}`}
+        userName={user?.name ?? ""}
+        onLogout={handleLogout}
       >
         <Outlet />
       </EnterpriseLayout>
@@ -92,6 +106,8 @@ export default function WorkspaceLayout() {
       <CommercialLayout
         activeSection={section}
         breadcrumb={`Área comercial    /    ${label}`}
+        userName={user?.name ?? ""}
+        onLogout={handleLogout}
       >
         <Outlet />
       </CommercialLayout>
@@ -106,6 +122,8 @@ export default function WorkspaceLayout() {
       <EnterpriseLayout
         activeSection={section}
         breadcrumb={`Área empresarial    /    ${label}`}
+        userName={user?.name ?? ""}
+        onLogout={handleLogout}
       >
         <Outlet />
       </EnterpriseLayout>
@@ -119,6 +137,9 @@ export default function WorkspaceLayout() {
       subtitle={
         area === "chat-ai" ? "Converse com o assistente Frigus" : undefined
       }
+      userName={user?.name ?? ""}
+      planLabel={user?.accountType === "DOMESTIC" ? "Plano doméstico" : "Plano Frigus"}
+      onLogout={handleLogout}
     >
       <Outlet />
     </AppLayout>

@@ -1,10 +1,6 @@
 import SkeletonBase, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
-import type {
-  SkeletonCardProps,
-  SkeletonProps,
-  SkeletonRowsProps,
-} from "@/types/component-props.type";
+import type { SkeletonCardProps, SkeletonProps, SkeletonRowsProps } from "@/types/ui-component-props.type";
 
 export function Skeleton({
   className,

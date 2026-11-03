@@ -1,9 +1,8 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/useAuth";
-import { useStore } from "@/store/store";
 import type { AccountType } from "@/types/auth.type";
-import type { AuthGuardProps } from "@/types/component-props.type";
-export type { AuthGuardProps } from "@/types/component-props.type";
+import type { AuthGuardProps } from "@/types/auth-component-props.type";
+export type { AuthGuardProps } from "@/types/auth-component-props.type";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { getSessionDestination } from "@/utils/plan.util";
 
@@ -18,8 +17,7 @@ export default function AuthGuard({
   accountType,
   allowPlanSelection = false,
 }: AuthGuardProps) {
-  const { user } = useAuth();
-  const initialized = useStore((state) => state.initialized);
+  const { user, initialized } = useAuth();
   const location = useLocation();
 
   if (!initialized) {

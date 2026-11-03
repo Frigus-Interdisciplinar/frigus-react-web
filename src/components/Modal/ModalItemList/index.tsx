@@ -1,7 +1,7 @@
 import { Check } from "lucide-react";
 import { cn } from "@/utils/cn.util";
-import type { ModalItemListProps } from "@/types/component-props.type";
-export type { ModalItemListProps, SuggestedItem } from "@/types/component-props.type";
+import type { ModalItemListProps } from "@/types/modal-component-props.type";
+export type { ModalItemListProps, SuggestedItem } from "@/types/modal-component-props.type";
 
 export default function ModalItemList({
   items,

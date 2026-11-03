@@ -1,7 +1,7 @@
 import { Check } from "lucide-react";
 import { cn } from "@/utils/cn.util";
-import type { CheckboxProps } from "@/types/component-props.type";
-export type { CheckboxProps } from "@/types/component-props.type";
+import type { CheckboxProps } from "@/types/ui-component-props.type";
+export type { CheckboxProps } from "@/types/ui-component-props.type";
 
 export default function Checkbox({
   id,

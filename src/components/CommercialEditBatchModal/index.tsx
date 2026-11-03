@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useResetModalState } from "@/hooks/useResetModalState";
-import type { ModalVisibilityProps } from "@/types/component-props.type";
+import type { ModalVisibilityProps } from "@/types/modal-component-props.type";
 import { CommercialModalBase } from "@/components/CommercialModalBase";
 
 type BatchFormData = {

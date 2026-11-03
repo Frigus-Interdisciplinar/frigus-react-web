@@ -1,8 +1,8 @@
 import { useState, type FormEvent } from "react";
 import { X } from "lucide-react";
 import { useModalFocus } from "@/hooks/useModalFocus";
-import type { EditFoodFormProps, EditFoodModalProps, FoodItemData } from "@/types/component-props.type";
-export type { EditFoodModalProps, FoodItemData } from "@/types/component-props.type";
+import type { EditFoodFormProps, EditFoodModalProps, FoodItemData } from "@/types/domestic-component-props.type";
+export type { EditFoodModalProps, FoodItemData } from "@/types/domestic-component-props.type";
 
 function EditFoodForm({ initialData, onClose, onSave }: EditFoodFormProps) {
   const [form, setForm] = useState({

@@ -10,7 +10,7 @@ import {
   formatUnitOfMeasure,
 } from "@/utils/unit.util";
 import { useServiceOperations } from "@/hooks/useServiceOperations";
-import type { BatchDetailsContentProps } from "@/types/component-props.type";
+import type { BatchDetailsContentProps } from "@/types/domestic-component-props.type";
 
 export default function CommercialBatchDetailsPage() {
   const { id } = useParams();

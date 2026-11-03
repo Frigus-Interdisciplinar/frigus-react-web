@@ -1,6 +1,6 @@
 import { Sun, Moon } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
-import type { ThemeToggleProps } from "@/types/component-props.type";
+import type { ThemeToggleProps } from "@/types/ui-component-props.type";
 
 export default function ThemeToggle({ className = "" }: ThemeToggleProps) {
   const { theme, toggleTheme } = useTheme();

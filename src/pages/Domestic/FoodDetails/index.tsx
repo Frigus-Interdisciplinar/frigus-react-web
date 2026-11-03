@@ -23,7 +23,7 @@ import { useModalFocus } from "@/hooks/useModalFocus";
 import { safeHttpUrl } from "@/utils/url.util";
 import { formatUnitOfMeasure } from "@/utils/unit.util";
 import { useServiceOperations } from "@/hooks/useServiceOperations";
-import type { FoodDetailsContentProps } from "@/types/component-props.type";
+import type { FoodDetailsContentProps } from "@/types/domestic-component-props.type";
 
 const categoryLabels: Record<string, string> = {
   FRUIT: "Frutas",

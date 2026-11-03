@@ -1,5 +1,5 @@
-import PlanSelection from "@/components/PlanSelection";
+import PlanSelectionPage from "@/pages/Common/PlanSelectionPage";
 
 export default function PlansEnterprisePage() {
-  return <PlanSelection accountType="BUSINESS" />;
+  return <PlanSelectionPage accountType="BUSINESS" />;
 }

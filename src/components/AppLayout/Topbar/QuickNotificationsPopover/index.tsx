@@ -7,8 +7,8 @@ import {
   UserCheck,
 } from "lucide-react";
 import { useModalFocus } from "@/hooks/useModalFocus";
-import type { QuickNotice, QuickNotificationsPopoverProps } from "@/types/component-props.type";
-export type { QuickNotice, QuickNotificationsPopoverProps } from "@/types/component-props.type";
+import type { QuickNotice, QuickNotificationsPopoverProps } from "@/types/layout-component-props.type";
+export type { QuickNotice, QuickNotificationsPopoverProps } from "@/types/layout-component-props.type";
 
 const notices: QuickNotice[] = [
   {

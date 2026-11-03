@@ -6,7 +6,7 @@ import {
 } from "react";
 import { ThemeContext, type Theme } from "./ThemeContext";
 import { z } from "zod";
-import type { ProviderProps } from "@/types/component-props.type";
+import type { ProviderProps } from "@/types/provider-component-props.type";
 
 const THEME_SCHEMA = z.enum(["light", "dark"]);
 const VERSIONED_THEME_SCHEMA = z.object({

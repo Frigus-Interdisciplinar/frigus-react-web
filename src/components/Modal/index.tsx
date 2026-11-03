@@ -6,12 +6,12 @@ import ModalTitle from "./ModalTitle";
 import ModalInput from "./ModalInput";
 import ModalItemList, { type SuggestedItem } from "./ModalItemList";
 import ModalFooter from "./ModalFooter";
-import type { ModalProps } from "@/types/component-props.type";
+import type { ModalProps } from "@/types/modal-component-props.type";
 
 export { ModalHeader, ModalTitle, ModalInput, ModalItemList, ModalFooter };
 export type { SuggestedItem };
 
-export type { ModalProps } from "@/types/component-props.type";
+export type { ModalProps } from "@/types/modal-component-props.type";
 
 export default function Modal({
   isOpen,

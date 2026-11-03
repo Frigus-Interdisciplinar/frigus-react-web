@@ -12,15 +12,13 @@ import {
   Utensils,
   MessageCircle,
 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import QuickNotificationsPopover from "./QuickNotificationsPopover";
 import ThemeToggle from "@/components/ThemeToggle";
-import { useStore } from "@/store/store";
 
-import type { SectionString, TopbarProps } from "@/types/component-props.type";
-export type { TopbarProps } from "@/types/component-props.type";
+import type { SectionString, TopbarProps } from "@/types/layout-component-props.type";
+export type { TopbarProps } from "@/types/layout-component-props.type";
 import MobileNavigation from "@/components/MobileNavigation";
-import { useServiceOperations } from "@/hooks/useServiceOperations";
 
 const mobileNavigationItems = [
   { label: "Visão geral", href: "/home", icon: LayoutDashboard },
@@ -38,24 +36,22 @@ export default function Topbar({
   subtitle,
   hasNotificationAlert = true,
   activeSection,
+  userName,
+  onLogout,
 }: TopbarProps) {
-  const apiOperations = useServiceOperations();
   const [isQuickNotificationsOpen, setIsQuickNotificationsOpen] =
     useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef<HTMLDivElement>(null);
   const accountMenuContentRef = useRef<HTMLDivElement>(null);
   const accountButtonRef = useRef<HTMLButtonElement>(null);
-  const navigate = useNavigate();
-  const user = useStore((state) => state.user);
-  const clearSession = useStore((state) => state.logout);
   const initials =
-    user?.name
+    userName
       .split(/\s+/)
       .slice(0, 2)
       .map((part) => part[0])
       .join("")
-      .toUpperCase() ?? "";
+      .toUpperCase();
   const sectionLabels: Partial<Record<NonNullable<SectionString>, string>> = {
     home: "Visão geral",
     stock: "Meu estoque",
@@ -101,12 +97,6 @@ export default function Topbar({
       ?.querySelector<HTMLElement>("a[href], button")
       ?.focus();
   }, [isAccountMenuOpen]);
-
-  const handleLogout = () => {
-    void apiOperations.auth.logout().catch(() => undefined);
-    clearSession();
-    navigate("/login", { replace: true });
-  };
 
   return (
     <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between gap-2 border-b border-gray-200/80 bg-white px-3 py-2 text-[#64748B] transition-colors dark:border-[#2A2D31] dark:bg-[#1B1D20] sm:min-h-20 sm:gap-4 sm:px-6 md:px-9">
@@ -183,7 +173,7 @@ export default function Topbar({
               </Link>
               <button
                 type="button"
-                onClick={handleLogout}
+                onClick={onLogout}
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-red-700 hover:bg-red-50 focus-visible:outline-2 focus-visible:outline-red-600 dark:text-red-300 dark:hover:bg-red-950/30"
               >
                 <LogOut size={16} aria-hidden="true" />

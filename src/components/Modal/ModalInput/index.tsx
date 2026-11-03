@@ -1,8 +1,8 @@
 import { Search } from "lucide-react";
 import { useId } from "react";
 import { cn } from "@/utils/cn.util";
-import type { ModalInputProps } from "@/types/component-props.type";
-export type { ModalInputProps } from "@/types/component-props.type";
+import type { ModalInputProps } from "@/types/modal-component-props.type";
+export type { ModalInputProps } from "@/types/modal-component-props.type";
 
 export default function ModalInput({
   icon,

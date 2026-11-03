@@ -1,7 +1,1 @@
-export type {
-  EnterpriseEditAdModalProps,
-  EnterpriseFinishAdModalProps,
-  EnterpriseModalBaseProps,
-  EnterpriseModalVisibilityProps,
-  EnterprisePauseAdModalProps,
-} from "@/types/component-props.type";
+export type { EnterpriseEditAdModalProps, EnterpriseFinishAdModalProps, EnterpriseModalBaseProps, EnterpriseModalVisibilityProps, EnterprisePauseAdModalProps } from "@/types/enterprise-component-props.type";
